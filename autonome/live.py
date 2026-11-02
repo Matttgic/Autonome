@@ -142,11 +142,13 @@ def summarize(cands: list[dict], now: datetime) -> dict:
         xs = sorted(xs)
         return round(xs[min(len(xs) - 1, int(f * len(xs)))], 4) if xs else None
     top = sorted(cands, key=lambda c: -c["ev"])[:10]
+    for c in cands:
+        c.setdefault("book", "?")
     return {"at": now.isoformat(), "n": len(cands), "n_ev_pos": sum(c["ev"] > 0 for c in cands),
             "n_ev_pos_cons": sum(c["ev_cons"] > 0 for c in cands),
             "by_family": {k: {"n": len(v), "median_ev": q(v, 0.5), "p90_ev": q(v, 0.9), "max_ev": max(v)}
                           for k, v in sorted(fam.items())},
-            "top": [{k: c[k] for k in ("home", "away", "label", "odds", "fair_odds", "ev", "ev_cons", "spread", "commence")}
+            "top": [{k: c[k] for k in ("home", "away", "label", "book", "odds", "fair_odds", "ev", "ev_cons", "spread", "commence")}
                     for c in top]}
 
 

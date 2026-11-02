@@ -161,7 +161,7 @@ def _event(e: dict, url: str) -> dict | None:
     if not actors.get("home") or not actors.get("away") or not e.get("start"):
         return None
     start = datetime.fromisoformat(e["start"]).astimezone(timezone.utc)
-    ev = {"id": f"nb|{e['matchId']}", "url": url,
+    ev = {"id": f"nb|{e['matchId']}", "url": BASE + url if url.startswith("/") else url,
           "commence": start.isoformat().replace("+00:00", "Z"), "home": actors["home"], "away": actors["away"],
           "competition": e.get("competitionLabel"), "markets": e.get("markets", [])}
     ev["odds"] = map_markets(ev)

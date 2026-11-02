@@ -18,10 +18,21 @@ _ALIAS = {"psg": "paris saint germain", "paris sg": "paris saint germain", "om":
           "lyon": "lyonnais lyon", "atletico madrid": "atletico madrid atleti", "brest": "brestois brest"}
 
 
+# Noms français des books -> noms internationaux (jeton par jeton)
+_TOK = {"corogne": "coruna", "majorque": "mallorca", "cadix": "cadiz", "seville": "sevilla", "saragosse": "zaragoza",
+        "munich": "munchen", "cologne": "koln", "monchengladbach": "monchengladbach", "naples": "napoli",
+        "rome": "roma", "milano": "milan", "inter": "internazionale", "turin": "torino", "florence": "fiorentina", "genes": "genoa",
+        "lisbonne": "lisbon", "porto": "porto", "londres": "london", "brugge": "brugge", "bruges": "brugge",
+        "glasgow": "glasgow", "prague": "praha", "belgrade": "beograd", "athenes": "athens", "eindhoven": "eindhoven",
+        "francfort": "frankfurt", "hambourg": "hamburger", "brest": "brest", "vigo": "vigo", "pampelune": "osasuna",
+        "betis": "betis", "atletico": "atletico", "copenhague": "kobenhavn", "varsovie": "warszawa"}
+
+
 def norm(name: str) -> set[str]:
     s = unicodedata.normalize("NFKD", name or "").encode("ascii", "ignore").decode().lower()
     s = re.sub(r"[^a-z0-9 ]+", " ", s).strip()
     s = _ALIAS.get(s, s)
+    s = " ".join(_TOK.get(t, t) for t in s.split())
     toks = {t for t in s.split() if t not in _STOP}
     return toks or set(s.split())
 

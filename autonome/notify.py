@@ -116,7 +116,7 @@ def github_dashboard(body: str, title: str = "📊 Tableau de bord Autonome") ->
 def md_bet(b: dict) -> str:
     """Un pari en Markdown, avec tout le détail vérifiable."""
     when = b["commence"][:16].replace("T", " ")
-    url = f"https://www.netbet.fr{b['url']}" if b.get("url") else ""
+    url = b.get("url") or ""
     return (f"### {md(b['home'])} – {md(b['away'])}  ·  {when} UTC\n"
             f"**{md(b['label'])}** @ **{b['odds']:.2f}** chez **{b['book']}** {('— ' + url) if url else ''}\n"
             f"- Mise conseillée : **{b['stake']:.1f} €** (¼ Kelly sur la proba prudente, plafond 2 %)\n"
