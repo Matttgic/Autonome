@@ -219,11 +219,31 @@ def cmd_live(a, cfg):
             "\n".join(notify.md_bet(b) for b in picks)
         print(notify.github_issue(f"Paris du {now:%d/%m/%Y}", body))
         print(notify.send(f"{len(picks)} value bet(s)", notify.message(picks), a.link))
-    print(notify.github_dashboard(dashboard_md(a.state, meta, obs)))
+    print(notify.github_dashboard(dashboard_md(a.state, meta, obs) + "\n\n" + fair_table_md(
+        [g for g in ref if 0 < live._mins(g["commence"], now) <= 72 * 60])))
     if errors and not ref:
         print(notify.github_issue(f"Panne source {now:%d/%m/%Y}", "Sources en erreur :\n- " + "\n- ".join(errors[:20])))
         return 2
     return 0
+
+
+def fair_table_md(games, limit=40) -> str:
+    """Cotes justes (sans marge) des prochains matchs : pour juger soi-même une cote boostée d'un book ANJ."""
+    def o(m, k, sel):
+        leg = (m.get(k) or {}).get(sel)
+        return f"{1 / leg['p']:.2f}" if leg and leg["p"] > 0 else "—"
+    rows = ["## Cotes justes Polymarket (sans marge) — un boost n'est intéressant que s'il dépasse ces cotes",
+            "| Heure (Paris) | Match | 1 | N | 2 | +2,5 | −2,5 | 2 marquent |", "|---|---|---|---|---|---|---|---|"]
+    from zoneinfo import ZoneInfo
+    for g in sorted(games, key=lambda g: g["commence"])[:limit]:
+        m = g["markets"]
+        t = datetime.fromisoformat(g["commence"].replace("Z", "+00:00")).astimezone(ZoneInfo("Europe/Paris"))
+        jour = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"][t.weekday()]
+        rows.append(f"| {jour} {t:%d/%m %H:%M} | {g['home']} – {g['away']} | {o(m, '1x2', 'home')} | {o(m, '1x2', 'draw')} | "
+                    f"{o(m, '1x2', 'away')} | {o(m, 'ou@2.5', 'over')} | {o(m, 'ou@2.5', 'under')} | {o(m, 'btts', 'yes')} |")
+    if len(rows) == 3:
+        rows.append("| — | aucun match liquide dans les 72 h | | | | | | |")
+    return "\n".join(rows)
 
 
 def dashboard_md(root, meta, obs=None) -> str:

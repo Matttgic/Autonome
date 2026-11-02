@@ -280,3 +280,18 @@ Sous-échantillon liquide (marge BFE avant ≤ 1,5 %, n = 4573) : log-loss PS av
 | 8 | The Odds API | — | refusée par le propriétaire | Code gardé, workflow `run` désactivé |
 | 9 | tennis-data.co.uk | HTTP 403 depuis la session | bloqué | À mesurer via probe |
 | 10 | Smarkets API publique | 403 (Cloudflare) depuis la session | inconnu depuis GitHub | probe.yml |
+
+## Session 3 — mesures réelles NetBet (ANJ) contre Polymarket (2026-11-02)
+Méthode : proba juste = milieu bid/ask Polymarket (1X2 normalisé par la somme des milieux) ; EV = p × cote NetBet − 1 ;
+EV prudente = borne défavorable (bid pour « oui », 1 − ask pour « non »).
+
+| # | Piste | Hypothèse | Test | Résultat chiffré | Décision |
+|---|---|---|---|---|---|
+| 9 | Value NetBet vs Polymarket (pré-match) | NetBet affiche parfois une cote > cote juste | 117 cotes comparables, 3 matchs (run live 02:18 UTC) | **0/117 à EV > 0**. Médiane EV : 1X2 −9,0 % ; handicaps −16 % ; 2 marquent −12,7 % ; double chance −17,9 % ; plus/moins −18,0 % ; mi-temps −19 à −20 % ; buts par équipe −23,4 %. Meilleure : −6,5 % | Garder la surveillance horaire (erreurs ponctuelles, cotes non mises à jour après une nouvelle) ; échantillon encore minuscule |
+| 10 | Combi Boost NetBet | Le bonus des combinés compense la marge | Paliers lus dans la page : +4 % (4 sél.) … +25 % (10) … +75 % (20) ; seuil de rentabilité par sélection = (1+bonus)^(1/n) − 1 | Il faut au mieux EV ≥ −2,8 %/sélection (20 sél.) ; −2,2 % (10 sél.) ; les sélections réelles sont à −7 % ou pire | **Abandonnée** |
+| 11 | Marchés secondaires mieux pricés | Moins surveillés donc plus d'erreurs | Même mesure | Au contraire : marge 2× plus forte que le 1X2 | Seuil inchangé ; rien de systématique |
+
+Conclusion honnête à ce stade : la marge française (fiscalité sur les mises, plafond de retour joueur à 85 %) rend la
+value systématique quasi inexistante sur NetBet. Les seules sources plausibles : (a) cotes figées après un mouvement de
+marché (mesurées chaque heure dans `observations.jsonl`), (b) cotes boostées des books bloqués (Winamax, Betclic) —
+non lisibles automatiquement ; à évaluer à la main avec la cote juste affichée.

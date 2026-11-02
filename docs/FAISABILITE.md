@@ -35,3 +35,22 @@ Ce qui tourne sans rien installer : `.github/workflows/fair.yml` (ven. 10:17/17:
 Smarkets, Polymarket, pages publiques des books ANJ) et écrit un tableau dans le résumé du run.
 Limite mesurée : la fiche est relevée 1-3 jours avant les matchs ; jouer plus tard contre ce relevé = CLV ≈ −5 %
 (RECHERCHE §A.4). Les cotes ANJ restent à comparer à la main.
+
+## Session 3 (2026-11-02, Opus) — sondes réelles depuis GitHub Actions (workflow `probe`, run 41374851664)
+| Source | Depuis GitHub | Verdict |
+|---|---|---|
+| Polymarket Gamma (API publique, sans clé) | 200, JSON | **Référence retenue** : marchés de matchs liquides (ex. Newcastle–Everton 1,2 M$ de liquidité, écart 0,01) avec 1X2, plus/moins, 2 marquent, buts par équipe, handicaps, mi-temps |
+| Smarkets API publique | 200 (403 depuis la session) | Lisible depuis GitHub ; non exploité (Polymarket couvre déjà) |
+| football-data.co.uk | 200 | Recherche / backtest |
+| NetBet.fr (ANJ) | 200, état Nuxt avec cotes | **Book retenu** : page compétition → URL des matchs ; page match ≈ 80 marchés |
+| Unibet.fr (ANJ) | 200, rendu serveur partiel (~9 cotes) | Peu exploitable sans exécuter de JS |
+| ZEbet, Parions Sport | redirection vers unibet.fr/paris-football | Non lisibles en propre |
+| Winamax, Betclic | 403 | Bloqués, non contournés |
+| PMU sport | 200 mais 1,7 ko | Vide (rendu client) |
+| tennis-data.co.uk | 403 | Bloqué |
+
+Contraintes respectées : User-Agent honnête, 1 requête / 4-5 s, aucune connexion, aucun contournement. L'état Nuxt de
+NetBet est lu par un analyseur de littéraux (`autonome/sources/jslit.py`) qui **n'exécute aucun code** (l'exécution
+du JS de la page a été refusée par le contrôle d'autorisation, à juste titre).
+Risque : les CGU de NetBet peuvent interdire la collecte automatisée ; usage personnel, débit très faible.
+Polymarket n'est pas agréé ANJ : il sert uniquement de référence, on n'y parie pas.
