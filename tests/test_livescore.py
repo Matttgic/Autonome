@@ -219,7 +219,7 @@ class PolymarketWide(unittest.TestCase):
             ref, errors = pm.fetch(tags=["ligue-1", "nba"])
         self.assertEqual(ref, [])
         self.assertTrue(any("tag_slug=ligue-1" in c for c in calls))   # repli sur la liste de championnats
-        self.assertEqual(len(errors), 2)
+        self.assertEqual(len(errors), len(pm.WINDOW_TAGS))
 
     def test_fetch_window_paginates_and_skips_soccer_tags(self):
         calls = []

@@ -29,9 +29,10 @@ LISTE = "GetMatchesBySportWithNotifications"
 DETAIL = "GetMatchWithNotification"
 PAGE = 40
 LISTE_MAX = 640
-SPORTS = {"FOOTBALL": "football", "TENNIS": "tennis", "BASKETBALL": "basketball", "ICE_HOCKEY": "ice_hockey"}
+SPORTS = {"FOOTBALL": "football", "TENNIS": "tennis", "BASKETBALL": "basketball", "ICE_HOCKEY": "ice_hockey",
+          "VOLLEYBALL": "volleyball"}
 URL_SPORT = {"FOOTBALL": "football-sfootball", "TENNIS": "tennis-stennis", "BASKETBALL": "basket-ball-sbasketball",
-             "ICE_HOCKEY": "hockey-sur-glace-sice_hockey"}
+             "ICE_HOCKEY": "hockey-sur-glace-sice_hockey", "VOLLEYBALL": "volley-ball-svolleyball"}
 HEADERS = {"Content-Type": "application/grpc-web+proto", "Accept": "*/*", "x-grpc-web": "1",
            "x-bg-ref-platform": "DESKTOP", "x-bg-regulation": "FR", "x-bg-ref-brand": "BETCLIC",
            "x-bg-ref-regulator-zone": "FR", "Origin": "https://www.betclic.fr", "Referer": "https://www.betclic.fr/",
@@ -337,7 +338,7 @@ def map_markets(markets: list[dict], home: str, away: str, sport: str) -> dict[s
             if set(sides) == {"home", "draw", "away"} and len(sels) == 3 == n_raw:
                 for k, v in sides.items():
                     put("1x2", k, v)
-        elif RX_ML.fullmatch(b) and sport in ("TENNIS", "BASKETBALL", "ICE_HOCKEY"):
+        elif RX_ML.fullmatch(b) and sport in ("TENNIS", "BASKETBALL", "ICE_HOCKEY", "VOLLEYBALL"):
             # Betclic : vainqueur sans mention = prolongation (et tirs au but) comprise (cotes-value, pulsescore.py)
             sides = {_side(s["name"], home, away): s["odds"] for s in sels}
             if set(sides) == {"home", "away"} and len(sels) == 2 == n_raw:

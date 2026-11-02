@@ -357,7 +357,15 @@ def cmd_live(a, cfg):
                             for c in sorted(cons_diag, key=lambda c: -c["ev"])[:8]]
     obs["by_book"] = {bk: live.summarize([c for c in allc if c["book"] == bk], now)["by_family"] for bk in books}
     obs["pairs_by_book"] = {bk: sum(1 for c in {(x["book"], x["event_id"]) for x in allc} if c[0] == bk) for bk in books}
-    store.append(a.state, "observations.jsonl", [obs])
+    # Mesure enregistrée au plus toutes les obs_every_min minutes (passages quasi continus : l'historique git grossirait
+    # de ~3 Mo/jour) ; la détection et le tableau de bord, eux, utilisent chaque passage.
+    prev = store.read(a.state, "observations.jsonl")[-1:]
+    try:
+        keep_obs = not prev or (now - datetime.fromisoformat(prev[0]["at"])).total_seconds() >= 60 * lcfg.get("obs_every_min", 14)
+    except (KeyError, ValueError, TypeError):
+        keep_obs = True
+    if keep_obs:
+        store.append(a.state, "observations.jsonl", [obs])
     rows = store.read(a.state, tracker.BETS)
     seen = {r["event_id"] for r in rows if r.get("ref_kind") == "polymarket"}
     today = now.date().isoformat()
@@ -410,7 +418,8 @@ def cmd_live(a, cfg):
                      "value": len(boost_picks),
                      "top": [{k: e.get(k) for k in ("event", "text", "odds", "fair_odds", "ev", "ev_cons", "commence")}
                              for e in sorted((x for x in boost_eval if x["evaluable"]), key=lambda x: -x["ev"])[:15]]}
-    store.write_all(a.state, "observations.jsonl", store.read(a.state, "observations.jsonl")[:-1] + [obs])
+    if keep_obs:
+        store.write_all(a.state, "observations.jsonl", store.read(a.state, "observations.jsonl")[:-1] + [obs])
     meta = {"at": now.isoformat(), "mode": "live", "ref_games": len(ref), "ref_soon": len(soon),
             "netbet_pages": len(book_events), "unibet_events": len(ub_events), "pmu_events": len(pmu_events),
             "betclic_events": len(bc_events),

@@ -22,18 +22,24 @@ GAMMA = "https://gamma-api.polymarket.com"
 UA = "autonome/0.3 (outil perso; requetes espacees)"
 TAGS = ["ligue-1", "epl", "la-liga", "bundesliga", "serie-a", "ucl", "uel", "mls", "brazil-serie-a", "primeira-liga",
         "efl-championship"]
-TAGS_2WAY = ["nba", "nhl", "tennis", "ufc", "ncaa-basketball", "boxing"]
+TAGS_2WAY = ["nba", "nhl", "tennis", "ufc", "ncaa-basketball", "boxing", "volleyball", "table-tennis", "darts"]
+# volley, tennis de table, fléchettes : date de fin = début + 7 j (lecture par étiquette, pas par fenêtre) ; vainqueur sans nul
 TAG_SPORT = {"nba": "BASKETBALL", "ncaa-basketball": "BASKETBALL", "nhl": "ICE_HOCKEY", "tennis": "TENNIS",
-             "ufc": "MMA", "boxing": "BOXING", "basketball": "BASKETBALL"}
+             "ufc": "MMA", "boxing": "BOXING", "basketball": "BASKETBALL", "hockey": "ICE_HOCKEY",
+             "american_football": "AMERICAN_FOOTBALL", "volleyball": "VOLLEYBALL", "table-tennis": "TABLE_TENNIS",
+             "darts": "DARTS"}
 # Lecture large par étiquette (idée reprise de cotes-value) : TOUS les championnats d'un sport en une requête paginée,
 # bornée par la date de fin (= heure du match en foot/basket ; pas au tennis : début + 7 j, d'où les TAGS_2WAY).
 # Fenêtre 72 h : couvre le consensus (48 h, un match couvert par Polymarket n'y entre pas), la fiche 72 h et les boosts.
 # Mesure du 02/11 : foot dans les 30 h = 92 matchs contre 6 avec la liste TAGS (Ligue 2, Liga 2, Pologne, Danemark…).
 # Identifiants lus sur GET /sports : 100350 porté par les 185 ligues de football, 28 par les 61 ligues de basket.
-WINDOW_TAGS = {"soccer": 100350, "basketball": 28}
+WINDOW_TAGS = {"soccer": 100350, "basketball": 28, "hockey": 100088, "american_football": 450}
+# hockey 100088 (KHL, SHL, Liiga, DEL, AHL… : vainqueur prolongation et tirs au but inclus, vérifié le 02/11/2026 dans
+# les règles des marchés), NFL 450 (prolongation incluse). Handball et rugby écartés : le nul existe.
 # Féminines, jeunes, réserves : jamais confondues avec l'équipe première d'un bookmaker (leçon des revues adverses).
 _EXCLUDE = re.compile(r"\b(women|womens|woman|wsl|wsl2|nwsl|uwcl|feminin\w*|femenin\w*|frauen|u1[5-9]|u2[0-3]|youth|"
-                      r"reserves?|wwc\w*|fifaw|aseanw|tpew|cwbb|bkfibaw|wnba|ncaaw|jong|next gen|futuro)\b")
+                      r"reserves?|wwc\w*|fifaw|aseanw|tpew|cwbb|bkfibaw|wnba|ncaaw|jong|next gen|futuro|"
+                      r"vbligueaw|vbbundesligaw|vb2bundesligaw|weuq|uwec|weuc|wwoh|aflw)\b")
 MAX_SPREAD = 0.03
 MIN_LIQ = 2000.0
 
