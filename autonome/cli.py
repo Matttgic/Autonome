@@ -580,16 +580,21 @@ def cmd_live(a, cfg):
                                                               separators=(",", ":")))
     except Exception as e:  # noqa: BLE001
         print(f"site.json non écrit : {type(e).__name__}: {e}"[:160])
+    # Pas d'e-mail (demande du propriétaire, 02/11/2026) : une issue créée = un e-mail de GitHub. Les paris sont sur la
+    # page (onglet Alertes). Pour réactiver les issues : variable de dépôt ALERT_ISSUES = 1.
+    issues_on = os.environ.get("ALERT_ISSUES", "") == "1"
     if picks:
-        body = "@" + os.environ.get("GITHUB_REPOSITORY_OWNER", "") + " nouveaux paris :\n\n" + \
-            "\n".join(notify.md_bet(b) for b in picks)
-        print(notify.github_issue(f"Paris du {now:%d/%m/%Y}", body))
+        if issues_on:
+            body = "@" + os.environ.get("GITHUB_REPOSITORY_OWNER", "") + " nouveaux paris :\n\n" + \
+                "\n".join(notify.md_bet(b) for b in picks)
+            print(notify.github_issue(f"Paris du {now:%d/%m/%Y}", body))
         print(notify.send(f"{len(picks)} value bet(s)", notify.message(picks), a.link))
     print(notify.github_dashboard(dashboard_md(a.state, meta, obs) + "\n\n" + fair_table_md(
         [g for g in ref if 0 < live._mins(g["commence"], now) <= 72 * 60])))
     if (errors and not ref) or (soon and not book_events and not ub_events and not pmu_events):
-        print(notify.github_issue_once(f"Panne source {now:%d/%m/%Y}",
-                                       "Sources en erreur (une alerte par jour) :\n- " + "\n- ".join(errors[:20] or ["NetBet : aucune page lue"])))
+        if issues_on:
+            print(notify.github_issue_once(f"Panne source {now:%d/%m/%Y}",
+                                           "Sources en erreur (une alerte par jour) :\n- " + "\n- ".join(errors[:20] or ["NetBet : aucune page lue"])))
         return 2 if not ref else 0
     return 0
 

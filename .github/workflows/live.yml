@@ -19,6 +19,7 @@ jobs:
     timeout-minutes: 85   # préparation + 55 min de boucle + dernier passage (15 min) + sauvegardes
     env:
       BANKROLL: ${{ vars.BANKROLL }}
+      ALERT_ISSUES: ${{ vars.ALERT_ISSUES }}
       GITHUB_TOKEN: ${{ github.token }}
       NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
