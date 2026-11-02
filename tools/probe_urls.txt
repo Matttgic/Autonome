@@ -1,0 +1,13 @@
+https://football-data.co.uk/fixtures.csv
+https://football-data.co.uk/new_league_fixtures.csv
+https://www.tennis-data.co.uk/2026/2026.xlsx
+https://api.smarkets.com/v3/events/?type_domain=football&state=upcoming&limit=5
+https://gamma-api.polymarket.com/events?tag_slug=soccer&closed=false&limit=5
+https://www.winamax.fr/paris-sportifs/sports/1
+https://www.betclic.fr/football-s1
+https://www.unibet.fr/sport/football
+https://www.zebet.fr/paris-football
+https://www.pmu.fr/sport/
+https://www.enligne.parionssport.fdj.fr/paris-football
+https://www.netbet.fr/football
+https://www.pinnacle.com/fr/soccer/matchups/

@@ -1,0 +1,48 @@
+name: fair
+# Fiche de cotes justes (football-data.co.uk, sans clé ni compte) publiée sur GitHub Pages.
+# Le fichier source est mis à jour le vendredi (week-end) et le mardi (milieu de semaine).
+on:
+  schedule:
+    - cron: "17 10,17 * * 5"   # vendredi : après la mise en ligne du matin, puis contrôle l'après-midi
+    - cron: "17 14 * * 2"      # mardi : matchs de milieu de semaine
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency: {group: autonome-pages, cancel-in-progress: false}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Tests (bloquants)
+        run: python -m unittest discover -s tests -t .
+      - name: Construire la fiche
+        run: |
+          python -m autonome fair --out site | tee fair_summary.json
+          cp site/fair.html site/index.html
+          cat fair_summary.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Notifier (optionnel, si NTFY_TOPIC existe)
+        if: env.NTFY_TOPIC != ''
+        run: |
+          python - <<'PY'
+          import json
+          from autonome import notify
+          s = json.load(open("fair_summary.json"))
+          print(notify.send("Cotes justes à jour", f"{s['markets']} marchés, relevé {s['snapshot']}",
+                            "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"))
+          PY
+      - uses: actions/upload-pages-artifact@v3
+        with: {path: site}
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: {name: github-pages}
+    steps:
+      - uses: actions/deploy-pages@v4

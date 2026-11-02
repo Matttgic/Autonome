@@ -135,18 +135,43 @@ def cmd_report(a, cfg):
     return 0
 
 
+def cmd_fair(a, cfg):
+    """Fiche de cotes justes depuis fixtures.csv (football-data.co.uk) : sans clé, sans compte."""
+    from . import fairsheet
+    from .sources import footballdata as fd
+    src = a.csv or fd.FIXTURES_URL
+    try:
+        if src.startswith("https://"):
+            data, snap = fd.fetch(src)
+        else:
+            data, snap = Path(src).read_bytes(), None  # fichier local : date du relevé inconnue (signalée)
+    except (fd.SourceError, OSError) as e:
+        print(f"[erreur] source indisponible : {e}", file=sys.stderr)
+        return 2
+    now = datetime.now(timezone.utc)
+    sheet = fairsheet.build(fd.load_fixtures(data, snap), now, cfg.get("fair"))
+    sheet["snapshot"] = snap.isoformat() if snap else None
+    Path(a.out).mkdir(parents=True, exist_ok=True)
+    Path(a.out, "fair.html").write_text(fairsheet.render(sheet, snap))
+    Path(a.out, "fair.json").write_text(json.dumps(sheet, ensure_ascii=False, indent=1))
+    print(json.dumps({"snapshot": sheet["snapshot"], "markets": len(sheet["rows"]),
+                      "markets_without_ref": sheet["markets_without_ref"]}, ensure_ascii=False))
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="autonome")
-    ap.add_argument("cmd", choices=["scan", "close", "settle", "stats", "report"])
+    ap.add_argument("cmd", choices=["scan", "close", "settle", "stats", "report", "fair"])
     ap.add_argument("--state", default="state")
     ap.add_argument("--out", default="site")
     ap.add_argument("--config", default="config.json")
     ap.add_argument("--within-min", type=int, default=240)
     ap.add_argument("--link", default=None)
     ap.add_argument("--notify-empty", action="store_true")
+    ap.add_argument("--csv", default=None, help="fair : chemin local ou URL https de fixtures.csv")
     a = ap.parse_args(argv)
     return {"scan": cmd_scan, "close": cmd_close, "settle": cmd_settle, "stats": cmd_stats,
-            "report": cmd_report}[a.cmd](a, load_cfg(a.config))
+            "report": cmd_report, "fair": cmd_fair}[a.cmd](a, load_cfg(a.config))
 
 
 if __name__ == "__main__":
