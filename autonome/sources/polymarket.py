@@ -10,11 +10,12 @@ est normalisé par la somme des milieux. Une jambe sans prix, trop large ou peu 
 from __future__ import annotations
 
 import http.client
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 import re
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 GAMMA = "https://gamma-api.polymarket.com"
@@ -23,7 +24,16 @@ TAGS = ["ligue-1", "epl", "la-liga", "bundesliga", "serie-a", "ucl", "uel", "mls
         "efl-championship"]
 TAGS_2WAY = ["nba", "nhl", "tennis", "ufc", "ncaa-basketball", "boxing"]
 TAG_SPORT = {"nba": "BASKETBALL", "ncaa-basketball": "BASKETBALL", "nhl": "ICE_HOCKEY", "tennis": "TENNIS",
-             "ufc": "MMA", "boxing": "BOXING"}
+             "ufc": "MMA", "boxing": "BOXING", "basketball": "BASKETBALL"}
+# Lecture large par étiquette (idée reprise de cotes-value) : TOUS les championnats d'un sport en une requête paginée,
+# bornée par la date de fin (= heure du match en foot/basket ; pas au tennis : début + 7 j, d'où les TAGS_2WAY).
+# Fenêtre 72 h : couvre le consensus (48 h, un match couvert par Polymarket n'y entre pas), la fiche 72 h et les boosts.
+# Mesure du 02/11 : foot dans les 30 h = 92 matchs contre 6 avec la liste TAGS (Ligue 2, Liga 2, Pologne, Danemark…).
+# Identifiants lus sur GET /sports : 100350 porté par les 185 ligues de football, 28 par les 61 ligues de basket.
+WINDOW_TAGS = {"soccer": 100350, "basketball": 28}
+# Féminines, jeunes, réserves : jamais confondues avec l'équipe première d'un bookmaker (leçon des revues adverses).
+_EXCLUDE = re.compile(r"\b(women|womens|woman|wsl|wsl2|nwsl|uwcl|feminin\w*|femenin\w*|frauen|u1[5-9]|u2[0-3]|youth|"
+                      r"reserves?|wwc\w*|fifaw|aseanw|tpew|cwbb|bkfibaw|wnba|ncaaw|jong|next gen|futuro)\b")
 MAX_SPREAD = 0.03
 MIN_LIQ = 2000.0
 
@@ -112,9 +122,19 @@ def _two_way(games: dict, e: dict, max_spread: float, min_liq: float) -> bool:
     return True
 
 
+def _excluded(e: dict) -> bool:
+    txt = " ".join([str(e.get("title") or ""), str(e.get("seriesSlug") or "")] +
+                   [f"{t.get('slug', '')} {t.get('label', '')}" for t in e.get("tags") or [] if isinstance(t, dict)])
+    return bool(_EXCLUDE.search(re.sub(r"[^a-z0-9]+", " ", txt.lower().replace("'", ""))))
+
+
 def _add_event(games: dict, e: dict, max_spread: float, min_liq: float) -> None:
+    if _excluded(e):
+        return
     if _two_way(games, e, max_spread, min_liq):
         return
+    if e.get("_tag") in TAG_SPORT:
+        return  # basket, tennis, NHL… : jamais lus comme un match de football à 3 issues
     title = e.get("title") or ""
     base, _, suffix = title.partition(" - ")
     if " vs. " not in base:
@@ -184,8 +204,36 @@ def _add_more(mk: dict, m: dict, home: str, away: str, max_spread: float, min_li
             mk[f"ah@{fav}@{_line(m['line'])}"] = {"fav": _leg(q, 0), "dog": _leg(q, 1)}
 
 
-def fetch(tags=TAGS + TAGS_2WAY) -> tuple[list[dict], list[str]]:
+def fetch_window(tag_id: int, label: str, now: datetime | None = None, hours: float = 72,
+                 max_pages: int = 20) -> list[dict]:
+    """Événements non clos d'une étiquette dont la date de fin tombe dans [maintenant − 1 h ; + hours]."""
+    now = now or datetime.now(timezone.utc)
+    out = []
+    for i in range(max_pages):
+        q = urllib.parse.urlencode({"tag_id": tag_id, "active": "true", "closed": "false", "limit": 100,
+                                    "offset": 100 * i,
+                                    "end_date_min": (now - timedelta(hours=1)).isoformat(timespec="seconds"),
+                                    "end_date_max": (now + timedelta(hours=hours)).isoformat(timespec="seconds")})
+        page = get(f"/events?{q}", pause=0.5)
+        if not isinstance(page, list):
+            raise SourceError(f"polymarket tag {tag_id}: réponse inattendue")
+        out += [{**e, "_tag": label} for e in page if isinstance(e, dict)]
+        if len(page) < 100:
+            return out
+    raise SourceError(f"polymarket tag {tag_id}: liste tronquée ({100 * max_pages} événements)")
+
+
+def fetch(tags=TAGS + TAGS_2WAY, window_tags=WINDOW_TAGS) -> tuple[list[dict], list[str]]:
     raw, errors = [], []
+    done_window = set()
+    for label, tag_id in (window_tags or {}).items():
+        try:
+            raw += fetch_window(tag_id, label)
+            done_window.add(label)
+        except SourceError as ex:
+            errors.append(str(ex))  # repli : la liste de championnats ci-dessous
+    if "soccer" in done_window:
+        tags = [t for t in tags if t not in TAGS]  # déjà couverts par la lecture large
     for t in tags:
         for off in (0, 300, 600):  # pagination : une page tronquée ferait perdre l'événement principal
             try:

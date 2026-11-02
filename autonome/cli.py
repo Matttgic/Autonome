@@ -211,6 +211,28 @@ def cmd_live(a, cfg):
         settled += settle_boosts(a.state, get_event, now)
     except Exception as e:  # noqa: BLE001
         errors.append(f"règlement boosts: {type(e).__name__}")
+    # Paris « consensus » : résultat LiveScore (API publique sans clé), une requête par sport et par jour UTC,
+    # seulement pour les jours où un pari attend son résultat (idée reprise de cotes-value).
+    try:
+        from . import consensus as CS0
+        from .sources import livescore
+        rows_s = store.read(a.state, tracker.BETS)
+        results = []
+        ls0 = len(errors)
+        for sport, day in sorted(CS0.days_to_fetch(rows_s, now)) if not _blocked(a.state, "livescore", now) else []:
+            try:
+                results += livescore.fetch(sport, day)
+            except livescore.SourceError as ex:
+                errors.append(str(ex))
+                if "HTTP 403" in str(ex) or "HTTP 429" in str(ex):
+                    break  # refus : on n'insiste pas sur les autres jours
+        _maybe_block(a.state, "livescore", ls0, errors, now)
+        n_cons = CS0.settle(rows_s, results, now) if results else 0
+        if n_cons:
+            store.write_all(a.state, tracker.BETS, rows_s)
+            settled += n_cons
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"règlement consensus: {type(e).__name__}")
     # NetBet : pages de compétition -> événements dans la fenêtre -> pages d'événements (1 req / 5 s)
     soon = [g for g in ref if 0 < live._mins(g["commence"], now) <= lcfg["max_hours_to_start"] * 60]
     book_events, urls = [], []
@@ -414,6 +436,13 @@ def dashboard_md(root, meta, obs=None) -> str:
         lines.append(f"| {notify.md(r['home'])}–{notify.md(r['away'])} | {notify.md(r.get('label', r['selection']))} | {r['odds']:.2f} | {r['ev']:+.1%} | "
                      f"{pct(r['close']['clv_odds']) if r.get('close') else '—'} | "
                      f"{'✅' if res is True else '❌' if res is False else ('remboursé' if r['status'] == 'settled' else '…')} |")
+    stale = [r for r in store.read(root, tracker.BETS) if r.get("status") == "open" and r.get("commence")
+             and (datetime.now(timezone.utc) - datetime.fromisoformat(r["commence"].replace("Z", "+00:00"))).total_seconds() > 86400]
+    if stale:
+        lines += ["", f"## À régler à la main ({len(stale)} paris commencés depuis plus de 24 h sans résultat automatique)",
+                  "| Match | Pari | Book | Début (UTC) |", "|---|---|---|---|"]
+        lines += [f"| {notify.md(r['home'])}–{notify.md(r['away'])} | {notify.md(r.get('label', r['selection']))} | "
+                  f"{notify.md(r.get('book', ''))} | {r['commence'][:16]} |" for r in stale[-20:]]
     if obs and obs.get("n"):
         lines += ["", f"## Bookmakers face à la cote juste (dernier passage : {obs['n']} cotes comparées, "
                       f"{obs['n_ev_pos']} à EV > 0)", "| Book · famille | n | EV médiane | meilleure EV |", "|---|---|---|---|"]
