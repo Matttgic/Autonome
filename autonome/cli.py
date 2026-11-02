@@ -199,7 +199,8 @@ def cmd_live(a, cfg):
     # Mesure de recherche : TOUTES les cotes comparables (même négatives), agrégées par famille de marché.
     _, allc = live.scan(ref, book_events, "netbet_fr", now,
                         {**lcfg, "min_ev": -9, "min_ev_cons": -9, "diagnostic": True, "min_odds": 1.01, "max_odds": 100})
-    store.append(a.state, "observations.jsonl", [live.summarize(allc, now)])
+    obs = live.summarize(allc, now)
+    store.append(a.state, "observations.jsonl", [obs])
     rows = store.read(a.state, tracker.BETS)
     seen = {(r["event_id"], r["group"]) for r in rows}
     today = now.date().isoformat()
@@ -218,14 +219,14 @@ def cmd_live(a, cfg):
             "\n".join(notify.md_bet(b) for b in picks)
         print(notify.github_issue(f"Paris du {now:%d/%m/%Y}", body))
         print(notify.send(f"{len(picks)} value bet(s)", notify.message(picks), a.link))
-    print(notify.github_dashboard(dashboard_md(a.state, meta)))
+    print(notify.github_dashboard(dashboard_md(a.state, meta, obs)))
     if errors and not ref:
         print(notify.github_issue(f"Panne source {now:%d/%m/%Y}", "Sources en erreur :\n- " + "\n- ".join(errors[:20])))
         return 2
     return 0
 
 
-def dashboard_md(root, meta) -> str:
+def dashboard_md(root, meta, obs=None) -> str:
     st = tracker.stats(root)
     clv, roi = st["clv"], st["roi"]
     ci = clv.get("ci95")
@@ -244,6 +245,14 @@ def dashboard_md(root, meta) -> str:
         lines.append(f"| {r['home']}–{r['away']} | {r.get('label', r['selection'])} | {r['odds']:.2f} | {r['ev']:+.1%} | "
                      f"{pct(r['close']['clv_odds']) if r.get('close') else '—'} | "
                      f"{'✅' if res is True else '❌' if res is False else ('remboursé' if r['status'] == 'settled' else '…')} |")
+    if obs and obs.get("n"):
+        lines += ["", f"## Marché NetBet face à la cote juste (dernier passage : {obs['n']} cotes comparées, "
+                      f"{obs['n_ev_pos']} à EV > 0)", "| Famille | n | EV médiane | meilleure EV |", "|---|---|---|---|"]
+        for k, v in obs["by_family"].items():
+            lines.append(f"| {k} | {v['n']} | {v['median_ev']:+.1%} | {v['max_ev']:+.1%} |")
+        t = obs["top"][0]
+        lines.append(f"\nMeilleure cote vue : {t['home']}–{t['away']}, {t['label']} @ {t['odds']} "
+                     f"(juste {t['fair_odds']:.2f}, EV {t['ev']:+.1%}). Seuil d'alerte : EV ≥ +3 % et EV prudente > 0.")
     return "\n".join(lines)
 
 
