@@ -105,3 +105,7 @@ tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jo
   groupe (book, sport, marché) non conforme sur ≥ 3 matchs) ; values écartées listées au tableau de bord.
   6e revue adverse : 10 points corrigés. 126 tests. Premier passage élargi (09:12 UTC) : 1 692 cotes comparées
   (contre 537), 3 à EV > 0 (max +1,3 %, sous le seuil de 3 %).
+- Betclic direct (API publique gRPC-web, stdlib) : tous marchés des matchs appariés à Polymarket, liste blanche de
+  libellés complets, budget 150 s, arrêt sur 403/429/3 erreurs, fusion par match avec coteur. Autorisé par le
+  propriétaire. Winamax par imitation TLS (curl_cffi) : refusé par le classifieur, abandonné. 7e revue adverse :
+  8 défauts prouvés corrigés (dont lecture bloquante d'un flux ouvert). 140 tests.

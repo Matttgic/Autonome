@@ -291,16 +291,25 @@ def cmd_live(a, cfg):
     from .sources import betclic as bcl
     bc_events, bc0 = [], len(errors)
     if soon and not _blocked(a.state, "betclic", now) and lcfg.get("betclic", True):
+        import time as _time
+        t_end = _time.monotonic() + lcfg.get("betclic_budget_s", 150)
         try:
-            bc_list, err = bcl.fetch_list(now, lcfg["max_hours_to_start"])
+            bc_list, err = bcl.fetch_list(now, lcfg["max_hours_to_start"], deadline=t_end - 60)
             errors += err
-            bc_match = [b for _, b, _ in _pair(soon, bc_list, with_swap=True)]
-            for e in bc_match[: lcfg.get("max_betclic_detail", 60)]:
+            refused = any("HTTP 403" in x or "HTTP 429" in x for x in err)  # refus : aucun détail, on n'insiste pas
+            bc_match = sorted((b for _, b, _ in _pair(soon, bc_list, with_swap=True)), key=lambda e: e["commence"])
+            fails = 0
+            for e in ([] if refused else bc_match[: lcfg.get("max_betclic_detail", 60)]):
+                if _time.monotonic() > t_end:
+                    errors.append("betclic : budget de temps atteint (détails)")
+                    break
                 try:
                     e = bcl.fetch_detail(e)
+                    fails = 0
                 except bcl.SourceError as ex:
                     errors.append(str(ex))
-                    if "HTTP 403" in str(ex) or "HTTP 429" in str(ex):
+                    fails += 1
+                    if "HTTP 403" in str(ex) or "HTTP 429" in str(ex) or fails >= 3:
                         break
                     continue
                 if e["odds"]:
@@ -319,7 +328,9 @@ def cmd_live(a, cfg):
     if why:
         errors.append(f"coteur : {why}")
     for bk, evs in ct_books.items():
-        if books.get(bk):  # source directe plus fraîche (PMU via Kambi, NetBet) : prioritaire
+        if books.get(bk):  # source directe plus fraîche (PMU via Kambi, NetBet, Betclic) : prioritaire, match par match
+            covered = {id(b) for _, b in _pair(books[bk], evs)}
+            books[bk] = books[bk] + [e for e in evs if id(e) not in covered]
             continue
         books[bk] = evs
     pairs, cands, allc = [], [], []

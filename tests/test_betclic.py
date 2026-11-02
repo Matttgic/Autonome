@@ -90,13 +90,52 @@ class Mapping(unittest.TestCase):
     def test_two_way_sports(self):
         self.assertEqual(self.m([mk("Vainqueur du match", ("Sinner J.", 1.3), ("Alcaraz C.", 3.4))], "TENNIS",
                                 "Sinner J.", "Alcaraz C."), {"ml": {"home": 1.3, "away": 3.4}})
-        # hockey : vainqueur sans prolongation mentionnée = temps réglementaire possible -> refusé
-        self.assertEqual(self.m([mk("Vainqueur du match", ("A", 1.8), ("B", 2.0))], "ICE_HOCKEY", "A", "B"), {})
+        # hockey : chez Betclic, vainqueur sans mention = prolongation comprise ; « hors prolong. » refusé
+        self.assertEqual(self.m([mk("Vainqueur du match", ("A", 1.8), ("B", 2.0))], "ICE_HOCKEY", "A", "B"),
+                         {"ml": {"home": 1.8, "away": 2.0}})
+        self.assertEqual(self.m([mk("Vainqueur du match (hors prolong.)", ("A", 1.8), ("B", 2.0))], "ICE_HOCKEY",
+                                "A", "B"), {})
         self.assertEqual(self.m([mk("Vainqueur du match (prolong. & pen. inclus)", ("A", 1.8), ("B", 2.0))],
                                 "ICE_HOCKEY", "A", "B"), {"ml": {"home": 1.8, "away": 2.0}})
         # basket : marchés secondaires non lus (unités, prolongations)
         self.assertEqual(self.m([mk("Nombre total de points", ("+ de 220,5", 1.9), ("- de 220,5", 1.9))],
                                 "BASKETBALL", "A", "B"), {})
+
+
+class ReviewTraps(unittest.TestCase):
+    """Libellés piégés de la 7e revue adverse : aucun ne doit produire de clé."""
+
+    def test_trap_labels(self):
+        traps = [
+            ("FOOTBALL", mk("Résultat du match - 1ère mi-temps", ("Lens", 2.5), ("Nul", 2.0), ("Lille", 4.0))),
+            ("FOOTBALL", mk("Résultat du match (1ère mi-temps)", ("Lens", 2.5), ("Nul", 2.0), ("Lille", 4.0))),
+            ("FOOTBALL", mk("Résultat du match (t. rég) - handicap Lille +1", ("Lens", 2.5), ("Nul", 2.0), ("Lille", 4.0))),
+            ("TENNIS", mk("Vainqueur du match - 1er set", ("Lens", 1.5), ("Lille", 2.5))),
+            ("BASKETBALL", mk("Vainqueur du match - 1ère mi-temps", ("Lens", 1.5), ("Lille", 2.5))),
+            ("FOOTBALL", mk("Les 2 équipes marquent au moins 2 buts", ("Oui", 4.5), ("Non", 1.1))),
+            ("FOOTBALL", mk("Les deux équipes marquent dans le 1er quart d'heure", ("Oui", 9.0), ("Non", 1.02))),
+            ("FOOTBALL", mk("Nombre de buts de Lens", ("+ de 1,5", 2.0), ("- de 1,5", 1.8))),
+            ("FOOTBALL", mk("Nombre total de buts (prolong. incluses)", ("+ de 2,5", 1.8), ("- de 2,5", 2.0))),
+            ("FOOTBALL", mk("Les 2 équipes marquent (prolong. incluses)", ("Oui", 1.8), ("Non", 2.0))),
+            ("FOOTBALL", mk("Écart de buts (prolong. incluses)", ("Lens gagne de 2 buts ou +", 3.2),
+                            ("Lille ne perd pas ou perd de 1 but ou -", 1.3))),
+        ]
+        for sport, m in traps:
+            self.assertEqual(B.map_markets([m], "Lens", "Lille", sport), {}, m["name"])
+
+    def test_basket_1x2_with_suspended_draw_is_not_a_winner(self):
+        fr = detail(("Résultat du match (t. rég)", [sel("A", 1.6), sel("Nul", 15.0, False), sel("B", 2.6)]))
+        self.assertEqual(B.map_markets(B.detail_markets(fr), "A", "B", "BASKETBALL"), {})
+
+    def test_double_chance_short_names(self):
+        got = B.map_markets([mk("Double chance", ("Independiente ou Nul", 1.3), ("Nul ou Racing", 1.6),
+                                ("Independiente ou Racing", 1.4))], "CA Independiente", "Racing Club", "FOOTBALL")
+        self.assertEqual(got["dc"], {"1X": 1.3, "X2": 1.6, "12": 1.4})
+
+    def test_team_named_like_excluded_words_still_read(self):
+        got = B.map_markets([mk("Total de buts - KF Tirana (t. rég)", ("+ de 1,5", 2.0), ("- de 1,5", 1.8))],
+                            "KF Tirana", "Partizani", "FOOTBALL")
+        self.assertEqual(got, {"team_ou@home@1.5": {"over": 2.0, "under": 1.8}})
 
 
 class Network(unittest.TestCase):
@@ -124,3 +163,52 @@ class Network(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RealSocket(unittest.TestCase):
+    """Flux de notifications réel : une trame, puis la connexion reste ouverte (défaut critique de la 7e revue)."""
+
+    def test_first_frame_returned_without_waiting_for_stream_end(self):
+        import http.server
+        import threading
+        import time as T
+        payload = liste(match(7, "Lens", "Lille"))
+
+        class H(http.server.BaseHTTPRequestHandler):
+            protocol_version = "HTTP/1.1"
+
+            def do_POST(self):
+                self.rfile.read(int(self.headers.get("Content-Length", 0)))
+                self.send_response(200)
+                self.send_header("Content-Type", "application/grpc-web+proto")
+                self.send_header("Transfer-Encoding", "chunked")
+                self.end_headers()
+                self.wfile.write(f"{len(payload):x}\r\n".encode() + payload + b"\r\n")
+                self.wfile.flush()
+                T.sleep(4)                       # flux laissé ouvert
+                self.wfile.write(b"0\r\n\r\n")
+
+            def log_message(self, *a):
+                pass
+
+        srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), H)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            with mock.patch.object(B, "BASE", f"http://127.0.0.1:{srv.server_address[1]}"):
+                t0 = T.monotonic()
+                fr = B.post(B.LISTE, b"", timeout=10, pause=0)
+                elapsed = T.monotonic() - t0
+        finally:
+            srv.shutdown()
+        self.assertEqual(B.list_matches(fr)[0]["home"], "Lens")
+        self.assertLess(elapsed, 2.0)
+
+    def test_grpc_resource_exhausted_is_a_429(self):
+        trailer = b"\x80" + len(b"grpc-status:8\r\n").to_bytes(4, "big") + b"grpc-status:8\r\n"
+        with mock.patch("urllib.request.urlopen") as uo:
+            r = uo.return_value.__enter__.return_value
+            r.headers = {}
+            r.read1.side_effect = [trailer, b""]
+            with self.assertRaises(B.SourceError) as cm:
+                B.post(B.LISTE, b"", pause=0)
+        self.assertIn("HTTP 429", str(cm.exception))
