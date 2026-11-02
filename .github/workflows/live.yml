@@ -7,6 +7,7 @@ on:
     - cron: "11 6-22 * * *"
   workflow_dispatch:
 permissions:
+  actions: write
   contents: write
   issues: write
 concurrency: {group: autonome-state, cancel-in-progress: false}
@@ -47,3 +48,13 @@ jobs:
             git pull -q --rebase origin data || true; sleep $((i * 5))
           done
           echo "::error::sauvegarde de l'état impossible"; exit 1
+      - name: Filet du relais pulse
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          n=$(gh run list --workflow pulse.yml --json status -q '[.[] | select(.status != "completed")] | length' 2>/dev/null || echo 1)
+          if [ "${n:-1}" = "0" ] && [ "${{ vars.PULSE }}" != "off" ]; then
+            gh workflow run pulse.yml --ref "${{ github.event.repository.default_branch }}" && echo "pulse relancé"
+          fi
