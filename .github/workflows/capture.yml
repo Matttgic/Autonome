@@ -1,0 +1,31 @@
+name: capture
+# Enregistre quelques pages PUBLIQUES (lisibles sans connexion depuis GitHub, cf. probe) sur la branche
+# `captures`, pour écrire des parseurs sur données réelles. 1 requête / 5 s, User-Agent honnête, aucun contournement.
+on:
+  workflow_dispatch:
+    inputs:
+      urls: {description: "URLs séparées par des espaces", default: "https://www.unibet.fr/paris-football https://www.netbet.fr/football"}
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      URLS: ${{ github.event.inputs.urls }}
+    steps:
+      - name: Capturer
+        run: |
+          mkdir cap && cd cap
+          for u in $URLS; do
+            case "$u" in https://*) ;; *) echo "ignoré: $u"; continue;; esac
+            n=$(echo "$u" | sed 's#https://##; s#[^A-Za-z0-9._-]#_#g')
+            curl -sS -m 30 -L -A "autonome-probe/0.1 (usage personnel)" -H "Accept-Language: fr-FR" \
+              -o "$n.html" -w "$u %{http_code} %{size_download} %{url_effective}\n" "$u" | tee -a index.txt || true
+            sleep 5
+          done
+      - name: Publier sur la branche captures
+        run: |
+          cd cap && git init -q -b captures && git add -A
+          git -c user.name=autonome -c user.email=autonome@users.noreply.github.com commit -qm "capture $(date -u +%FT%TZ)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" captures
