@@ -26,7 +26,7 @@ jobs:
       - name: Construire la fiche
         run: |
           python -m autonome fair --out site | tee fair_summary.json
-          cp site/fair.html site/index.html
+          true  # page d'accueil = site/index.html (onglets, lit site.json) ; la fiche reste sur /fair.html
           cat fair_summary.json >> "$GITHUB_STEP_SUMMARY"
       - name: Notifier (optionnel, si NTFY_TOPIC existe)
         if: env.NTFY_TOPIC != ''

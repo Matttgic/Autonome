@@ -1,0 +1,27 @@
+name: pages
+# Page mobile (site/index.html) publiée sur GitHub Pages. Publiée seulement quand la page change : elle lit ses données
+# (site.json, réécrit à chaque passage live) sur la branche data, donc elle est à jour sans redéploiement.
+on:
+  push:
+    branches: [ccr-0a28d713-rav38k]
+    paths: ["site/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency: {group: autonome-pages, cancel-in-progress: false}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-pages-artifact@v3
+        with: {path: site}
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: {name: github-pages}
+    steps:
+      - uses: actions/deploy-pages@v4
