@@ -117,6 +117,16 @@ def md_bet(b: dict) -> str:
     """Un pari en Markdown, avec tout le détail vérifiable."""
     when = b["commence"][:16].replace("T", " ")
     url = b.get("url") or ""
+    if b.get("ref_kind") == "polymarket-modele":
+        legs = "\n".join(f"  - {md(x['match'])} : {x['pred']} {x.get('side') or ''} {x.get('args') or ''} → p = {x['p']:.2%} "
+                         f"(λ dom/ext/ρ = {x['lambda']}, erreur de calage {x['fit_err']:.2%})" for x in b.get("boost_legs", []))
+        return (f"### ⚡ {md(b['label'])}\n"
+                f"**Cote boostée {b['odds']:.2f}** chez **{b['book']}** (mise max {b.get('max_stake') or '?'} €)\n"
+                f"- Mise conseillée : **{b['stake']:.1f} €** (¼ Kelly sur la proba prudente, plafonnée par la mise max)\n"
+                f"- EV : **{b['ev']:+.1%}** ; EV prudente {b['ev_cons']:+.1%} (chaque jambe diminuée de l'erreur de calage + 1 pt)\n"
+                f"- Cote juste {b['fair_odds']:.2f} (p = {b['p_fair']:.2%}) : modèle de score Dixon-Coles calé sur les marchés "
+                f"Polymarket (1X2, plus/moins, 2 marquent, buts par équipe), jambes indépendantes multipliées :\n{legs}\n"
+                f"- Heure limite : premier coup d'envoi {when} UTC\n")
     return (f"### {md(b['home'])} – {md(b['away'])}  ·  {when} UTC\n"
             f"**{md(b['label'])}** @ **{b['odds']:.2f}** chez **{b['book']}** {('— ' + url) if url else ''}\n"
             f"- Mise conseillée : **{b['stake']:.1f} €** (¼ Kelly sur la proba prudente, plafond 2 %)\n"

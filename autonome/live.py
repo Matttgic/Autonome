@@ -90,10 +90,19 @@ def scan(ref_games: list[dict], book_events: list[dict], book_key: str, now: dat
 
 def update_closing(root, ref_games: list[dict], now: datetime) -> int:
     """Clôture = dernier milieu Polymarket vu avant le coup d'envoi (relevé à chaque exécution horaire)."""
+    from .boosts import reprice
     by_key = {g["key"]: g for g in ref_games}
     rows = store.read(root, BETS)
-    n = 0
+    n, cache = 0, {}
     for r in rows:
+        if r["status"] == "open" and r.get("ref_kind") == "polymarket-modele":
+            mins = _mins(r["commence"], now)
+            p = reprice(r.get("boost_legs") or [], ref_games, cache) if mins > 0 else None
+            if p:
+                r["close"] = {"book": "polymarket-modele", "p_fair": p, "seen_at": now.isoformat(),
+                              "minutes_to_start": mins, "ref_age_min": 0.0, **V.clv(r["odds"], p)}
+                n += 1
+            continue
         g = by_key.get(r["event_id"])
         if r["status"] != "open" or not g or r.get("ref_kind") != "polymarket":
             continue

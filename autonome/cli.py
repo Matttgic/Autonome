@@ -230,10 +230,31 @@ def cmd_live(a, cfg):
     cands = list(best.values())
     picks = engine.select_daily(cands, {"max_bets_per_day": lcfg["max_bets_per_day"]},
                                 {r["bet_id"] for r in rows}, done_today)
+    # Cotes boostées Winamax (coteur.com) évaluées contre Polymarket + modèle de score
+    from . import boosts as BO
+    from .sources import coteur
+    boost_eval, boost_picks = [], []
+    try:
+        boost_eval = [BO.evaluate(b, ref, {}) for b in coteur.parse(coteur.fetch())]
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"boosts: {type(e).__name__}: {e}"[:160])
+    known = {r["bet_id"] for r in rows}
+    for e in boost_eval:
+        b = BO.to_bet(e, now, lcfg["bankroll"], lcfg["kelly_mult"], lcfg["stake_cap_pct"])
+        if b and b["bet_id"] not in known:
+            boost_picks.append(b)
+    picks += boost_picks
     tracker.record_bets(a.state, picks)
+    obs["boosts"] = {"lus": len(boost_eval), "evaluables": sum(e["evaluable"] for e in boost_eval),
+                     "value": len(boost_picks),
+                     "top": [{k: e.get(k) for k in ("event", "text", "odds", "fair_odds", "ev", "ev_cons", "commence")}
+                             for e in sorted((x for x in boost_eval if x["evaluable"]), key=lambda x: -x["ev"])[:15]]}
+    store.write_all(a.state, "observations.jsonl", store.read(a.state, "observations.jsonl")[:-1] + [obs])
     meta = {"at": now.isoformat(), "mode": "live", "ref_games": len(ref), "ref_soon": len(soon),
             "netbet_pages": len(book_events), "unibet_events": len(ub_events), "pairs": len(pairs), "candidates": len(cands), "picked": len(picks),
-            "closing_updates": closed, "settled": settled, "errors": errors}
+            "closing_updates": closed, "settled": settled, "boosts_lus": len(boost_eval),
+            "boosts_evaluables": sum(e["evaluable"] for e in boost_eval), "boosts_value": len(boost_picks),
+            "errors": errors}
     store.append(a.state, "runs.jsonl", [meta])
     print(json.dumps(meta, ensure_ascii=False))
     if picks:
@@ -294,10 +315,20 @@ def dashboard_md(root, meta, obs=None) -> str:
         for bk, fams in (obs.get("by_book") or {"tous": obs["by_family"]}).items():
             for k, v in fams.items():
                 lines.append(f"| {bk} · {k} | {v['n']} | {v['median_ev']:+.1%} | {v['max_ev']:+.1%} |")
-        t = obs["top"][0]
+        t = obs["top"][0] if obs["top"] else {"home": "?", "away": "?", "label": "—", "odds": 0, "fair_odds": 0, "ev": 0}
         lines.append(f"\nMeilleure cote vue : {notify.md(t['home'])}–{notify.md(t['away'])}, {notify.md(t['label'])} @ {t['odds']} "
                      f"({t.get('book', '?')}) "
                      f"(juste {t['fair_odds']:.2f}, EV {t['ev']:+.1%}). Seuil d'alerte : EV ≥ +3 % et EV prudente > 0.")
+    bo = (obs or {}).get("boosts")
+    if bo:
+        lines += ["", f"## Cotes boostées Winamax (via coteur.com) : {bo['lus']} lues, {bo['evaluables']} évaluables "
+                      f"(matchs cotés sur Polymarket, libellés reconnus), {bo['value']} au-dessus du seuil (EV ≥ 5 % et EV prudente ≥ 0)",
+                  "| Match | Boost | Cote | Cote juste | EV | EV prudente |", "|---|---|---|---|---|---|"]
+        for t in bo["top"]:
+            lines.append(f"| {notify.md(t['event'])} | {notify.md(t['text'])} | {t['odds']:.2f} | {t['fair_odds']:.2f} | "
+                         f"{t['ev']:+.1%} | {t['ev_cons']:+.1%} |")
+        if not bo["top"]:
+            lines.append("| — | aucun boost actuel ne porte sur un match coté par Polymarket avec un libellé reconnu | | | | |")
     return "\n".join(lines)
 
 
