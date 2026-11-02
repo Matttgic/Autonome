@@ -244,3 +244,50 @@ def reprice(legs: list[dict], games: list[dict], cache: dict) -> float | None:
             return None
         p *= SM.prob(f["grid"], PRED[x["pred"]](x["side"], x["args"]))
     return p
+
+
+def final_score(exact_event: dict | None):
+    """Score final lu dans le marché « score exact » Polymarket résolu : (dom, ext), 'autre', 'annulé' ou None."""
+    if not exact_event:
+        return None
+    ms = exact_event.get("markets") or []
+    for m in ms:
+        try:
+            p = [float(x) for x in __import__("json").loads(m.get("outcomePrices") or "[]")]
+        except ValueError:
+            continue
+        if not m.get("closed") or len(p) != 2:
+            continue
+        if p[0] == 1.0:
+            r = re.search(r" (\d+) - (\d+) ", f" {m.get('groupItemTitle') or ''} ")
+            return (int(r.group(1)), int(r.group(2))) if r else "autre"
+        if p[0] == 0.5:
+            return "annulé"
+    return None
+
+
+def settle(root, get_event, now: datetime, delay_h: float = 3.0) -> int:
+    """Règle les boosts : chaque jambe évaluée sur le score final ; une jambe annulée => pari annulé."""
+    from . import store
+    from .tracker import BETS
+    rows, n = store.read(root, BETS), 0
+    for r in rows:
+        if r["status"] != "open" or r.get("ref_kind") != "polymarket-modele":
+            continue
+        legs = r.get("boost_legs") or []
+        if not legs or any((now - datetime.fromisoformat(x["commence"].replace("Z", "+00:00"))).total_seconds()
+                           < delay_h * 3600 for x in legs):
+            continue
+        outcomes = []
+        for x in legs:
+            sc = final_score(get_event(x["game"].split("|", 1)[-1] + "-exact-score"))
+            if sc is None or sc == "autre":
+                break
+            outcomes.append(None if sc == "annulé" else PRED[x["pred"]](x["side"], x["args"])(*sc))
+        if len(outcomes) != len(legs):
+            continue
+        won = None if None in outcomes else all(outcomes)
+        r["status"], r["result"] = "settled", {"won": won, "source": "score exact Polymarket"}
+        n += 1
+    store.write_all(root, BETS, rows)
+    return n

@@ -182,6 +182,15 @@ def cmd_live(a, cfg):
         except pm.SourceError:
             return None
     settled = live.settle(a.state, get_market, now)
+
+    def get_event(slug):
+        try:
+            r = pm.get(f"/events?slug={slug}", pause=0.3)
+            return r[0] if r else None
+        except pm.SourceError:
+            return None
+    from .boosts import settle as settle_boosts
+    settled += settle_boosts(a.state, get_event, now)
     # NetBet : pages de compétition -> événements dans la fenêtre -> pages d'événements (1 req / 5 s)
     soon = [g for g in ref if 0 < live._mins(g["commence"], now) <= lcfg["max_hours_to_start"] * 60]
     book_events, urls = [], []

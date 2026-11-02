@@ -113,3 +113,24 @@ class PlayerTraps(unittest.TestCase):
             r = boosts.evaluate({"id": "b", "book": "winamax", "event": "Newcastle - Everton", "text": t, "odds": 3.0,
                                  "max_stake": 20}, GAMES, {})
             self.assertFalse(r["evaluable"], t)
+
+
+class Settle(unittest.TestCase):
+    def test_settle_from_exact_score(self):
+        import tempfile
+        from autonome import store, tracker
+        d = tempfile.mkdtemp()
+        r = boosts.evaluate({"id": "b1", "book": "winamax", "event": "Lorient - Brest",
+                             "text": "Lorient gagne et plus de 2,5 buts dans le match", "odds": 9.0, "max_stake": 20}, GAMES, {})
+        b = boosts.to_bet(r, NOW, 100)
+        tracker.record_bets(d, [b])
+        ex = {"markets": [{"closed": True, "groupItemTitle": "FC Lorient 2 - 1 Stade Brestois 29", "outcomePrices": '["1", "0"]'},
+                          {"closed": True, "groupItemTitle": "FC Lorient 1 - 1 Stade Brestois 29", "outcomePrices": '["0", "1"]'}]}
+        later = datetime(2026, 11, 3, 3, 0, tzinfo=timezone.utc)
+        early = datetime(2026, 11, 2, 21, 0, tzinfo=timezone.utc)
+        self.assertEqual(boosts.settle(d, lambda slug: ex, early), 0)  # moins de 3 h après le coup d'envoi
+        rows = store.read(d, tracker.BETS)
+        rows[0]["boost_legs"][0]["game"] = "pm|fl1-x"
+        store.write_all(d, tracker.BETS, rows)
+        self.assertEqual(boosts.settle(d, lambda slug: ex if slug == "fl1-x-exact-score" else None, later), 1)
+        self.assertTrue(store.read(d, tracker.BETS)[0]["result"]["won"])   # 2-1 : victoire et 3 buts
