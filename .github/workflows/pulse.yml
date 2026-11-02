@@ -41,7 +41,13 @@ jobs:
             a=$(live_actifs); c=$(age_min coteur.yml)
             echo "$(date -u +%FT%TZ) jobs live actifs : ${a}, coteur il y a ${c} min"
             if [ "$c" -ge "$COTEUR_EVERY" ]; then gh workflow run coteur.yml --ref "$REF" && echo "-> coteur relancé"; fi
-            if [ "$a" = "0" ]; then gh workflow run live.yml --ref "$REF" && echo "-> live relancé"; fi
+            if [ "$a" = "0" ]; then
+              # dernier live terminé en moins de 5 min (tests rouges, panne) : on attend 15 min avant de relancer
+              ok=$(gh run list --workflow live.yml -L 1 --json createdAt,updatedAt -q \
+                '.[0] | ((.updatedAt|fromdateiso8601) - (.createdAt|fromdateiso8601) >= 300) or ((now - (.createdAt|fromdateiso8601)) >= 900)' \
+                2>/dev/null || echo true)
+              if [ "$ok" = "true" ]; then gh workflow run live.yml --ref "$REF" && echo "-> live relancé"; else echo "live en échec rapide : attente"; fi
+            fi
             sleep 120
           done
       - name: Se relancer (5 essais)

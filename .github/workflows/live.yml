@@ -44,6 +44,7 @@ jobs:
           INTERVAL: ${{ vars.LIVE_INTERVAL_S }}
         run: |
           case "$LOOP_MIN" in ''|*[!0-9]*) LOOP_MIN=50;; esac
+          [ "$LOOP_MIN" -gt 55 ] && LOOP_MIN=55   # le job dure au plus 75 min : marge pour le dernier passage
           case "$INTERVAL" in ''|*[!0-9]*) INTERVAL=120;; esac
           git -C state config user.name autonome && git -C state config user.email autonome@users.noreply.github.com
           save() {
@@ -57,13 +58,16 @@ jobs:
           END=$((SECONDS + LOOP_MIN * 60)); N=0
           while [ "$SECONDS" -lt "$END" ]; do
             T0=$SECONDS; N=$((N + 1))
-            git -C state pull -q --rebase origin data 2>/dev/null || true   # instantané coteur le plus récent
-            timeout 600 python -m autonome live --state state || echo "::warning::passage $N en échec"
+            git -C state pull -q --rebase origin data 2>/dev/null || git -C state rebase --abort 2>/dev/null || true
+            timeout 900 python -m autonome live --state state || echo "::warning::passage $N en échec"
             save || true
             echo "passage $N : $((SECONDS - T0)) s"
             W=$((INTERVAL - (SECONDS - T0)))
             if [ "$W" -gt 0 ] && [ $((SECONDS + W)) -lt "$END" ]; then sleep "$W"; fi
           done
+          # dernière sauvegarde : un état non poussé serait perdu avec le runner (alertes en double ensuite)
+          for k in 1 2 3; do save && exit 0; sleep 20; done
+          echo "::error::état non sauvegardé à la fin du job"; exit 1
       - name: Filet du relais pulse
         if: always() && vars.PULSE != 'off'
         env:

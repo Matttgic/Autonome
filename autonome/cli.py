@@ -251,7 +251,12 @@ def cmd_live(a, cfg):
                     break  # refus : on arrête immédiatement
         from .match import slug_hits
         wanted = [u for u in dict.fromkeys(urls) if any(slug_hits(u, g["home"], g["away"]) for g in soon)]
+        import time as _t0
+        nb_end = _t0.monotonic() + lcfg.get("netbet_budget_s", 150)
         for u in wanted[: lcfg.get("max_event_pages", 40)]:
+            if _t0.monotonic() > nb_end:
+                errors.append("netbet : budget de temps atteint")
+                break
             try:
                 book_events += nb.parse_event_page(nb.fetch(u), u)
             except Exception as e:  # noqa: BLE001 - une page défectueuse ne doit jamais arrêter le run
@@ -360,7 +365,9 @@ def cmd_live(a, cfg):
         allc += live.scan(ref, evs, bk, now, diag)[1]  # mesure : TOUTES les cotes comparables, même négatives
     # consensus : uniquement les matchs SANS référence Polymarket (sinon deux références pour un même match)
     from .match import pair as _pair2
-    covered = {id(b) for _, b in _pair2(ref, ct_matches)}
+    # couvert = apparié à Polymarket ET au moins un marché comparable (hockey : coteur 1N2, Polymarket vainqueur -> non)
+    covered = {id(b) for r, b in _pair2(ref, ct_matches)
+               if set(r["markets"]) & {mk for o in b["books"].values() for mk in o}}
     ct_all = ct_matches  # stratégies fictives (paper.py) : tous les matchs coteur, couverts ou non par Polymarket
     ct_matches = [m for m in ct_matches if id(m) not in covered]
     cons_diag = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"],
@@ -402,7 +409,18 @@ def cmd_live(a, cfg):
     from .sources import coteur
     boost_eval, boost_picks = [], []
     try:
-        parsed = coteur.parse(coteur.fetch())
+        last = store.read(a.state, "boosts_fetch.jsonl")[-1:]
+        recent = bool(last) and (now - datetime.fromisoformat(last[0]["at"])).total_seconds() < 60 * lcfg.get("boosts_every_min", 30)
+        if recent or _blocked(a.state, "coteur_boosts", now):
+            raise LookupError("boosts : relus au plus toutes les 30 min")
+        store.write_all(a.state, "boosts_fetch.jsonl", [{"at": now.isoformat()}])
+        bo0 = len(errors)
+        try:
+            parsed = coteur.parse(coteur.fetch())
+        except Exception as ex:  # noqa: BLE001
+            errors.append(f"boosts coteur: {ex}"[:160])
+            _maybe_block(a.state, "coteur_boosts", bo0, errors, now)
+            raise LookupError("boosts : lecture en échec") from None
         seen_rows = store.read(a.state, "boosts_seen.jsonl")
         seen = {(r.get("event"), r.get("text")) for r in seen_rows}  # clé stable (indépendante de la cote)
         first = not seen_rows  # premier relevé = référence : on ne sait pas dater ces boosts
@@ -412,6 +430,8 @@ def cmd_live(a, cfg):
         store.append(a.state, "boosts_seen.jsonl",
                      [{"id": b["id"], "first_seen": now.isoformat(), "event": b["event"], "text": b["text"],
                        "odds": b["odds"]} for b in parsed if (b["event"], b["text"]) not in seen])
+    except LookupError:
+        pass  # boosts non relus à ce passage (cadence ou pause) : rien de nouveau
     except Exception as e:  # noqa: BLE001
         errors.append(f"boosts: {type(e).__name__}: {e}"[:160])
     known = {r["bet_id"] for r in rows}

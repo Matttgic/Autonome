@@ -109,3 +109,8 @@ tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jo
   libellés complets, budget 150 s, arrêt sur 403/429/3 erreurs, fusion par match avec coteur. Autorisé par le
   propriétaire. Winamax par imitation TLS (curl_cffi) : refusé par le classifieur, abandonné. 7e revue adverse :
   8 défauts prouvés corrigés (dont lecture bloquante d'un flux ouvert). 140 tests.
+- Session 4 (fin) : live en boucle continue (passage ~4-6 min), hockey/NFL Polymarket, règlement hockey, Betclic
+  vainqueur volley, Winamax page publique tentée (403 → pause 6 h), stratégies fictives « Valeur 4 % » et « Témoin »
+  (paper.jsonl). 8e revue : pagination Gamma (100 max, tri par début décroissant), volley/tennis de table/fléchettes
+  retirés (aucune liquidité Polymarket), doubles ≠ simples, couverture = marché commun, boosts coteur ≤ 1/30 min,
+  budget NetBet, sauvegarde finale bloquante, relance pulse sans rafale.

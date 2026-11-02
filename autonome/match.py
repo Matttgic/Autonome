@@ -45,7 +45,10 @@ def markers(name: str) -> set[str]:
     m = {t for t in flat.split() if _MARK.match(t)}
     if re.search(r"\s(b|ii)$", flat.strip()):
         m.add("b-team")  # « Girona FC B », « Real Madrid B »
-    m |= {"(" + x.strip() + ")" for x in re.findall(r"\(([^)]*)\)", s) if x.strip() not in ("", "f", "w")}
+    m |= {"(" + x.strip() + ")" for x in re.findall(r"\(([^)]*)\)", s)
+          if x.strip() not in ("", "f", "w") and not re.fullmatch(r"[a-z]{3}", x.strip())}  # (UKR) = pays, pas une équipe
+    if "/" in s:
+        m.add("double")  # « Ivanov, Oleksandr/Petrov, Bogdan » : un double n'est jamais un simple
     if re.search(r"\((f|w)\)|\b(w|f)$", s.strip()):
         m.add("women")
     return m

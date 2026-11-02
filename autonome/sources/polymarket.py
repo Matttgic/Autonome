@@ -22,8 +22,9 @@ GAMMA = "https://gamma-api.polymarket.com"
 UA = "autonome/0.3 (outil perso; requetes espacees)"
 TAGS = ["ligue-1", "epl", "la-liga", "bundesliga", "serie-a", "ucl", "uel", "mls", "brazil-serie-a", "primeira-liga",
         "efl-championship"]
-TAGS_2WAY = ["nba", "nhl", "tennis", "ufc", "ncaa-basketball", "boxing", "volleyball", "table-tennis", "darts"]
-# volley, tennis de table, fléchettes : date de fin = début + 7 j (lecture par étiquette, pas par fenêtre) ; vainqueur sans nul
+TAGS_2WAY = ["nba", "nhl", "tennis", "ufc", "ncaa-basketball", "boxing"]
+# volley, tennis de table, fléchettes : mesurés le 02/11/2026, 0 marché vainqueur sur 136 au-dessus de 2 000 $ de
+# liquidité et 3 points d'écart -> non lus (rien d'exploitable, requêtes inutiles). Le consensus ANJ couvre ces sports.
 TAG_SPORT = {"nba": "BASKETBALL", "ncaa-basketball": "BASKETBALL", "nhl": "ICE_HOCKEY", "tennis": "TENNIS",
              "ufc": "MMA", "boxing": "BOXING", "basketball": "BASKETBALL", "hockey": "ICE_HOCKEY",
              "american_football": "AMERICAN_FOOTBALL", "volleyball": "VOLLEYBALL", "table-tennis": "TABLE_TENNIS",
@@ -240,18 +241,28 @@ def fetch(tags=TAGS + TAGS_2WAY, window_tags=WINDOW_TAGS) -> tuple[list[dict], l
             errors.append(str(ex))  # repli : la liste de championnats ci-dessous
     if "soccer" in done_window:
         tags = [t for t in tags if t not in TAGS]  # déjà couverts par la lecture large
+    now = datetime.now(timezone.utc)
     for t in tags:
-        for off in (0, 300, 600):  # pagination : une page tronquée ferait perdre l'événement principal
+        # Gamma plafonne limit à 100 et garde « ouverts » de vieux matchs : tri par début décroissant, pages de 100,
+        # arrêt dès qu'une page ne contient plus que des matchs commencés depuis plus de 6 h.
+        for off in range(0, 1000, 100):
             try:
-                page = get(f"/events?tag_slug={t}&closed=false&limit=300&offset={off}")
+                page = get(f"/events?tag_slug={t}&closed=false&limit=100&offset={off}&order=startDate&ascending=false")
             except SourceError as ex:
                 errors.append(str(ex))
                 break
-            for e in page if isinstance(page, list) else []:
+            page = page if isinstance(page, list) else []
+            for e in page:
                 if isinstance(e, dict):
                     e.setdefault("_tag", t)
                     raw.append(e)
-            if not isinstance(page, list) or len(page) < 300:
+            starts = []
+            for e in page:
+                try:
+                    starts.append(datetime.fromisoformat(str(e.get("startTime") or e.get("startDate")).replace("Z", "+00:00")))
+                except (ValueError, TypeError):
+                    continue
+            if len(page) < 100 or (starts and max(starts) < now - timedelta(hours=6)):
                 break
     seen, uniq = set(), []
     for e in raw:

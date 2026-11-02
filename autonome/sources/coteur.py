@@ -13,7 +13,7 @@ import urllib.error
 import urllib.request
 
 URL = "https://www.coteur.com/cotes-boostees"
-UA = "autonome/0.4 (outil perso; 1 requete par heure)"
+UA = "autonome/0.6 (outil perso; page des boosts relue au plus toutes les 30 min)"
 BOOKIDS = {"33": "winamax"}
 
 

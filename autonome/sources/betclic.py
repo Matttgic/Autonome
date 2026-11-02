@@ -261,7 +261,7 @@ def detail_markets(fr: bytes | None) -> list[dict]:
 # Liste blanche de libellés COMPLETS (fullmatch) : tout autre libellé (mi-temps, sets, « au moins », combinaisons,
 # « hors prolong. », handicaps à 3 issues…) est ignoré. « (t. rég) » = temps réglementaire.
 _REG = r"(?:\s*\(t\.?\s?r[ée]g\.?\))?"
-_PROL = r"(?:\s*\(prolong[^)]*\))?"
+_PROL = r"(?:\s*\(prolong(?![^)]*(?:exclu|hors|sans))[^)]*\))?"
 RX_1X2 = re.compile(rf"r[ée]sultat du match{_REG}")
 RX_ML = re.compile(rf"(?:vainqueur du match|face [àa] face){_PROL}")
 RX_DC = re.compile(rf"double chance{_REG}")
