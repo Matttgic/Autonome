@@ -14,7 +14,7 @@ NOW = datetime(2026, 11, 2, 12, 0, tzinfo=timezone.utc)
 def match(outlier):
     books = {f"b{i}_fr": {"ml": {"home": 1.80 + 0.01 * i, "away": 1.95 - 0.01 * i}} for i in range(6)}
     books["x_fr"] = {"ml": {"home": outlier, "away": 1.70}}
-    return {"renc": "1", "commence": "2026-11-02T18:00:00Z", "home": "A", "away": "B", "sport": "TENNIS",
+    return {"renc": "1", "commence": "2026-11-02T18:00:00Z", "home": "A", "away": "B", "sport": "TENNIS", "snapshot_age_min": 5,
             "competition": "T", "url": "u", "books": books}
 
 

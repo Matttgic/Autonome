@@ -12,7 +12,8 @@ from . import value as V
 from .devig import shin
 
 CFG = {"min_books": 6, "min_groups": 5, "min_ev": 0.07, "max_ev": 0.4, "min_odds": 1.3, "max_odds": 6.0,
-       "min_minutes_to_start": 20, "max_hours_to_start": 48, "max_dispersion": 0.04}
+       "min_minutes_to_start": 20, "max_hours_to_start": 48, "max_dispersion": 0.04,
+       "max_book_age_min": 60}  # remplacé par live.CFG au passage live (une seule valeur de réglage)
 
 
 def evaluate(match: dict, now: datetime, bankroll: float, cfg=None) -> list[dict]:
@@ -21,6 +22,11 @@ def evaluate(match: dict, now: datetime, bankroll: float, cfg=None) -> list[dict
     mins = (start - now).total_seconds() / 60
     if not c["min_minutes_to_start"] <= mins <= c["max_hours_to_start"] * 60:
         return []
+    if not c.get("diagnostic"):
+        from .live import book_age_limit
+        age = match.get("snapshot_age_min")
+        if age is None or age > book_age_limit(mins, c["max_book_age_min"]):
+            return []  # instantané trop vieux (ou d'âge inconnu) : mesuré, jamais proposé
     out = []
     for mk in ("1x2", "ml"):
         names = ["home", "draw", "away"] if mk == "1x2" else ["home", "away"]

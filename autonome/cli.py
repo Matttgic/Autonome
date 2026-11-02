@@ -313,8 +313,11 @@ def cmd_live(a, cfg):
     ct_matches = [m for m in ct_matches if id(m) not in covered]
     cons_diag = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"],
                                                                 {"min_ev": -9, "max_ev": 9, "max_dispersion": 9, "diagnostic": True})]
-    cons_picks = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"])]
+    cons_picks = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"],
+                                                            {"max_book_age_min": lcfg["max_book_age_min"]})]
+    cands, gated, gated_detail = live.gate(cands, allc, lcfg)
     obs = live.summarize(allc, now)
+    obs["ecartes"], obs["ecartes_top"] = gated, gated_detail
     obs["consensus"] = {bk: live.summarize([c for c in cons_diag if c["book"] == bk], now)["by_family"]
                         for bk in sorted({c["book"] for c in cons_diag})}
     obs["consensus_top"] = [{k: c[k] for k in ("book", "sport", "home", "away", "label", "odds", "fair_odds", "ev")}
@@ -443,6 +446,14 @@ def dashboard_md(root, meta, obs=None) -> str:
                   "| Match | Pari | Book | Début (UTC) |", "|---|---|---|---|"]
         lines += [f"| {notify.md(r['home'])}–{notify.md(r['away'])} | {notify.md(r.get('label', r['selection']))} | "
                   f"{notify.md(r.get('book', ''))} | {r['commence'][:16]} |" for r in stale[-20:]]
+    if obs and obs.get("ecartes_top"):
+        lines += ["", "## Values écartées par les garde-fous (dernier passage)",
+                  "| Raison | Book · sport · marché | Match | Cote | EV | Âge (min) | Groupe : matchs, EV médiane |",
+                  "|---|---|---|---|---|---|---|"]
+        for d in obs["ecartes_top"]:
+            gm = "—" if d["ev_mediane_groupe"] is None else f"{d['ev_mediane_groupe']:+.1%}"
+            lines.append(f"| {d['raison']} | {notify.md(str(d['book']))} · {d['sport']} · {d['groupe']} | {notify.md(d['match'])} | "
+                         f"{d['cote']} | {d['ev']:+.1%} | {d['age_min'] if d['age_min'] is not None else '—'} | {d['matchs_mesures']}, {gm} |")
     if obs and obs.get("n"):
         lines += ["", f"## Bookmakers face à la cote juste (dernier passage : {obs['n']} cotes comparées, "
                       f"{obs['n_ev_pos']} à EV > 0)", "| Book · famille | n | EV médiane | meilleure EV |", "|---|---|---|---|"]

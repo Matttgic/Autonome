@@ -20,6 +20,10 @@ CFG = {
     "min_minutes_to_start": 20, "max_hours_to_start": 30,
     "bankroll": 100.0, "kelly_mult": 0.25, "stake_cap_pct": 0.02,
     "max_bets_per_day": 6,
+    # Garde-fous repris de cotes-value (controle.py) et Revue/Cotescope (fraîcheur) :
+    "max_book_age_min": 60,      # cote de book plus vieille (instantané coteur) : mesurée, jamais proposée ; plus strict
+                                 # près du coup d'envoi (voir book_age_limit)
+    "conf_min_events": 3, "conf_median_lo": -0.25, "conf_median_hi": -0.01,
 }
 
 SEL_FR = {"home": "{home}", "draw": "Nul", "away": "{away}", "1X": "{home} ou nul", "X2": "Nul ou {away}",
@@ -80,6 +84,8 @@ def compare(ref: dict, book: dict, book_key: str, now: datetime, cfg: dict | Non
                 "devig_method": "milieu bid/ask", "p_fair": leg["p"], "p_cons": leg["lo"], "p_hi": leg["hi"],
                 "spread": leg["spread"], "fair_odds": 1 / leg["p"], "ev": ev_mid, "ev_cons": ev_cons,
                 "legs": leg["legs"], "stake": stake, "found_at": now.isoformat(),
+                "book_age_min": book.get("snapshot_age_min"), "ref_sport": ref.get("sport") or "?",
+                "minutes_to_start": mins,
             })
     return out
 
@@ -177,3 +183,51 @@ def _age(iso, now):
         return max(0.0, (now - datetime.fromisoformat(iso.replace("Z", "+00:00"))).total_seconds() / 60)
     except (AttributeError, ValueError, TypeError):
         return None
+
+
+def book_age_limit(minutes_to_start: float, cap: float = 60) -> float:
+    """Âge maximal (min) d'une cote de book relevée hors du passage : cap, mais un quart du temps restant avant le coup
+    d'envoi (au moins 15 min) : à l'approche du match (compos, blessures) une cote vieille de 40 min est déjà fausse."""
+    return min(cap, max(15.0, minutes_to_start / 4))
+
+
+def _key(x: dict) -> tuple:
+    return (x.get("book"), x.get("ref_sport") or "?", x["group"].split("@")[0])
+
+
+def gate(cands: list[dict], measured: list[dict], cfg: dict | None = None) -> tuple[list[dict], dict, list[dict]]:
+    """Écarte les candidats dont la cote de book est trop vieille, ou dont le groupe (book, sport, famille de marché)
+    n'est pas « conforme » sur ce passage : un marché bien traduit cote en médiane un peu SOUS la cote juste. Médiane
+    par match puis médiane des matchs (au moins conf_min_events matchs), calculée sur les seules cotes de la plage
+    min_odds..max_odds des candidats. Médiane aberrante = traduction ou appariement douteux (cotes-value/controle.py).
+    measured = toutes les cotes comparables du passage (diagnostic). -> (gardés, compteurs, détail des écartés)."""
+    c = {**CFG, **(cfg or {})}
+    per_event: dict = {}
+    for m in measured:
+        if c["min_odds"] <= m.get("odds", c["min_odds"]) <= c["max_odds"]:
+            per_event.setdefault(_key(m), {}).setdefault(m.get("event_id"), []).append(m["ev"])
+
+    def med(v):
+        v = sorted(v)
+        n = len(v)
+        return (v[n // 2] + v[(n - 1) // 2]) / 2
+
+    stats = {k: (len(evs), med([med(v) for v in evs.values()])) for k, evs in per_event.items()}
+    kept, why, detail = [], {"cote_trop_vieille": 0, "groupe_non_conforme": 0}, []
+    for x in cands:
+        age, n_med = x.get("book_age_min"), stats.get(_key(x), (0, None))
+        reason = None
+        if age is not None and age > book_age_limit(x.get("minutes_to_start", 1e9), c["max_book_age_min"]):
+            reason = "cote_trop_vieille"
+        elif not (n_med[0] >= c["conf_min_events"] and c["conf_median_lo"] <= n_med[1] <= c["conf_median_hi"]):
+            reason = "groupe_non_conforme"
+        if reason:
+            why[reason] += 1
+            detail.append({"raison": reason, "book": x.get("book"), "sport": x.get("ref_sport"), "groupe": x["group"],
+                           "match": f"{x.get('home')} - {x.get('away')}", "cote": x.get("odds"),
+                           "ev": round(x["ev"], 4), "age_min": None if age is None else round(age),
+                           "matchs_mesures": n_med[0],
+                           "ev_mediane_groupe": None if n_med[1] is None else round(n_med[1], 4)})
+        else:
+            kept.append(x)
+    return kept, why, sorted(detail, key=lambda d: -d["ev"])[:10]

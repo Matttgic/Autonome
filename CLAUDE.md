@@ -11,7 +11,7 @@ Le propriétaire refuse toute clé d'API/compte et toute installation sur son t�
   Règlement : résolution Polymarket ; paris « consensus » via LiveScore (API publique, `sources/livescore.py`).
   Alertes : issue GitHub « Paris du JJ/MM » (e-mail au propriétaire) ; issue « Tableau de bord » réécrite à chaque run.
 - Ordonnancement : le cron GitHub ne s'est pas déclenché sur ce dépôt → workflow `pulse` (relais auto-relancé,
-  vérifie toutes les 55 min que live/coteur ont tourné). La branche par défaut est `ccr-0a28d713-rav38k` (= main).
+  contrôle toutes les 5 min : live dès 15 min, coteur dès 45 min ; filets dans live/coteur ; arrêt : variable PULSE=off). La branche par défaut est `ccr-0a28d713-rav38k` (= main).
 - Diagnostic réseau depuis GitHub : workflows `probe.yml` (tableau des accès) et `capture.yml` (pages publiques
   enregistrées sur la branche `captures`, à analyser localement). Lancement : MCP `actions_run_trigger`.
 - Voies secondaires : `python -m autonome fair` (CSV football-data.co.uk) ; backtest `python tools/backtest_fd.py`.

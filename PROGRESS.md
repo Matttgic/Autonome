@@ -100,3 +100,8 @@ tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jo
   choisi quand le vrai match est reporté (désormais tous les matchs sont candidats, seul un candidat FINI règle),
   simple apparié à un double au tennis, Epr/Ewt non contrôlés, pas de pause 403/429, fenêtre 36 h qui laissait des
   matchs Polymarket au consensus (passée à 72 h). Paris ouverts > 24 h listés « À régler à la main » au tableau de bord.
+- Session 4 (suite) : relais `pulse` toutes les 5 min (live dès 15 min, coteur dès 45 min, branche par défaut, 5 essais
+  de relance, filets dans live/coteur) ; garde-fous avant alerte (cote coteur > 60 min ou > 1/4 du temps avant match,
+  groupe (book, sport, marché) non conforme sur ≥ 3 matchs) ; values écartées listées au tableau de bord.
+  6e revue adverse : 10 points corrigés. 126 tests. Premier passage élargi (09:12 UTC) : 1 692 cotes comparées
+  (contre 537), 3 à EV > 0 (max +1,3 %, sous le seuil de 3 %).

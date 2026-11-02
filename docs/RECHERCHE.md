@@ -391,3 +391,17 @@ dans les boosts ; leurs modèles K/L/M (+14 à +43 %) sont exploratoires et choi
    vagues), aucun mauvais appariement.
 Non repris : Winamax/Betclic directs (proxy français + empreinte Chrome chez cotes-boostees = contournement exclu),
 Pinnacle (cache périmé depuis GitHub), Supabase/Bright Data (comptes).
+
+### Session 4 (suite) — obstacles d'Autonome et solutions trouvées ailleurs
+| Obstacle | Constat | Solution reprise |
+|---|---|---|
+| Cadence | 3 passages `live` entre 03:51 et 08:33 UTC ; le relais relançait `live` sur `main` (ancien code) | `pulse` toutes les 5 min : `live` dès 15 min, `coteur` dès 60 min, branche par défaut (cotes-value 5 min, Grotonome 6 min) |
+| Cotes de book vieilles | instantané coteur jusqu'à 3 h contre une référence Polymarket fraîche = fausses values | pas d'alerte si cote > 45 min (Revue : ≤ 5 min ; Cotescope : ≤ 2-15 min) |
+| Marché mal traduit | aucun contrôle global par (book, marché) | groupe non conforme (EV médiane hors [−25 % ; −1 %] ou < 5 mesures) bloqué (cotes-value `controle.py`) |
+| Couverture Polymarket | 6 matchs de foot à 30 h | tous championnats foot/basket (cotes-value) |
+| Paris consensus non réglés | — | LiveScore (cotes-value) |
+Recherche web (02/11) : aucune étude sérieuse ; un blog de fournisseur (OddsPapi, 28 matchs) mesure un retard médian des books
+« mous » sur Pinnacle de ~6 min (1xBet) à ~1 h (Bet365) : la valeur se trouve dans ce retard, d'où la cadence.
+Écartés (contournement ou compte) : Winamax socket et NetBet/Unibet/OlyBet via `curl_cffi` « impersonate=chrome »
+(cotes-value), proxy français Bright Data (cotes-boostees), réchauffeur Pinnacle Supabase. Betclic gRPC-web public
+(`offering.begmedia.com`, cotes-value, sans empreinte) : à décider par le propriétaire (CLAUDE.md : ne pas contourner le 403).
