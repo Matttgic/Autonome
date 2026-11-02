@@ -159,6 +159,22 @@ def cmd_fair(a, cfg):
     return 0
 
 
+def _blocked(state, source, now) -> bool:
+    """Source en pause (elle nous a renvoyé 403/429 récemment) : on respecte le refus, sans insister."""
+    rows = store.read(state, "backoff.jsonl")
+    until = max((r["until"] for r in rows if r["source"] == source), default="")
+    return until > now.isoformat()
+
+
+def _maybe_block(state, source, errors_before: int, errors: list, now, hours=6) -> None:
+    new = errors[errors_before:]
+    if any(("HTTP 403" in e or "HTTP 429" in e) for e in new):
+        from datetime import timedelta
+        store.append(state, "backoff.jsonl", [{"source": source, "at": now.isoformat(),
+                                               "until": (now + timedelta(hours=hours)).isoformat()}])
+        errors.append(f"{source} : accès refusé (403/429) -> pause de {hours} h, aucune insistance")
+
+
 def cmd_live(a, cfg):
     """Sans clé : Polymarket (référence) vs NetBet (pages publiques). Clôture + règlement inclus."""
     from . import live
@@ -169,7 +185,7 @@ def cmd_live(a, cfg):
         lcfg["bankroll"] = float(os.environ["BANKROLL"])
     errors = []
     try:
-        ref, err = pm.fetch(cfg.get("polymarket_tags", pm.TAGS))
+        ref, err = pm.fetch(cfg.get("polymarket_tags", pm.TAGS + pm.TAGS_2WAY))
     except Exception as e:  # noqa: BLE001
         ref, err = [], [f"polymarket: {type(e).__name__}"]
     errors += err
@@ -197,12 +213,15 @@ def cmd_live(a, cfg):
     # NetBet : pages de compétition -> événements dans la fenêtre -> pages d'événements (1 req / 5 s)
     soon = [g for g in ref if 0 < live._mins(g["commence"], now) <= lcfg["max_hours_to_start"] * 60]
     book_events, urls = [], []
-    if soon:
+    nb0 = len(errors)
+    if soon and not _blocked(a.state, "netbet", now):
         for comp in cfg.get("netbet_competitions", nb.COMPETITIONS):
             try:
                 urls += nb.event_urls(nb.fetch(comp))
             except nb.SourceError as e:
                 errors.append(str(e))
+                if "HTTP 403" in str(e) or "HTTP 429" in str(e):
+                    break  # refus : on arrête immédiatement
         from .match import slug_hits
         wanted = [u for u in dict.fromkeys(urls) if any(slug_hits(u, g["home"], g["away"]) for g in soon)]
         for u in wanted[: lcfg.get("max_event_pages", 40)]:
@@ -210,10 +229,12 @@ def cmd_live(a, cfg):
                 book_events += nb.parse_event_page(nb.fetch(u), u)
             except Exception as e:  # noqa: BLE001 - une page défectueuse ne doit jamais arrêter le run
                 errors.append(f"netbet {u}: {type(e).__name__}")
+    _maybe_block(a.state, "netbet", nb0, errors, now)
     # Unibet : une seule page publique lisible (1X2 des matchs mis en avant)
     from .sources import unibet as ub
     ub_events = []
-    if soon:
+    ub0 = len(errors)
+    if soon and not _blocked(a.state, "unibet", now):
         for pg in cfg.get("unibet_pages", ub.PAGES):
             try:
                 ub_events += ub.parse_page(ub.fetch(pg))
@@ -241,6 +262,7 @@ def cmd_live(a, cfg):
             pmu_events.append(e)
     except Exception as e:  # noqa: BLE001
         errors.append(f"pmu: {type(e).__name__}: {e}"[:160])
+    _maybe_block(a.state, "unibet", ub0, errors, now)
     books = {"netbet_fr": book_events, "unibet_fr": ub_events, "pmu_fr": pmu_events}
     pairs, cands, allc = [], [], []
     diag = {**lcfg, "min_ev": -9, "min_ev_cons": -9, "diagnostic": True, "min_odds": 1.01, "max_odds": 100}
