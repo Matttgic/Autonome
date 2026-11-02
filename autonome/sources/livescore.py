@@ -19,8 +19,11 @@ import urllib.request
 from datetime import datetime, timezone
 
 BASE = "https://prod-public-api.livescore.com/v1/api/app/date"
-SLUG = {"FOOTBALL": "soccer", "BASKETBALL": "basketball", "TENNIS": "tennis"}
-FINAL = {"FOOTBALL": {"FT", "AET", "AP"}, "BASKETBALL": {"FT", "OT", "AOT"}, "TENNIS": {"FT"}}
+SLUG = {"FOOTBALL": "soccer", "BASKETBALL": "basketball", "TENNIS": "tennis", "ICE_HOCKEY": "hockey"}
+FINAL = {"FOOTBALL": {"FT", "AET", "AP"}, "BASKETBALL": {"FT", "OT", "AOT"}, "TENNIS": {"FT"},
+         "ICE_HOCKEY": {"FT", "OT", "AP"}}
+# Hockey (vérifié le 02/11/2026) : Tr1OR = score à 60 min ; Tr1 = score final, prolongation comprise et +1 au vainqueur
+# des tirs au but (« AP » : 3-2 pour 2-2 à 60 min) : 1N2 = 60 min, vainqueur = prolongation et tirs au but inclus.
 # Compétitions féminines / jeunes : LiveScore ne marque pas toujours les équipes (« Arsenal WFC », ligue « Naisten… »).
 _SPECIAL = re.compile(r"(women|womens|woman|feminin|femenin|frauen|damen|naisten|kvinn|kvinde|dames|vrouwen|"
                       r"damallsvenskan|toppserien|\bwsl\b|nwsl|u-? ?\d{2}\b|youth|reserve|primavera|"
@@ -116,7 +119,7 @@ def outcome(res: dict, market: str) -> str | None:
     if not res.get("is_final"):
         return None
     if market == "1x2":
-        if sport not in ("FOOTBALL", "BASKETBALL") or not res.get("regular"):
+        if sport not in ("FOOTBALL", "BASKETBALL", "ICE_HOCKEY") or not res.get("regular"):
             return None  # 1N2 = temps réglementaire seulement
         h, a = res["regular"]
         win = "home" if h > a else "away" if a > h else "draw"
@@ -125,8 +128,8 @@ def outcome(res: dict, market: str) -> str | None:
             return None  # vainqueur déclaré et score en désaccord : à la main
         return win
     if market == "ml":
-        if sport not in ("BASKETBALL", "TENNIS"):
-            return None  # hockey, rugby… : prolongation/tirs au but selon le book -> à la main
+        if sport not in ("BASKETBALL", "TENNIS", "ICE_HOCKEY"):
+            return None  # rugby, handball, volley… : non lus sur LiveScore ou règles variables -> à la main
         h, a = res["final"]
         win = None if h == a else "home" if h > a else "away"
         if res.get("winner") is not None and res["winner"] != {"home": 1, "away": 2}.get(win):
