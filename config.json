@@ -1,0 +1,12 @@
+{
+  "markets": "h2h",
+  "regions": "eu",
+  "sports_priority": ["soccer_france_ligue_one", "soccer_epl", "soccer_spain_la_liga", "soccer_germany_bundesliga",
+                      "soccer_italy_serie_a", "soccer_uefa_champs_league", "soccer_uefa_europa_league",
+                      "basketball_nba", "tennis_atp_us_open", "icehockey_nhl"],
+  "credits_per_scan": 6,
+  "credits_reserve": 25,
+  "credits_per_close": 4,
+  "credits_per_settle": 4,
+  "engine": {}
+}

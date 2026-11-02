@@ -1,0 +1,67 @@
+name: run
+on:
+  schedule:
+    - cron: "17 6 * * *"    # scan du matin
+    - cron: "43 15 * * *"   # scan de l'après-midi
+    - cron: "7 11,17,20 * * *"  # clôture (CLV) des matchs proches
+    - cron: "23 4 * * *"    # règlement des paris terminés
+  workflow_dispatch:
+    inputs:
+      mode: {description: "scan | close | settle", default: scan}
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency: {group: autonome-run, cancel-in-progress: false}
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      BANKROLL: ${{ vars.BANKROLL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Tests (bloquants)
+        run: python -m unittest discover -s tests -t .
+      - name: Charger l'état (branche data)
+        run: |
+          git clone --branch data --single-branch --depth 1 "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" state \
+            || (mkdir state && git -C state init -q -b data && git -C state remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}")
+      - name: Choisir le mode
+        id: m
+        run: |
+          S="${{ github.event.schedule }}"
+          case "$S" in
+            "7 11,17,20 * * *") M=close;;
+            "23 4 * * *") M=settle;;
+            "") M="${{ github.event.inputs.mode }}";;
+            *) M=scan;;
+          esac
+          echo "mode=${M:-scan}" >> "$GITHUB_OUTPUT"
+      - name: Exécuter
+        run: |
+          [ -z "$ODDS_API_KEY" ] && { echo "::error::secret ODDS_API_KEY absent"; exit 1; }
+          python -m autonome ${{ steps.m.outputs.mode }} --state state --out site --link "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+      - name: Sauvegarder l'état
+        if: always()
+        run: |
+          cd state && git config user.name autonome && git config user.email autonome@users.noreply.github.com
+          git add -A && (git diff --cached --quiet || git commit -qm "state $(date -u +%FT%TZ)") && git push -q origin data
+      - name: Publier la page mobile
+        if: steps.m.outputs.mode == 'scan'
+        continue-on-error: true
+        uses: actions/upload-pages-artifact@v3
+        with: {path: site}
+  deploy:
+    needs: run
+    if: always() && needs.run.result == 'success'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    environment: {name: github-pages}
+    steps:
+      - uses: actions/deploy-pages@v4
