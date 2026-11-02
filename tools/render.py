@@ -26,12 +26,13 @@ def main(out, urls):
 
             def on_resp(r, xhr=xhr):
                 ct = r.headers.get("content-type", "")
-                if "json" in ct and len(xhr) < 80:
+                kind = r.request.resource_type
+                if ("json" in ct or kind in ("xhr", "fetch")) and len(xhr) < 120:
                     try:
                         body = r.text()[:200_000]
                     except Exception:  # noqa: BLE001
                         body = ""
-                    xhr.append({"url": r.url, "status": r.status, "len": len(body), "body": body})
+                    xhr.append({"url": r.url, "status": r.status, "type": kind, "ct": ct, "len": len(body), "body": body})
             page.on("response", on_resp)
             name = re.sub(r"[^A-Za-z0-9._-]", "_", u.replace("https://", ""))[:120]
             try:
