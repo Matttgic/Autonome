@@ -1,0 +1,132 @@
+"""Pipeline sans clé : référence Polymarket (milieu bid/ask) vs cotes publiques NetBet (ANJ).
+
+Chaque pari candidat porte tout le détail vérifiable : bid/ask de la référence, proba juste (milieu), proba
+prudente (borne bid/ask défavorable), cote du book, EV au milieu et EV prudente, jambes Polymarket pour le
+règlement et la clôture.
+"""
+from __future__ import annotations
+
+from datetime import datetime, timezone
+
+from . import store, value as V
+from .match import pair
+from .tracker import BETS
+
+CFG = {
+    "min_ev": 0.03,          # EV au milieu
+    "min_ev_cons": 0.005,    # EV avec la borne prudente (bid/ask défavorable) : doit rester positive
+    "max_spread": 0.03,
+    "min_odds": 1.30, "max_odds": 5.0,
+    "min_minutes_to_start": 20, "max_hours_to_start": 30,
+    "bankroll": 100.0, "kelly_mult": 0.25, "stake_cap_pct": 0.02,
+    "max_bets_per_day": 6,
+}
+
+SEL_FR = {"home": "{home}", "draw": "Nul", "away": "{away}", "1X": "{home} ou nul", "X2": "Nul ou {away}",
+          "12": "{home} ou {away}", "yes": "Oui", "no": "Non", "over": "Plus", "under": "Moins"}
+
+
+def label(group: str, sel: str, home: str, away: str) -> str:
+    kind, *rest = group.split("@")
+    if kind in ("ou", "ht_ou"):
+        base = f"{'Plus' if sel == 'over' else 'Moins'} de {rest[0]} buts"
+        return base + (" (1re mi-temps)" if kind == "ht_ou" else "")
+    if kind == "team_ou":
+        team = home if rest[0] == "home" else away
+        return f"{team} : {'plus' if sel == 'over' else 'moins'} de {rest[1]} buts"
+    if kind == "ah":
+        fav = home if rest[0] == "home" else away
+        dog = away if rest[0] == "home" else home
+        return f"Handicap {fav} ({rest[1]})" if sel == "fav" else f"Handicap {dog} (+{rest[1].lstrip('-')})"
+    name = {"1x2": "1X2", "ht1x2": "1X2 mi-temps", "dc": "Double chance", "btts": "Les 2 marquent"}.get(kind, kind)
+    return f"{name} : {SEL_FR.get(sel, sel).format(home=home, away=away)}"
+
+
+def _mins(iso: str, now: datetime) -> float:
+    return (datetime.fromisoformat(iso.replace("Z", "+00:00")) - now).total_seconds() / 60
+
+
+def compare(ref: dict, book: dict, book_key: str, now: datetime, cfg: dict | None = None) -> list[dict]:
+    c = {**CFG, **(cfg or {})}
+    mins = _mins(ref["commence"], now)
+    if not c["min_minutes_to_start"] <= mins <= c["max_hours_to_start"] * 60:
+        return []
+    out = []
+    for group, sels in book["odds"].items():
+        rm = ref["markets"].get(group)
+        if not rm:
+            continue
+        for sel, odds in sels.items():
+            leg = rm.get(sel)
+            if not leg or odds is None or leg["spread"] > c["max_spread"]:
+                continue
+            if not c["min_odds"] <= odds <= c["max_odds"]:
+                continue
+            ev_mid, ev_cons = V.ev(leg["p"], odds), V.ev(leg["lo"], odds)
+            if ev_mid < c["min_ev"] or ev_cons < c["min_ev_cons"]:
+                continue
+            stake = V.stake(leg["lo"], odds, c["bankroll"], c["kelly_mult"], c["stake_cap_pct"])
+            if stake <= 0 and not c.get("diagnostic"):
+                continue
+            out.append({
+                "bet_id": f"{book['id']}|{group}|{sel}|{book_key}", "event_id": ref["key"], "book_event": book["id"],
+                "sport": book.get("competition") or "", "commence": ref["commence"],
+                "home": book["home"], "away": book["away"], "ref_home": ref["home"], "ref_away": ref["away"],
+                "group": group, "selection": sel, "label": label(group, sel, book["home"], book["away"]),
+                "book": book_key, "url": book.get("url"), "odds": odds,
+                "ref_kind": "polymarket", "ref_books": ["polymarket"], "ref_overround": 0.0,
+                "devig_method": "milieu bid/ask", "p_fair": leg["p"], "p_cons": leg["lo"], "p_hi": leg["hi"],
+                "spread": leg["spread"], "fair_odds": 1 / leg["p"], "ev": ev_mid, "ev_cons": ev_cons,
+                "legs": leg["legs"], "stake": stake, "found_at": now.isoformat(),
+            })
+    return out
+
+
+def scan(ref_games: list[dict], book_events: list[dict], book_key: str, now: datetime, cfg=None):
+    pairs = pair(ref_games, book_events)
+    cands = [b for r, e in pairs for b in compare(r, e, book_key, now, cfg)]
+    return pairs, cands
+
+
+def update_closing(root, ref_games: list[dict], now: datetime) -> int:
+    """Clôture = dernier milieu Polymarket vu avant le coup d'envoi (relevé à chaque exécution horaire)."""
+    by_key = {g["key"]: g for g in ref_games}
+    rows = store.read(root, BETS)
+    n = 0
+    for r in rows:
+        g = by_key.get(r["event_id"])
+        if r["status"] != "open" or not g or r.get("ref_kind") != "polymarket":
+            continue
+        mins = _mins(g["commence"], now)
+        leg = (g["markets"].get(r["group"]) or {}).get(r["selection"])
+        if mins <= 0 or not leg:
+            continue
+        r["close"] = {"book": "polymarket", "p_fair": leg["p"], "seen_at": now.isoformat(), "minutes_to_start": mins,
+                      "ref_age_min": 0.0, "spread": leg["spread"], **V.clv(r["odds"], leg["p"])}
+        n += 1
+    store.write_all(root, BETS, rows)
+    return n
+
+
+def settle(root, get_market, now: datetime, delay_h: float = 3.0) -> int:
+    """Règle via la résolution officielle des marchés Polymarket des jambes. get_market(id) -> dict marché."""
+    from .sources.polymarket import resolved
+    rows = store.read(root, BETS)
+    n = 0
+    for r in rows:
+        if r["status"] != "open" or r.get("ref_kind") != "polymarket" or _mins(r["commence"], now) > -60 * delay_h:
+            continue
+        pay, ok = 0.0, True
+        for mid, idx in r["legs"]:
+            res = resolved(get_market(mid) or {})
+            if res is None:
+                ok = False
+                break
+            pay += res[idx]
+        if not ok:
+            continue
+        won = None if abs(pay - 0.5) < 1e-6 else pay >= 0.999
+        r["status"], r["result"] = "settled", {"won": won, "payout": pay, "source": "résolution Polymarket"}
+        n += 1
+    store.write_all(root, BETS, rows)
+    return n

@@ -45,3 +45,58 @@ def _fire(req) -> str:
             return f"ok {r.status}"
     except Exception as e:  # noqa: BLE001 - ne jamais exposer l'URL (secret)
         return f"échec {type(e).__name__}"
+
+
+# --- GitHub Issues : alerte sans rien installer (GitHub envoie un e-mail au propriétaire mentionné) ---
+def _gh(method: str, path: str, payload: dict | None = None):
+    tok, repo = os.environ.get("GITHUB_TOKEN"), os.environ.get("GITHUB_REPOSITORY")
+    if not tok or not repo:
+        return None
+    req = urllib.request.Request(f"https://api.github.com/repos/{repo}{path}", method=method,
+                                 data=json.dumps(payload).encode() if payload is not None else None,
+                                 headers={"Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json",
+                                          "Content-Type": "application/json", "User-Agent": "autonome"})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        return json.load(r)
+
+
+def github_issue(title: str, body: str, label: str = "paris") -> str:
+    """Crée l'issue du jour, ou y ajoute un commentaire si elle existe déjà. Renvoie un statut lisible."""
+    try:
+        issues = _gh("GET", f"/issues?state=open&labels={label}&per_page=30") or []
+        same = [i for i in issues if i.get("title") == title]
+        if same:
+            _gh("POST", f"/issues/{same[0]['number']}/comments", {"body": body})
+            return f"commentaire #{same[0]['number']}"
+        r = _gh("POST", "/issues", {"title": title, "body": body, "labels": [label]})
+        return f"issue #{r['number']}" if r else "pas de GITHUB_TOKEN"
+    except Exception as e:  # noqa: BLE001
+        return f"échec {type(e).__name__}"
+
+
+def github_dashboard(body: str, title: str = "📊 Tableau de bord Autonome") -> str:
+    """Issue épinglable unique, dont le corps est réécrit à chaque exécution (aucune notification)."""
+    try:
+        issues = _gh("GET", "/issues?state=open&labels=tableau&per_page=10") or []
+        same = [i for i in issues if i.get("title") == title]
+        if same:
+            _gh("PATCH", f"/issues/{same[0]['number']}", {"body": body})
+            return f"tableau #{same[0]['number']}"
+        r = _gh("POST", "/issues", {"title": title, "body": body, "labels": ["tableau"]})
+        return f"tableau #{r['number']}" if r else "pas de GITHUB_TOKEN"
+    except Exception as e:  # noqa: BLE001
+        return f"échec {type(e).__name__}"
+
+
+def md_bet(b: dict) -> str:
+    """Un pari en Markdown, avec tout le détail vérifiable."""
+    when = b["commence"][:16].replace("T", " ")
+    url = f"https://www.netbet.fr{b['url']}" if b.get("url") else ""
+    return (f"### {b['home']} – {b['away']}  ·  {when} UTC\n"
+            f"**{b['label']}** @ **{b['odds']:.2f}** chez **{b['book']}** {('— ' + url) if url else ''}\n"
+            f"- Mise conseillée : **{b['stake']:.1f} €** (¼ Kelly sur la proba prudente, plafond 2 %)\n"
+            f"- EV : **{b['ev']:+.1%}** au milieu, {b['ev_cons']:+.1%} en prudent\n"
+            f"- Référence Polymarket : proba juste {b['p_fair']:.2%} (cote juste {b['fair_odds']:.2f}), "
+            f"fourchette bid/ask {b['p_cons']:.2%} – {b['p_hi']:.2%} ; marge retirée : aucune (milieu d'un carnet "
+            f"d'ordres){' ; 1X2 normalisé par la somme des milieux' if b['group'] in ('1x2', 'ht1x2', 'dc') else ''}\n"
+            f"- Heure limite : coup d'envoi {when} UTC (vérifie que la cote est toujours ≥ {b['odds']:.2f})\n")

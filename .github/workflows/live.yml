@@ -1,0 +1,44 @@
+name: live
+# Sans clé ni compte : référence Polymarket (API publique) vs cotes publiques NetBet (ANJ).
+# Chaque heure de 6 h à 22 h UTC : nouveaux paris -> issue « Paris du JJ/MM » (e-mail GitHub au propriétaire),
+# clôture (CLV) et règlement des paris ouverts, tableau de bord mis à jour (issue « Tableau de bord »).
+on:
+  schedule:
+    - cron: "11 6-22 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+  issues: write
+concurrency: {group: autonome-state, cancel-in-progress: false}
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BANKROLL: ${{ vars.BANKROLL }}
+      GITHUB_TOKEN: ${{ github.token }}
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Tests (bloquants)
+        run: python -m unittest discover -s tests -t .
+      - name: Charger l'état (branche data)
+        run: |
+          URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+          if git ls-remote --exit-code --heads "$URL" data >/dev/null 2>&1; then
+            git clone --branch data --single-branch --depth 1 "$URL" state
+          else
+            rc=$?; [ "$rc" -eq 2 ] || { echo "::error::ls-remote a échoué ($rc)"; exit 1; }
+            mkdir state && git -C state init -q -b data && git -C state remote add origin "$URL"
+          fi
+      - name: Exécuter
+        run: python -m autonome live --state state
+      - name: Sauvegarder l'état
+        if: always()
+        run: |
+          cd state && git config user.name autonome && git config user.email autonome@users.noreply.github.com
+          git add -A && (git diff --cached --quiet || git commit -qm "state $(date -u +%FT%TZ)") && git push -q origin data

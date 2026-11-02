@@ -10,7 +10,7 @@ permissions:
   contents: write
   pages: write
   id-token: write
-concurrency: {group: autonome-run, cancel-in-progress: false}
+concurrency: {group: autonome-state, cancel-in-progress: false}
 jobs:
   run:
     runs-on: ubuntu-latest
