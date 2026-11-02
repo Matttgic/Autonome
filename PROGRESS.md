@@ -43,3 +43,23 @@ Plan gratuit 500 crédits/mois ; CLV approximative ; settlement via scores = sco
 2. Lire le résumé de probe : si l'API publique Smarkets répond 200 depuis GitHub → adaptateur Smarkets
    (référence exchange fraîche toutes les heures) ; sinon la fiche CSV reste la seule voie, à faible valeur.
 3. Ne pas annoncer de rentabilité : aucune mesure sur des cotes ANJ réelles n'existe.
+
+## Session 3 (2026-11-02, Opus 5.5) — voie sans clé ni installation : OPÉRATIONNELLE
+Fait :
+- Sondes depuis GitHub Actions (probe/capture déclenchés via MCP) : Polymarket, Smarkets, NetBet, Unibet lisibles ;
+  Winamax/Betclic 403 ; ZEbet/Parions Sport → redirection Unibet. Détails : docs/FAISABILITE.md.
+- Référence Polymarket (`sources/polymarket.py`) : 1X2, DC, plus/moins, 2 marquent, buts par équipe, handicaps, mi-temps.
+  **Validée** : 189 matchs EPL 25/26, log-loss PM 0,9781 vs Pinnacle 0,9826 (docs/RECHERCHE.md).
+- Book NetBet (`sources/netbet.py` + `sources/jslit.py`, sans exécution de JS), appariement (`match.py`),
+  comparaison/CLV/règlement (`live.py`), `python -m autonome live`, workflow `live.yml` horaire 6-22 h UTC.
+- Interface sans installation : issue « 📊 Tableau de bord Autonome » (#1, réécrite à chaque run : CLV, ROI,
+  distribution d'EV NetBet, cotes justes à 72 h pour juger un boost) ; issue « Paris du JJ/MM » + mention = e-mail.
+- 2 revues adverses indépendantes (Sonnet) : 17 + 15 défauts, corrigés ; 62 tests.
+Résultat honnête : 117 cotes NetBet comparées (3 matchs) → 0 à EV > 0 ; médiane 1X2 −9 %, secondaires −13 à −23 %.
+Prochaine étape :
+1. Laisser tourner ; lire `observations.jsonl` (branche data) après ~1 semaine : fréquence réelle d'EV > 0.
+2. Si toujours ~0 : ajouter Unibet (Kambi, rendu serveur partiel) seulement si une source lisible sans JS existe.
+3. Valider Polymarket sur Ligue 1/Liga (`tools/pm_collect.py` avec la série correspondante).
+4. Possible : ntfy/Telegram déjà supportés si le propriétaire change d'avis (secrets).
+Décisions : Polymarket plutôt que Smarkets (marchés secondaires + historique pour valider) ; un seul pari par match ;
+EV ≥ 3 % au milieu ET EV > 0,5 % sur la borne prudente ; alerte = issue GitHub (zéro installation).
