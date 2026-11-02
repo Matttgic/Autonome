@@ -190,7 +190,10 @@ def cmd_live(a, cfg):
         except pm.SourceError:
             return None
     from .boosts import settle as settle_boosts
-    settled += settle_boosts(a.state, get_event, now)
+    try:
+        settled += settle_boosts(a.state, get_event, now)
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"règlement boosts: {type(e).__name__}")
     # NetBet : pages de compétition -> événements dans la fenêtre -> pages d'événements (1 req / 5 s)
     soon = [g for g in ref if 0 < live._mins(g["commence"], now) <= lcfg["max_hours_to_start"] * 60]
     book_events, urls = [], []
@@ -259,7 +262,8 @@ def cmd_live(a, cfg):
     known = {r["bet_id"] for r in rows}
     for e in boost_eval:
         b = BO.to_bet(e, now, lcfg["bankroll"], lcfg["kelly_mult"], lcfg["stake_cap_pct"])
-        if b and b["bet_id"] not in known:
+        open_ev = {r["event_id"] for r in rows if r["status"] == "open"} | {x["event_id"] for x in boost_picks}
+        if b and b["bet_id"] not in known and b["event_id"] not in open_ev:  # un boost par match (corrélés)
             boost_picks.append(b)
     picks += boost_picks
     tracker.record_bets(a.state, picks)

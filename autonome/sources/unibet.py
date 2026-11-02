@@ -70,7 +70,7 @@ def parse_page(page: str) -> list[dict]:
     starts = _starts(page)
     out = []
     page = re.sub(r"<!--.*?-->", "", page, flags=re.S)  # commentaires Angular entre les balises
-    for blk in page.split('class="psel-event"')[1:]:
+    for blk in re.split(r'class="psel-event(?: [^"]*)?"', page)[1:]:
         try:
             href = re.search(r'class="psel-event__link"[^>]*href="([^"]+)"', blk)
             names = [H.unescape(x).strip() for x in re.findall(r'psel-opponent__name">([^<]*)<', blk)]

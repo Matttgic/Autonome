@@ -67,7 +67,7 @@ class Templates(unittest.TestCase):
             self.assertFalse(self.ev(ev, t)["evaluable"], t)
 
     def test_to_bet_thresholds_and_max_stake(self):
-        r = self.ev("Newcastle - Everton", "Newcastle gagne", odds=3.0)   # p≈0.58 -> EV ≈ +74 %
+        r = self.ev("Newcastle - Everton", "Newcastle gagne", odds=2.0)   # p≈0.58 -> EV ≈ +16 %
         b = boosts.to_bet(r, NOW, bankroll=10000)
         self.assertEqual(b["stake"], 20)                                   # plafonné par la mise max du boost
         r2 = self.ev("Newcastle - Everton", "Newcastle gagne", odds=1.6)
@@ -121,8 +121,8 @@ class Settle(unittest.TestCase):
         from autonome import store, tracker
         d = tempfile.mkdtemp()
         r = boosts.evaluate({"id": "b1", "book": "winamax", "event": "Lorient - Brest",
-                             "text": "Lorient gagne et plus de 2,5 buts dans le match", "odds": 9.0, "max_stake": 20}, GAMES, {})
-        b = boosts.to_bet(r, NOW, 100)
+                             "text": "Lorient gagne et plus de 2,5 buts dans le match", "odds": 4.6, "max_stake": 20}, GAMES, {})
+        b = boosts.to_bet(r, NOW, 1000)  # bankroll 1000 : mise ≥ 1 €
         tracker.record_bets(d, [b])
         ex = {"markets": [{"closed": True, "groupItemTitle": "FC Lorient 2 - 1 Stade Brestois 29", "outcomePrices": '["1", "0"]'},
                           {"closed": True, "groupItemTitle": "FC Lorient 1 - 1 Stade Brestois 29", "outcomePrices": '["0", "1"]'}]}
@@ -134,3 +134,60 @@ class Settle(unittest.TestCase):
         store.write_all(d, tracker.BETS, rows)
         self.assertEqual(boosts.settle(d, lambda slug: ex if slug == "fl1-x-exact-score" else None, later), 1)
         self.assertTrue(store.read(d, tracker.BETS)[0]["result"]["won"])   # 2-1 : victoire et 3 buts
+
+
+class Review3(unittest.TestCase):
+    def ev(self, event, text, odds=2.0):
+        return boosts.evaluate({"id": "b", "book": "winamax", "event": event, "text": text, "odds": odds,
+                                "max_stake": 20}, GAMES, {})
+
+    def test_reserves_women_youth_refused(self):
+        for ev, t in [("Lorient (F) - Brest (F)", "Plus de 2,5 buts dans le match"),
+                      ("Football", "Newcastle U23 et Lorient gagnent chacun leur match"),
+                      ("Lorient B - Brest B", "Match nul")]:
+            self.assertFalse(self.ev(ev, t)["evaluable"], t)
+
+    def test_extra_words_refused(self):
+        for t in ["Lorient apres prolongation gagne", "Lorient seconde periode gagne", "Lorient a domicile marque au moins 2 buts"]:
+            self.assertFalse(self.ev("Lorient - Brest", t)["evaluable"], t)
+
+    def test_multi_partial_split_refused(self):
+        r = self.ev("Football", "Plus de 2,5 buts lors de chacun des matchs suivants : Lorient - Brest, Real–Sociedad et Newcastle - Everton")
+        self.assertFalse(r["evaluable"])
+
+    def test_respectivement_other_form_refused(self):
+        r = self.ev("Football", "Le Paris SG et Newcastle gagnent chacun leur match (respectivement face à Lyon et Everton)")
+        self.assertFalse(r["evaluable"])
+
+    def test_other_sport_refused(self):
+        self.assertFalse(self.ev("Basketball", "Lorient et Newcastle gagnent chacun leur match")["evaluable"])
+
+    def test_absurd_ev_not_bet(self):
+        r = self.ev("Newcastle - Everton", "Newcastle gagne", odds=1000)
+        self.assertIsNone(boosts.to_bet(r, NOW, 100))
+
+    def test_lost_leg_beats_void_leg(self):
+        import tempfile
+        from autonome import store, tracker
+        d = tempfile.mkdtemp()
+        tracker.record_bets(d, [{"bet_id": "b", "event_id": "e", "status": "open", "ref_kind": "polymarket-modele",
+                                 "odds": 3, "stake": 1, "ev": .1, "commence": "2026-11-01T10:00:00Z",
+                                 "boost_legs": [{"game": "pm|a", "pred": "win", "side": "home", "args": {}, "commence": "2026-11-01T10:00:00Z"},
+                                                {"game": "pm|b", "pred": "win", "side": "home", "args": {}, "commence": "2026-11-01T10:00:00Z"}]}])
+        evs = {"a-exact-score": {"markets": [{"closed": True, "groupItemTitle": "A 0 - 2 B", "outcomePrices": '["1", "0"]'}]},
+               "b-exact-score": {"markets": [{"closed": True, "groupItemTitle": "C 1 - 0 D", "outcomePrices": '["0.5", "0.5"]'}]}}
+        boosts.settle(d, evs.get, datetime(2026, 11, 2, tzinfo=timezone.utc))
+        self.assertIs(store.read(d, tracker.BETS)[0]["result"]["won"], False)
+
+    def test_model_needs_enough_constraints(self):
+        from autonome import scoremodel as SM
+        m = {k: v for k, v in GAMES[0]["markets"].items() if k in ("1x2", "ou@2.5")}
+        self.assertIsNone(SM.fit(m))
+
+    def test_coteur_max_with_space_and_id_without_odds(self):
+        card = ('<div class="custom-card p-0 overflow-hidden"><img src="/build/images/logo/bookid/33.webp">'
+                '<span class="badge text-truncate">Cote Boostée : A - B</span><h5 class="card-title">A gagne</h5>'
+                '<span class="display-6">{o}</span>Max: 1 000 €</div>')
+        a, b = coteur.parse(card.format(o="2.10"))[0], coteur.parse(card.format(o="2.30"))[0]
+        self.assertEqual(a["max_stake"], 1000.0)
+        self.assertEqual(a["id"], b["id"])

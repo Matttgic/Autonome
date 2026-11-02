@@ -46,15 +46,15 @@ def parse(page: str, limit: int = 400) -> list[dict]:
             ev = re.search(r'text-truncate"[^>]*>(.*?)</span>', c, re.S)
             ti = re.search(r'card-title[^>]*>(.*?)</h5>', c, re.S)
             od = re.search(r'display-6[^>]*>\s*([\d.,]+)\s*<', c)
-            mx = re.search(r"Max:\s*([\d.,]+)\s*€", c)
+            mx = re.search(r"Max:\s*([\d.,\s\u00a0\u202f]+)\s*€", c)
             if not (book and ev and ti and od):
                 continue
             label = re.sub(r"^Cote Boostée\s*:\s*", "", _txt(ev.group(1)))
             text, odds = _txt(ti.group(1)), float(od.group(1).replace(",", "."))
-            bid = hashlib.sha1(f"{book.group(1)}|{label}|{text}|{odds}".encode()).hexdigest()[:12]
+            bid = hashlib.sha1(f"{book.group(1)}|{label}|{text}".encode()).hexdigest()[:12]  # sans la cote
             out.append({"id": f"boost|{bid}", "book": BOOKIDS.get(book.group(1), f"book{book.group(1)}"),
                         "event": label, "text": text, "odds": odds,
-                        "max_stake": float(mx.group(1).replace(",", ".")) if mx else None})
+                        "max_stake": float(re.sub(r"[\s\u00a0\u202f]", "", mx.group(1)).replace(",", ".")) if mx else None})
         except (ValueError, AttributeError):
             continue
     return out

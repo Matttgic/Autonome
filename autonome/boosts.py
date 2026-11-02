@@ -14,6 +14,10 @@ from . import scoremodel as SM
 from . import value as V
 from .match import pair, sim
 
+REL_MARGIN = 0.08
+MAX_EV = 0.5   # EV au-delà : libellé probablement mal traduit -> jamais parié, signalé
+MAX_HOURS = 96
+
 PRED = {
     "win": lambda s, a: lambda i, j: (i > j) if s == "home" else (j > i),
     "draw": lambda s, a: lambda i, j: i == j,
@@ -32,8 +36,8 @@ PRED = {
 
 
 def _n(s: str) -> str:
-    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower()
-    return " ".join(s.replace("’", "'").split())
+    s = unicodedata.normalize("NFKD", s.replace("’", "'")).encode("ascii", "ignore").decode().lower()
+    return " ".join(s.split())
 
 
 def _num(x: str) -> float:
@@ -58,13 +62,25 @@ SINGLE = [  # (regex sur le texte normalisé, prédicat, extraction d'arguments)
 
 
 _NOT_TEAM = re.compile(r"\b(et|ou|buteur|buteurs|marque|marquent|but|buts|premier|1er|passe|decisive|tir|carton|"
-                       r"penalty|corner|mi-temps|joueur|ni|avec|sans|plus|moins)\b|\d")
+                       r"penalty|corner|mi-temps|joueur|ni|avec|sans|plus|moins|apres|prolongation|incluse|periode|"
+                       r"domicile|exterieur|match|tab|hors|seconde|premiere)\b|\b[a-z]\. |\d+-\d+")
+# équipes réserves, jeunes, féminines : jamais assimilées à l'équipe première
+_YOUTH = re.compile(r"\((f|w)\)|\b(b|ii|u\d{2}|women|feminine?s?|castilla|next gen|jong|reserves?|youth|juniors?)\b")
 
 
 def _is_team_name(t: str) -> bool:
-    """Un sujet de gabarit doit être un nom d'équipe seul (≤ 5 mots, aucun mot de pari ou de joueur)."""
+    """Un sujet de gabarit doit être un nom d'équipe seul (≤ 5 mots, aucun mot de pari, de joueur ou de période)."""
     t = _n(t)
-    return bool(t) and len(t.split()) <= 5 and not _NOT_TEAM.search(t) and "." not in t
+    return bool(t) and len(t.split()) <= 5 and not _NOT_TEAM.search(t) and not _YOUTH.search(t)
+
+
+def _covers(subject: str, team: str) -> bool:
+    """Chaque jeton du sujet doit correspondre à un jeton de l'équipe (pas de mot en trop)."""
+    from .match import norm
+    from difflib import SequenceMatcher
+    ts = norm(team)
+    return all(any(x == y or y.startswith(x) or x.startswith(y) or SequenceMatcher(None, x, y).ratio() >= 0.8
+                   for y in ts) for x in norm(subject))
 
 
 def _split_teams(s: str) -> list[str]:
@@ -84,7 +100,10 @@ def _multi(text: str):
         return [(t, "team_goals", {"n": int(m["n"])}) for t in _split_teams(m["ts"])]
     m = re.match(r"^plus de (?P<x>\d+[.,]5) buts lors de chacun des matchs suivants ?: (?P<ms>.+)$", text)
     if m:
-        games = [g.strip() for g in re.split(r",| et ", m["ms"]) if " - " in g]
+        parts = [g.strip() for g in re.split(r",| et ", m["ms"]) if g.strip()]
+        games = [g for g in parts if " - " in g]
+        if len(games) != len(parts):
+            return None  # un match mal découpé ferait surestimer la proba : refus
         return [(g, "over_game", {"x": _num(m["x"])}) for g in games] or None
     return None
 
@@ -110,11 +129,9 @@ def _game_for_label(label: str, games: list[dict], start_hint=None):
     if " - " not in label:
         return None
     h, a = [x.strip() for x in label.split(" - ", 1)]
-    for g in games:
-        if min(sim(h, g["home"]), sim(a, g["away"])) >= 0.6 and \
-                sim(h, g["home"]) + sim(a, g["away"]) > sim(h, g["away"]) + sim(a, g["home"]) + 0.5:
-            return g
-    return None
+    ok = [g for g in games if min(sim(h, g["home"]), sim(a, g["away"])) >= 0.6 and
+          sim(h, g["home"]) + sim(a, g["away"]) > sim(h, g["away"]) + sim(a, g["home"]) + 0.5]
+    return min(ok, key=lambda g: g["commence"]) if ok else None  # le plus proche
 
 
 def _opponents(text: str) -> list[str] | None:
@@ -122,9 +139,18 @@ def _opponents(text: str) -> list[str] | None:
     return [re.sub(r"^(le|la|les|l') ", "", x.strip()) for x in re.split(r",| et ", m["o"]) if x.strip()] if m else None
 
 
+_OTHER_SPORT = re.compile(r"\b(basket|basketball|nba|euroleague|nhl|nfl|tennis|atp|wta|rugby|top 14|handball|hockey|"
+                          r"mlb|baseball|volley|ufc|mma|boxe|golf|f1|formule|cyclisme|nba cup|ncaa|snooker|flechettes)\b")
+
+
 def translate(boost: dict, games: list[dict], allow_team_legs: bool = True):
     """→ (jambes [(jeu, prédicat, côté, args)], raison si non évaluable)."""
     text = _n(boost["text"])
+    label = _n(boost.get("event") or "")
+    if _OTHER_SPORT.search(label):
+        return None, "autre sport que le football"
+    if _YOUTH.search(label) or _YOUTH.search(text):
+        return None, "équipe réserve, jeune ou féminine : non assimilable à l'équipe première"
     single = _game_for_label(boost["event"], games)
     if single:
         for rx, pred, ex in SINGLE:
@@ -139,12 +165,16 @@ def translate(boost: dict, games: list[dict], allow_team_legs: bool = True):
                 if max(sh, sa) < 0.8 or abs(sh - sa) < 0.2:
                     return None, f"équipe « {m['t']} » non reconnue dans {single['home']} – {single['away']}"
                 side = "home" if sh > sa else "away"
+                if not _covers(m["t"], single[side]):
+                    return None, f"sujet « {m['t']} » contient des mots absents du nom d'équipe"
             return [(single, pred, side, ex(m))], None
         return None, "libellé non pris en charge (joueur, mi-temps, autre)"
     legs_txt = _multi(text)
     if not legs_txt:
         return None, "match non coté sur Polymarket ou libellé non pris en charge"
     opp = _opponents(text)
+    if "respectivement" in text and opp is None:
+        return None, "« respectivement » de forme inconnue : adversaires non vérifiables"
     team_legs = [x for x in legs_txt if x[1] != "over_game"]
     if team_legs and opp is None and not allow_team_legs:
         return None, "combiné désigné par équipes, boost non daté (déjà présent au relevé de référence)"
@@ -159,7 +189,7 @@ def translate(boost: dict, games: list[dict], allow_team_legs: bool = True):
                 return None, f"match « {who} » introuvable"
             legs.append((g, "over", None, args))
         else:
-            if not _is_team_name(who):
+            if not _is_team_name(who) or not _covers(who, who):
                 return None, f"« {who} » n'est pas un simple nom d'équipe"
             r = _game_for_team(who, games)
             if not r:
@@ -195,8 +225,8 @@ def evaluate(boost: dict, games: list[dict], cache: dict, max_fit_err: float = 0
                       "lambda": [round(f["lh"], 3), round(f["la"], 3), round(f["rho"], 3)], "fit_err": f["max_err"]})
     # borne prudente : chaque jambe perd (erreur de calage + marge modèle) en probabilité absolue
     p_cons = 1.0
-    for x in parts:
-        p_cons *= max(0.0, x["p"] - (x["fit_err"] + model_margin))
+    for x in parts:  # marge absolue (calage) + relative (forme du modèle : ~8 % mesuré par la revue)
+        p_cons *= max(0.0, x["p"] * (1 - REL_MARGIN) - (x["fit_err"] + model_margin))
     return {**boost, "evaluable": True, "p_fair": p, "p_cons": p_cons, "fair_odds": 1 / p if p > 0 else None,
             "ev": V.ev(p, boost["odds"]), "ev_cons": V.ev(p_cons, boost["odds"]), "legs": parts,
             "commence": min(x["commence"] for x in parts)}
@@ -207,13 +237,16 @@ CFG = {"min_ev": 0.05, "min_ev_cons": 0.0, "min_minutes_to_start": 20}
 
 def to_bet(e: dict, now: datetime, bankroll: float, kelly_mult=0.25, cap_pct=0.02) -> dict | None:
     """Boost évalué -> pari enregistrable (même schéma que live.compare), ou None s'il ne passe pas les seuils."""
-    if not e.get("evaluable") or e["ev"] < CFG["min_ev"] or e["ev_cons"] < CFG["min_ev_cons"]:
+    if not e.get("evaluable") or e.get("book") != "winamax":
+        return None
+    if e["ev"] < CFG["min_ev"] or e["ev_cons"] < CFG["min_ev_cons"] or e["ev"] > MAX_EV:
         return None
     start = datetime.fromisoformat(e["commence"].replace("Z", "+00:00"))
-    if (start - now).total_seconds() < CFG["min_minutes_to_start"] * 60:
+    secs = (start - now).total_seconds()
+    if secs < CFG["min_minutes_to_start"] * 60 or secs > MAX_HOURS * 3600:
         return None
     stake = V.stake(e["p_cons"], e["odds"], bankroll, kelly_mult, cap_pct)
-    if e.get("max_stake"):
+    if e.get("max_stake") is not None:
         stake = min(stake, e["max_stake"])
     if stake <= 0:
         return None
@@ -250,19 +283,25 @@ def final_score(exact_event: dict | None):
     """Score final lu dans le marché « score exact » Polymarket résolu : (dom, ext), 'autre', 'annulé' ou None."""
     if not exact_event:
         return None
-    ms = exact_event.get("markets") or []
-    for m in ms:
+    import json as _json
+    won, void = None, False
+    for m in exact_event.get("markets") or []:
         try:
-            p = [float(x) for x in __import__("json").loads(m.get("outcomePrices") or "[]")]
-        except ValueError:
+            raw = m.get("outcomePrices")
+            p = [float(x) for x in (_json.loads(raw) if isinstance(raw, str) else raw or [])]
+        except (ValueError, TypeError):
             continue
         if not m.get("closed") or len(p) != 2:
             continue
         if p[0] == 1.0:
-            r = re.search(r" (\d+) - (\d+) ", f" {m.get('groupItemTitle') or ''} ")
-            return (int(r.group(1)), int(r.group(2))) if r else "autre"
-        if p[0] == 0.5:
-            return "annulé"
+            won = m
+        elif p[0] == 0.5:
+            void = True
+    if void:
+        return "annulé"
+    if won is not None:
+        r = re.search(r" (\d+) - (\d+) ", f" {won.get('groupItemTitle') or ''} ")
+        return (int(r.group(1)), int(r.group(2))) if r else "autre"
     return None
 
 
@@ -281,13 +320,15 @@ def settle(root, get_event, now: datetime, delay_h: float = 3.0) -> int:
         outcomes = []
         for x in legs:
             sc = final_score(get_event(x["game"].split("|", 1)[-1] + "-exact-score"))
-            if sc is None or sc == "autre":
+            if sc is None:
                 break
-            outcomes.append(None if sc == "annulé" else PRED[x["pred"]](x["side"], x["args"])(*sc))
+            outcomes.append(None if sc in ("annulé", "autre") else PRED[x["pred"]](x["side"], x["args"])(*sc))
         if len(outcomes) != len(legs):
             continue
-        won = None if None in outcomes else all(outcomes)
-        r["status"], r["result"] = "settled", {"won": won, "source": "score exact Polymarket"}
+        # une jambe perdue => perdu ; sinon une jambe annulée/inconnue => remboursé (à vérifier) ; sinon gagné
+        won = False if False in outcomes else (None if None in outcomes else True)
+        r["status"], r["result"] = "settled", {"won": won, "source": "score exact Polymarket",
+                                               "note": "score hors grille ou annulé : vérifier" if won is None else ""}
         n += 1
     store.write_all(root, BETS, rows)
     return n

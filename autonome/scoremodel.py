@@ -23,6 +23,7 @@ def grid(lh: float, la: float, rho: float = 0.0) -> list[list[float]]:
     g[0][1] *= 1 + lh * rho
     g[1][0] *= 1 + la * rho
     g[1][1] *= 1 - rho
+    g = [[max(0.0, x) for x in row] for row in g]
     s = sum(map(sum, g))
     return [[x / s for x in row] for row in g]
 
@@ -54,7 +55,8 @@ def _targets(markets: dict) -> list[tuple]:
 def fit(markets: dict) -> dict | None:
     """Calage (λ dom, λ ext, ρ) par moindres carrés ; None si moins de 4 contraintes."""
     t = _targets(markets)
-    if len(t) < 4 or "1x2" not in markets:
+    # 1X2 = 2 contraintes indépendantes ; il en faut ≥ 5 pour que l'erreur de calage veuille dire quelque chose
+    if "1x2" not in markets or len(t) - 1 < 5:
         return None
 
     def err(lh, la, rho):
