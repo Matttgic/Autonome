@@ -1,0 +1,27 @@
+name: render
+# Rendu navigateur (Playwright) de pages PUBLIQUES qui chargent leurs données en JavaScript, pour écrire des
+# lecteurs sur données réelles. Résultat sur la branche `captures`. Aucun contournement de protection.
+on:
+  workflow_dispatch:
+    inputs:
+      urls: {description: "URLs séparées par des espaces", default: "https://www.coteur.com/cotes-foot"}
+permissions:
+  contents: write
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      URLS: ${{ github.event.inputs.urls }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -q playwright==1.48.0 && python -m playwright install --with-deps chromium >/dev/null
+      - name: Rendre
+        run: python tools/render.py cap $URLS
+      - name: Publier sur la branche captures
+        run: |
+          cd cap && git init -q -b captures && git add -A
+          git -c user.name=autonome -c user.email=autonome@users.noreply.github.com commit -qm "render $(date -u +%FT%TZ)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" captures
