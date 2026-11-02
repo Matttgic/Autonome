@@ -3,3 +3,4 @@
 {"at": "2026-11-02T02:22:38.365294+00:00", "candidates": 0, "closing_updates": 0, "errors": [], "mode": "live", "netbet_pages": 3, "pairs": 3, "picked": 0, "ref_games": 60, "ref_soon": 3, "settled": 0}
 {"at": "2026-11-02T02:36:18.895350+00:00", "candidates": 0, "closing_updates": 0, "errors": [], "mode": "live", "netbet_pages": 3, "pairs": 3, "picked": 0, "ref_games": 59, "ref_soon": 3, "settled": 0}
 {"at": "2026-11-02T02:38:53.380558+00:00", "candidates": 0, "closing_updates": 0, "errors": [], "mode": "live", "netbet_pages": 3, "pairs": 3, "picked": 0, "ref_games": 60, "ref_soon": 3, "settled": 0}
+{"at": "2026-11-02T02:55:44.473391+00:00", "candidates": 0, "closing_updates": 0, "errors": ["unibet /paris-football: SourceError: unibet /paris-football: HTTP 503"], "mode": "live", "netbet_pages": 3, "pairs": 3, "picked": 0, "ref_games": 60, "ref_soon": 3, "settled": 0, "unibet_events": 0}
