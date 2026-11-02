@@ -286,7 +286,29 @@ def cmd_live(a, cfg):
     except Exception as e:  # noqa: BLE001
         errors.append(f"pmu: {type(e).__name__}: {e}"[:160])
     _maybe_block(a.state, "unibet", ub0, errors, now)
-    books = {"netbet_fr": book_events, "unibet_fr": ub_events, "pmu_fr": pmu_events}
+    # Betclic (API publique gRPC-web, contournement du 403 du site autorisé par le propriétaire le 02/11/2026) :
+    # liste de 4 sports, puis tous les marchés des seuls matchs appariés à Polymarket.
+    from .sources import betclic as bcl
+    bc_events, bc0 = [], len(errors)
+    if soon and not _blocked(a.state, "betclic", now) and lcfg.get("betclic", True):
+        try:
+            bc_list, err = bcl.fetch_list(now, lcfg["max_hours_to_start"])
+            errors += err
+            bc_match = [b for _, b, _ in _pair(soon, bc_list, with_swap=True)]
+            for e in bc_match[: lcfg.get("max_betclic_detail", 60)]:
+                try:
+                    e = bcl.fetch_detail(e)
+                except bcl.SourceError as ex:
+                    errors.append(str(ex))
+                    if "HTTP 403" in str(ex) or "HTTP 429" in str(ex):
+                        break
+                    continue
+                if e["odds"]:
+                    bc_events.append(e)
+        except Exception as e:  # noqa: BLE001 - une source en panne n'arrête jamais le passage
+            errors.append(f"betclic: {type(e).__name__}: {e}"[:160])
+    _maybe_block(a.state, "betclic", bc0, errors, now)
+    books = {"netbet_fr": book_events, "unibet_fr": ub_events, "pmu_fr": pmu_events, "betclic_fr": bc_events}
     # coteur.com (instantané du workflow coteur) : Betclic, Unibet, Betsson, Olybet, Vbet, DAZN Bet, etc.
     from . import consensus as CS
     from .sources import coteur_odds
@@ -380,6 +402,7 @@ def cmd_live(a, cfg):
     store.write_all(a.state, "observations.jsonl", store.read(a.state, "observations.jsonl")[:-1] + [obs])
     meta = {"at": now.isoformat(), "mode": "live", "ref_games": len(ref), "ref_soon": len(soon),
             "netbet_pages": len(book_events), "unibet_events": len(ub_events), "pmu_events": len(pmu_events),
+            "betclic_events": len(bc_events),
             "pmu_par_sport": pmu_cov, "coteur_matchs": len(ct_matches),
             "coteur_books": {k: len(v) for k, v in ct_books.items()}, "pairs": len(pairs), "candidates": len(cands), "picked": len(picks),
             "closing_updates": closed, "settled": settled, "boosts_lus": len(boost_eval),
