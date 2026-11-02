@@ -27,3 +27,19 @@ Plan gratuit 500 crédits/mois ; CLV approximative ; settlement via scores = sco
 - Décision : collecte depuis le téléphone (Termux, IP résidentielle). Étape 1 : `tools/probe.py` (résumé à coller dans le chat) ; étape 2 (session suivante) : écrire les parseurs sur données RÉELLES, jamais sur des formats supposés.
 - Sous-agent briseur lancé (Sonnet) ; corriger ses défauts avant livraison.
 - Revue adverse (17 défauts) : corrigés (t de Student, clôture/CLV, couverture, ref sans horodatage/marge<0.5 %, lignes .25/entières, limite/jour, crash par événement, alerte avant rendu, workflow état/injection/deploy). Régressions : tests/test_regress.py. Non corrigé : IC du ROI pondéré par mises (renommé return_per_bet), correction de tests séquentiels.
+
+## Session 2 (2026-11-02) — voie sans API ni installation
+- Fait : football-data.co.uk accessible (fixtures.csv + 15 archives saisonnières HTTP 200). Backtest réel
+  `tools/backtest_fd.py` → docs/RECHERCHE.md (calibration PS, log-loss dé-vig, CLV/ROI séparés dans le temps).
+- Fait : `autonome/sources/footballdata.py` (adaptateur CSV → format interne), `autonome/fairsheet.py` +
+  `python -m autonome fair` (fiche cotes justes / cote mini ANJ), `autonome/backtest.py` (fonctions pures).
+- Fait : workflows `fair.yml` (planifié ven./mar., Pages) et `probe.yml` (manuel, résumé dans le run).
+  `run.yml` (The Odds API) : planification retirée = désactivé par défaut (code conservé).
+- Tests : 44 (13 nouveaux dans tests/test_sources.py, sans réseau).
+- Résultats clés : comparaison simultanée PS→Bet365 CLV +2,4 % [1,4 ; 3,4] mais ~95 paris/saison ; référence
+  périmée (pari tardif) CLV −5,5 % ; Pinnacle absent des fichiers 2026/27 ; books ANJ absents (marge non mesurée).
+## Prochaine étape
+1. Propriétaire : Réglages > Pages > Source « GitHub Actions » ; lancer Actions > probe, puis Actions > fair.
+2. Lire le résumé de probe : si l'API publique Smarkets répond 200 depuis GitHub → adaptateur Smarkets
+   (référence exchange fraîche toutes les heures) ; sinon la fiche CSV reste la seule voie, à faible valeur.
+3. Ne pas annoncer de rentabilité : aucune mesure sur des cotes ANJ réelles n'existe.

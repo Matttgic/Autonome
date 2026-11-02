@@ -1,10 +1,8 @@
 name: run
+# DÉSACTIVÉ PAR DÉFAUT : ce pipeline utilise The Odds API (clé requise), refusée par le propriétaire.
+# Planification retirée ; lancement manuel seulement. Pour réactiver : remettre les crons ci-dessous dans `on:`.
+#   - cron: "17 6 * * *" / "43 15 * * *" (scan) ; "7 11,17,20 * * *" (clôture) ; "23 4 * * *" (règlement)
 on:
-  schedule:
-    - cron: "17 6 * * *"    # scan du matin
-    - cron: "43 15 * * *"   # scan de l'après-midi
-    - cron: "7 11,17,20 * * *"  # clôture (CLV) des matchs proches
-    - cron: "23 4 * * *"    # règlement des paris terminés
   workflow_dispatch:
     inputs:
       mode: {description: "scan | close | settle", default: scan}

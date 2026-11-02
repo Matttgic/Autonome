@@ -19,3 +19,19 @@ Les endpoints non officiels des sites de bookmakers (API publiques utilisées pa
 
 ## Décision
 Moteur indépendant de la source (format interne unique) + adaptateur The Odds API maintenant. Autres adaptateurs ajoutables sans toucher au moteur. Panne de source : le scan échoue proprement, notifie (ntfy/Telegram), n'invente aucune cote.
+
+## Session 2 (2026-11-02) — voie « sans API ni installation »
+| Source | Mesure depuis la session cloud | Verdict |
+|---|---|---|
+| football-data.co.uk `fixtures.csv` | HTTP 200 (après redirection 302 www → sans www), 55 479 octets, 196 matchs, `Last-Modified: Fri, 30 Oct 2026 09:33:33 GMT` | **Accessible**. Matchs à venir des 22 ligues ; 1X2, +/-2,5, handicap ; books UK + Betfair Exchange + moyenne/max ; **pas de Pinnacle en 2026/27, aucun book ANJ** |
+| football-data.co.uk archives `mmz4281/{saison}/data.zip` | 15/15 HTTP 200 (2012/13 → 2026/27), ≈ 11 Mo | **Accessible** → backtest réel (docs/RECHERCHE.md) |
+| football-data.co.uk `new_league_fixtures.csv`, `new/BRA.csv` | HTTP 200 | Accessible (ligues hors Europe ; non exploité) |
+| tennis-data.co.uk | HTTP 403 | Bloqué depuis la session (noté, pas contourné) ; à mesurer via probe GitHub |
+Rythme : 1 requête / 4 s, User-Agent `autonome/0.2 (outil perso de recherche…)`.
+
+Ce qui tourne sans rien installer : `.github/workflows/fair.yml` (ven. 10:17/17:17 UTC, mar. 14:17 UTC) télécharge
+`fixtures.csv` (1 requête), publie `fair.html` sur GitHub Pages (lisible dans le navigateur du téléphone) ;
+`.github/workflows/probe.yml` (manuel) mesure depuis les IP GitHub ce qui est lisible (football-data, tennis-data,
+Smarkets, Polymarket, pages publiques des books ANJ) et écrit un tableau dans le résumé du run.
+Limite mesurée : la fiche est relevée 1-3 jours avant les matchs ; jouer plus tard contre ce relevé = CLV ≈ −5 %
+(RECHERCHE §A.4). Les cotes ANJ restent à comparer à la main.
