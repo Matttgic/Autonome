@@ -86,3 +86,20 @@ class Coteur(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Stale(unittest.TestCase):
+    def test_respectivement_opponent_must_match(self):
+        r = boosts.evaluate({"id": "b", "book": "winamax", "event": "Football", "odds": 3.0, "max_stake": 20,
+                             "text": "Le Paris SG et Newcastle gagnent chacun leur match (respectivement contre Lyon et Everton)"},
+                            GAMES, {})
+        self.assertFalse(r["evaluable"])
+        self.assertIn("périmé", r["why"])
+
+    def test_team_legs_refused_when_not_new(self):
+        r = boosts.evaluate({"id": "b", "book": "winamax", "event": "Football", "odds": 3.0, "max_stake": 20,
+                             "text": "Le Paris SG et Newcastle gagnent chacun leur match"}, GAMES, {}, allow_team_legs=False)
+        self.assertFalse(r["evaluable"])
+        r = boosts.evaluate({"id": "b", "book": "winamax", "event": "Lorient - Brest", "odds": 3.0, "max_stake": 20,
+                             "text": "Lorient gagne"}, GAMES, {}, allow_team_legs=False)
+        self.assertTrue(r["evaluable"])  # boost d'un match précis : appariement exact, toujours évaluable

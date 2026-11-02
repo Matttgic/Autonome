@@ -63,7 +63,7 @@ def _split_teams(s: str) -> list[str]:
 
 def _multi(text: str):
     """Combinés multi-matchs → [(équipe ou match, prédicat, args)] ; None si non reconnu."""
-    m = re.match(r"^(?P<ts>.+?) gagnent chacun leur match$", text)
+    m = re.match(r"^(?P<ts>.+?) gagnent chacun leur match( \(respectivement.*\))?$", text)
     if m:
         return [(t, "win", {}) for t in _split_teams(m["ts"])]
     m = re.match(r"^(?P<ts>.+?) gagnent chacun par au moins (?P<n>\d+) buts d'ecart( \(respectivement.*\))?$", text)
@@ -107,7 +107,12 @@ def _game_for_label(label: str, games: list[dict], start_hint=None):
     return None
 
 
-def translate(boost: dict, games: list[dict]):
+def _opponents(text: str) -> list[str] | None:
+    m = re.search(r"\(respectivement contre (?P<o>.+?)\)$", text)
+    return [re.sub(r"^(le|la|les|l') ", "", x.strip()) for x in re.split(r",| et ", m["o"]) if x.strip()] if m else None
+
+
+def translate(boost: dict, games: list[dict], allow_team_legs: bool = True):
     """→ (jambes [(jeu, prédicat, côté, args)], raison si non évaluable)."""
     text = _n(boost["text"])
     single = _game_for_label(boost["event"], games)
@@ -127,7 +132,14 @@ def translate(boost: dict, games: list[dict]):
     legs_txt = _multi(text)
     if not legs_txt:
         return None, "match non coté sur Polymarket ou libellé non pris en charge"
+    opp = _opponents(text)
+    team_legs = [x for x in legs_txt if x[1] != "over_game"]
+    if team_legs and opp is None and not allow_team_legs:
+        return None, "combiné désigné par équipes, boost non daté (déjà présent au relevé de référence)"
+    if opp is not None and len(opp) != len(team_legs):
+        return None, "adversaires « respectivement » incohérents"
     legs = []
+    k = 0
     for who, pred, args in legs_txt:
         if pred == "over_game":
             g = _game_for_label(who, games)
@@ -138,14 +150,20 @@ def translate(boost: dict, games: list[dict]):
             r = _game_for_team(who, games)
             if not r:
                 return None, f"équipe « {who} » introuvable ou ambiguë"
+            if opp is not None:
+                other = r[0]["away"] if r[1] == "home" else r[0]["home"]
+                if sim(opp[k], other) < 0.8:
+                    return None, f"adversaire attendu « {opp[k]} », prochain match contre « {other} » : boost périmé"
+                k += 1
             legs.append((r[0], pred, r[1], args))
     if len({id(g) for g, *_ in legs}) != len(legs):
         return None, "deux jambes sur le même match (corrélées) : non évalué"
     return legs, None
 
 
-def evaluate(boost: dict, games: list[dict], cache: dict, max_fit_err: float = 0.02, model_margin: float = 0.01):
-    legs, why = translate(boost, games)
+def evaluate(boost: dict, games: list[dict], cache: dict, max_fit_err: float = 0.02, model_margin: float = 0.01,
+             allow_team_legs: bool = True):
+    legs, why = translate(boost, games, allow_team_legs)
     if not legs:
         return {**boost, "evaluable": False, "why": why}
     p, worst_err, parts = 1.0, 0.0, []
