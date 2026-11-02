@@ -38,8 +38,17 @@ jobs:
             rc=$?; [ "$rc" -eq 2 ] || { echo "::error::ls-remote a échoué ($rc)"; exit 1; }
             mkdir state && git -C state init -q -b data && git -C state remote add origin "$URL"
           fi
+      # État de travail de la mesure du retard des books (lag.py) : dans le cache Actions, pas dans git (réécrit à chaque
+      # passage). Absent (premier job, cache évincé) : la mesure repart de zéro, sans erreur.
+      - name: Restaurer le cache de travail
+        uses: actions/cache/restore@v4
+        with:
+          path: cache
+          key: autonome-cache-${{ github.run_id }}
+          restore-keys: autonome-cache-
       - name: Passages en boucle (sauvegarde après chacun)
         env:
+          AUTONOME_CACHE: cache
           LOOP_MIN: ${{ vars.LIVE_LOOP_MIN }}
           INTERVAL: ${{ vars.LIVE_INTERVAL_S }}
         run: |
@@ -68,6 +77,12 @@ jobs:
           # dernière sauvegarde : un état non poussé serait perdu avec le runner (alertes en double ensuite)
           for k in 1 2 3; do save && exit 0; sleep 20; done
           echo "::error::état non sauvegardé à la fin du job"; exit 1
+      - name: Enregistrer le cache de travail
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: cache
+          key: autonome-cache-${{ github.run_id }}
       - name: Filet du relais pulse
         if: always() && vars.PULSE != 'off'
         env:

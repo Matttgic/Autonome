@@ -35,7 +35,24 @@ class Parse(unittest.TestCase):
         self.assertEqual(W.events_from(W.state(page(*foot(status="LIVE"))), NOW), [])
         self.assertEqual(W.events_from(W.state(page(*foot(start=T - 86400))), NOW), [])
         self.assertEqual(W.events_from(W.state(page(*foot(labels=("Brest", "Match nul", "Lorient")))), NOW), [])
-        self.assertEqual(W.events_from(W.state("<html>pas d'état</html>"), NOW), [])
+        with self.assertRaises(W.SourceError):
+            W.state("<html>pas d'état</html>")                                  # absence signalée, pas « 0 match »
+        with self.assertRaises(W.SourceError):
+            W.state("<script>if(window.PRELOADED_STATE){}; var PRELOADED_STATE = {\"matches\": {</script>")
+
+    def test_malformed_entry_does_not_lose_page(self):
+        m, b, o, od = foot()
+        m["9"] = {"matchId": 9, "sportId": 1, "status": "PREMATCH", "matchStart": "x", "mainBetId": 999}
+        b["999"] = ["liste au lieu d'objet"]
+        self.assertEqual(len(W.events_from(W.state(page(m, b, o, od)), NOW)), 1)
+
+    def test_label_contradicting_code_refused_and_tournament_name(self):
+        m, b, o, od = foot(labels=("Brest", "Match nul", "Lorient"))
+        self.assertEqual(W.events_from(W.state(page(m, b, o, od)), NOW), [])
+        m, b, o, od = foot()
+        m["1"]["tournamentId"] = 4
+        st = {"matches": m, "bets": b, "outcomes": o, "odds": od, "tournaments": {"4": {"tournamentName": "Ligue 1"}}}
+        self.assertEqual(W.events_from(st, NOW)[0]["competition"], "Ligue 1")
 
     def test_tennis_winner(self):
         m = {"5": {"matchId": 5, "sportId": 5, "status": "PREMATCH", "matchStart": T, "competitor1Name": "Sinner J.",

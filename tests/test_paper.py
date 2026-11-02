@@ -37,7 +37,8 @@ class Paper(unittest.TestCase):
         self.assertTrue(all(1.5 <= p["odds"] <= 4.5 for p in PP.picks(ms, NOW, set())))
 
     def test_summary_hand(self):
-        rows = [{"strategy": "paper-valeur4", "status": "settled", "stake": 10, "odds": 2.5, "result": {"won": True}},
+        rows = [{"strategy": "paper-valeur4", "status": "settled", "stake": 10, "odds": 2.5, "result": {"won": True},
+                 "close": {"clv_odds": 0.03}},
                 {"strategy": "paper-valeur4", "status": "settled", "stake": 10, "odds": 3.0, "result": {"won": False}},
                 {"strategy": "paper-valeur4", "status": "settled", "stake": 10, "odds": 2.0, "result": {"won": None}},
                 {"strategy": "paper-valeur4", "status": "open", "stake": 10, "odds": 2.0, "result": None,
@@ -46,7 +47,20 @@ class Paper(unittest.TestCase):
         self.assertAlmostEqual(v["roi"], (15 - 10) / 20)         # +15 −10 sur 20 € misés ; remboursé exclu
         self.assertAlmostEqual(v["hit"], 0.5)
         self.assertAlmostEqual(v["bankroll"], 1005.0)
-        self.assertEqual((v["n"], v["open"], v["settled"], v["clv"]), (4, 1, 3, 0.05))
+        self.assertEqual((v["n"], v["open"], v["settled"], v["clv"]), (4, 1, 2, 0.03))  # CLV des seuls réglés
+
+    def test_matched_control_and_abandon(self):
+        ps = PP.picks([match("r1")], NOW, set())
+        v = [p for p in ps if p["strategy"] == "paper-valeur4"][0]
+        t = [p for p in ps if p["strategy"] == "paper-temoin-apparie"][0]
+        self.assertEqual((t["event_id"], t["stake"]), (v["event_id"], v["stake"]))      # même match, même mise
+        self.assertTrue(1.5 <= t["odds"] <= 4.5)
+        rows = [{**v, "status": "open"}]
+        self.assertEqual(PP.abandon(rows, datetime(2026, 11, 5, tzinfo=timezone.utc)), 1)
+        self.assertEqual(rows[0]["status"], "unsettled")
+
+    def test_unsettleable_sport_never_taken(self):
+        self.assertEqual(PP.picks([{**match("r1"), "sport": "VOLLEYBALL"}], NOW, set()), [])
 
 
 if __name__ == "__main__":

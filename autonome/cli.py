@@ -221,13 +221,34 @@ def cmd_live(a, cfg):
         rows_p = store.read(a.state, PP0.FILE)
         results = []
         ls0 = len(errors)
-        for sport, day in sorted(CS0.days_to_fetch(rows_s + rows_p, now)) if not _blocked(a.state, "livescore", now) else []:
+        cache_dir = Path(os.environ.get("AUTONOME_CACHE") or a.state)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        ls_path = cache_dir / "livescore_cache.json"
+        try:
+            ls_cache = json.loads(ls_path.read_text()) if ls_path.exists() else {}
+        except (ValueError, OSError):
+            ls_cache = {}
+        real = CS0.days_to_fetch(rows_s, now)
+        wanted = sorted(real) + sorted(CS0.days_to_fetch(rows_p, now) - real)  # vrais paris d'abord
+        n_req = 0
+        for sport, day in wanted if not _blocked(a.state, "livescore", now) else []:
+            key = f"{sport}|{day}"
+            hit = ls_cache.get(key)
+            if hit and (now - datetime.fromisoformat(hit["at"])).total_seconds() < 90 * 60:
+                results += hit["results"]  # relu il y a moins de 90 min : pas de nouvelle requête
+                continue
+            if n_req >= lcfg.get("livescore_max_req", 8):
+                break
+            n_req += 1
             try:
-                results += livescore.fetch(sport, day)
+                got = livescore.fetch(sport, day)
+                results += got
+                ls_cache[key] = {"at": now.isoformat(), "results": got}
             except livescore.SourceError as ex:
                 errors.append(str(ex))
-                if "HTTP 403" in str(ex) or "HTTP 429" in str(ex):
-                    break  # refus : on n'insiste pas sur les autres jours
+                break  # 403/429, délai ou panne : on n'insiste pas ce passage
+        ls_cache = {k: v for k, v in ls_cache.items() if (now - datetime.fromisoformat(v["at"])).total_seconds() < 6 * 3600}
+        ls_path.write_text(json.dumps(ls_cache, separators=(",", ":")))
         _maybe_block(a.state, "livescore", ls0, errors, now)
         n_cons = CS0.settle(rows_s, results, now) if results else 0
         if n_cons:
@@ -329,15 +350,20 @@ def cmd_live(a, cfg):
     # Winamax : page publique (requête ordinaire, sans exécuter de JS) ; 403 la plupart du temps depuis GitHub -> pause 6 h.
     from .sources import winamax as wmx
     wx_events, wx0 = [], len(errors)
-    if not _blocked(a.state, "winamax", now):
+    wx_last = store.read(a.state, "winamax_fetch.jsonl")[-1:]
+    wx_due = not wx_last or (now - datetime.fromisoformat(wx_last[0]["at"])).total_seconds() >= 60 * lcfg.get("winamax_every_min", 30)
+    if wx_due and not _blocked(a.state, "winamax", now):
+        store.write_all(a.state, "winamax_fetch.jsonl", [{"at": now.isoformat()}])
         for pg in wmx.PAGES:
             try:
                 wx_events += wmx.events_from(wmx.state(wmx.fetch(pg)), now, lcfg["max_hours_to_start"])
-            except wmx.SourceError as ex:
-                errors.append(str(ex))
+            except Exception as ex:  # noqa: BLE001 - toute panne : pause d'une heure (403/429 : 6 h, plus bas)
+                errors.append(str(ex)[:160] if isinstance(ex, wmx.SourceError) else f"winamax: {type(ex).__name__}")
+                if "HTTP 403" not in str(ex) and "HTTP 429" not in str(ex):
+                    from datetime import timedelta as _td
+                    store.append(a.state, "backoff.jsonl", [{"source": "winamax", "at": now.isoformat(),
+                                                             "until": (now + _td(hours=1)).isoformat()}])
                 break
-            except Exception as ex:  # noqa: BLE001
-                errors.append(f"winamax: {type(ex).__name__}")
     _maybe_block(a.state, "winamax", wx0, errors, now)
     books = {"netbet_fr": book_events, "unibet_fr": ub_events, "pmu_fr": pmu_events, "betclic_fr": bc_events,
              "winamax_fr": wx_events}
@@ -375,6 +401,22 @@ def cmd_live(a, cfg):
     cons_picks = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"],
                                                             {"max_book_age_min": lcfg["max_book_age_min"]})]
     cands, gated, gated_detail = live.gate(cands, allc, lcfg)
+    # Retard des books sur Polymarket (lag.py) : état de travail hors git (cache Actions), résultats sur data.
+    try:
+        from . import lag as LG
+        cache_dir = Path(os.environ.get("AUTONOME_CACHE") or a.state)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        lag_path = cache_dir / "lag_state.json"
+        try:
+            lag_state = json.loads(lag_path.read_text()) if lag_path.exists() else {}
+        except (ValueError, OSError):
+            lag_state = {}
+        lag_new = LG.update(lag_state, allc, now)
+        lag_path.write_text(json.dumps(lag_state, separators=(",", ":")))
+        if lag_new:
+            store.append(a.state, "lag.jsonl", lag_new)
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"retard: {type(e).__name__}: {e}"[:160])
     obs = live.summarize(allc, now)
     obs["ecartes"], obs["ecartes_top"] = gated, gated_detail
     obs["consensus"] = {bk: live.summarize([c for c in cons_diag if c["book"] == bk], now)["by_family"]
@@ -457,10 +499,13 @@ def cmd_live(a, cfg):
     try:
         from . import paper as PP
         prows = store.read(a.state, PP.FILE)
+        before = json.dumps(prows, sort_keys=True)
         new = PP.picks(ct_all, now, {(r.get("strategy"), r.get("event_id")) for r in prows}, lcfg["max_book_age_min"])
         prows += [{**r, "status": "open", "close": None, "result": None, "found_at": now.isoformat()} for r in new]
         CS.closing(prows, ct_all, now)
-        store.write_all(a.state, PP.FILE, prows)
+        PP.abandon(prows, now)
+        if json.dumps(prows, sort_keys=True) != before:  # pas de commit inutile à chaque passage
+            store.write_all(a.state, PP.FILE, prows)
     except Exception as e:  # noqa: BLE001
         errors.append(f"paper: {type(e).__name__}: {e}"[:160])
     obs["boosts"] = {"lus": len(boost_eval), "evaluables": sum(e["evaluable"] for e in boost_eval),
@@ -538,15 +583,30 @@ def dashboard_md(root, meta, obs=None) -> str:
                   "| Match | Pari | Book | Début (UTC) |", "|---|---|---|---|"]
         lines += [f"| {notify.md(r['home'])}–{notify.md(r['away'])} | {notify.md(r.get('label', r['selection']))} | "
                   f"{notify.md(r.get('book', ''))} | {r['commence'][:16]} |" for r in stale[-20:]]
+    from . import lag as LG
+    lag_sum = LG.summary(store.read(root, "lag.jsonl"), datetime.now(timezone.utc))
+    if lag_sum:
+        lines += ["", "## Retard des bookmakers sur Polymarket (7 jours, mouvements ≥ 2 points)",
+                  "| Book | Suivis | Pas suivis avant le match | Délai médian | 3e quartile | Suivis en ≤ 15 min | Source |",
+                  "|---|---|---|---|---|---|---|"]
+        for x in lag_sum:
+            lines.append(f"| {notify.md(str(x['book']))} | {x['followed']} | {x['not_followed']} | "
+                         f"{'—' if x['median_min'] is None else str(x['median_min']) + ' min'} | "
+                         f"{'—' if x['p75_min'] is None else str(x['p75_min']) + ' min'} | {pct(x['within_15'])} | "
+                         f"{', '.join(map(str, x['src']))} |")
+        lines.append("Un book qui suit lentement (ou pas) les mouvements du marché est celui où une value a le plus de chances d'apparaître.")
     from . import paper as PP
     paper = PP.summary(store.read(root, PP.FILE))
     if any(x["n"] for x in paper):
         lines += ["", "## Stratégies suivies en fictif (bankroll 1 000 €, aucune alerte)",
-                  "| Stratégie | Paris (en cours) | Réglés | ROI | Réussite | CLV moy. | Bankroll |", "|---|---|---|---|---|---|---|"]
+                  "| Stratégie | Paris (en cours, non réglés) | Réglés | ROI | Réussite | CLV moy. (réglés) | Bankroll |",
+                  "|---|---|---|---|---|---|---|"]
         for x in paper:
-            lines.append(f"| {x['name']} | {x['n']} ({x['open']}) | {x['settled']} | {pct(x['roi'])} | {pct(x['hit'])} | "
+            hit = "—" if x["hit"] is None else f"{x['hit']:.0%}"
+            lines.append(f"| {x['name']} | {x['n']} ({x['open']}, {x['unsettled']}) | {x['settled']} | {pct(x['roi'])} | {hit} | "
                          f"{pct(x['clv'])} (n={x['n_clv']}) | {x['bankroll']:.2f} € |")
-        lines.append("Si « Valeur 4 % » ne bat pas le Témoin sur plusieurs centaines de paris, elle ne vaut pas mieux que le hasard.")
+        lines.append("Battre un Témoin est nécessaire, pas suffisant : il faut aussi un ROI et une CLV positifs sur plusieurs "
+                     "centaines de paris. Le Témoin apparié (même match, même moment) est la comparaison juste.")
     if obs and obs.get("ecartes_top"):
         lines += ["", "## Values écartées par les garde-fous (dernier passage)",
                   "| Raison | Book · sport · marché | Match | Cote | EV | Âge (min) | Groupe : matchs, EV médiane |",

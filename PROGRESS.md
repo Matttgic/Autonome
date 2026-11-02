@@ -114,3 +114,7 @@ tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jo
   (paper.jsonl). 8e revue : pagination Gamma (100 max, tri par début décroissant), volley/tennis de table/fléchettes
   retirés (aucune liquidité Polymarket), doubles ≠ simples, couverture = marché commun, boosts coteur ≤ 1/30 min,
   budget NetBet, sauvegarde finale bloquante, relance pulse sans rafale.
+- Mesure du retard des books sur Polymarket (lag.py, lag.jsonl, tableau de bord ; état de travail dans le cache
+  Actions). 9e revue (Winamax/paper) : CLV seulement sur un instantané plus récent que la prise (touchait aussi les
+  vrais paris consensus), même méthode qu'à l'entrée, Témoin apparié, paris fictifs non réglables exclus / abandon
+  48 h, cache LiveScore 90 min (8 requêtes max), Winamax ≤ 1 lecture/30 min, état introuvable signalé. 158 tests.
