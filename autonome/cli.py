@@ -219,7 +219,29 @@ def cmd_live(a, cfg):
                 ub_events += ub.parse_page(ub.fetch(pg))
             except Exception as e:  # noqa: BLE001
                 errors.append(f"unibet {pg}: {type(e).__name__}: {e}"[:160])
-    books = {"netbet_fr": book_events, "unibet_fr": ub_events}
+    # PMU (Kambi) : tous les sports (marché principal), puis tous les marchés des matchs appariés à Polymarket
+    from .match import pair as _pair
+    from .sources import kambi
+    pmu_events, pmu_cov = [], {}
+    try:
+        pmu_main, err = kambi.fetch_main("pmusportsfr")
+        errors += err
+        for e in pmu_main:
+            pmu_cov[e["sport"]] = pmu_cov.get(e["sport"], 0) + 1
+        horizon = [e for e in pmu_main if 0 < live._mins(e["commence"], now) <= lcfg["max_hours_to_start"] * 60]
+        matched = {id(b) for _, b, _ in _pair(soon, horizon, with_swap=True)}
+        n_full = 0
+        for e in horizon:
+            if id(e) in matched and e["sport"] == "FOOTBALL" and n_full < lcfg.get("max_pmu_full", 40):
+                try:
+                    e = kambi.fetch_full("pmusportsfr", e)
+                    n_full += 1
+                except kambi.SourceError as ex:
+                    errors.append(str(ex))
+            pmu_events.append(e)
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"pmu: {type(e).__name__}: {e}"[:160])
+    books = {"netbet_fr": book_events, "unibet_fr": ub_events, "pmu_fr": pmu_events}
     pairs, cands, allc = [], [], []
     diag = {**lcfg, "min_ev": -9, "min_ev_cons": -9, "diagnostic": True, "min_odds": 1.01, "max_odds": 100}
     for bk, evs in books.items():
@@ -273,7 +295,8 @@ def cmd_live(a, cfg):
                              for e in sorted((x for x in boost_eval if x["evaluable"]), key=lambda x: -x["ev"])[:15]]}
     store.write_all(a.state, "observations.jsonl", store.read(a.state, "observations.jsonl")[:-1] + [obs])
     meta = {"at": now.isoformat(), "mode": "live", "ref_games": len(ref), "ref_soon": len(soon),
-            "netbet_pages": len(book_events), "unibet_events": len(ub_events), "pairs": len(pairs), "candidates": len(cands), "picked": len(picks),
+            "netbet_pages": len(book_events), "unibet_events": len(ub_events), "pmu_events": len(pmu_events),
+            "pmu_par_sport": pmu_cov, "pairs": len(pairs), "candidates": len(cands), "picked": len(picks),
             "closing_updates": closed, "settled": settled, "boosts_lus": len(boost_eval),
             "boosts_evaluables": sum(e["evaluable"] for e in boost_eval), "boosts_value": len(boost_picks),
             "errors": errors}
@@ -286,7 +309,7 @@ def cmd_live(a, cfg):
         print(notify.send(f"{len(picks)} value bet(s)", notify.message(picks), a.link))
     print(notify.github_dashboard(dashboard_md(a.state, meta, obs) + "\n\n" + fair_table_md(
         [g for g in ref if 0 < live._mins(g["commence"], now) <= 72 * 60])))
-    if (errors and not ref) or (soon and not book_events and not ub_events):
+    if (errors and not ref) or (soon and not book_events and not ub_events and not pmu_events):
         print(notify.github_issue_once(f"Panne source {now:%d/%m/%Y}",
                                        "Sources en erreur (une alerte par jour) :\n- " + "\n- ".join(errors[:20] or ["NetBet : aucune page lue"])))
         return 2 if not ref else 0
@@ -319,7 +342,7 @@ def dashboard_md(root, meta, obs=None) -> str:
     pct = lambda x: "—" if x is None else f"{x:+.2%}"  # noqa: E731
     rows = store.read(root, tracker.BETS)[-15:][::-1]
     lines = [f"Dernière exécution : {meta['at'][:16]} UTC · matchs de référence {meta['ref_games']} · "
-             f"matchs appariés (NetBet+Unibet) {meta['pairs']} · candidats {meta['candidates']} · erreurs {len(meta['errors'])}",
+             f"matchs appariés (NetBet+Unibet+PMU) {meta['pairs']} · PMU {meta.get('pmu_events', 0)} matchs lus · candidats {meta['candidates']} · erreurs {len(meta['errors'])}",
              "", "## Mesure de l'avantage", f"- Paris : {st['bets_total']} (ouverts {st['bets_open']}, réglés {st['bets_settled']})",
              f"- **CLV moyenne : {pct(clv.get('mean'))}** (n={clv['n']}, IC95 % "
              f"{(f'{ci[0]:+.2%} à {ci[1]:+.2%}') if ci else 'n/a'}) — {st['clv_coverage']}",

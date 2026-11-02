@@ -56,26 +56,32 @@ def _ts(iso: str) -> float:
     return datetime.fromisoformat(iso.replace("Z", "+00:00")).timestamp()
 
 
-def pair(ref_games: list[dict], book_events: list[dict], max_dt_min: float = 20, min_sim: float = 0.6) -> list[tuple]:
-    """Paires (ref, book) uniques : même heure (±max_dt_min) et deux équipes ressemblantes, dans le même sens."""
+def pair(ref_games: list[dict], book_events: list[dict], max_dt_min: float = 20, min_sim: float = 0.6,
+         with_swap: bool = False) -> list[tuple]:
+    """Paires (ref, book) uniques : même heure (±max_dt_min) et deux équipes ressemblantes, dans le même sens.
+    Sports à deux issues (ref['two_way']) : le sens inverse est accepté (« A vs. B » = « B - A ») ; avec
+    with_swap=True on renvoie (ref, book, inversé)."""
     cands = []
     for i, r in enumerate(ref_games):
         for j, b in enumerate(book_events):
             if abs(_ts(r["commence"]) - _ts(b["commence"])) > max_dt_min * 60:
                 continue
             sh, sa = sim(r["home"], b["home"]), sim(r["away"], b["away"])
-            cross = sim(r["home"], b["away"]) + sim(r["away"], b["home"])
-            if sh + sa < cross + 0.5:  # sens ambigu (derby « Inter – AC Milan ») : refusé plutôt que risquer l'inversion
+            xh, xa = sim(r["home"], b["away"]), sim(r["away"], b["home"])
+            swap = False
+            if r.get("two_way") and xh + xa > sh + sa:
+                sh, sa, xh, xa, swap = xh, xa, sh, sa, True
+            if sh + sa < xh + xa + 0.5:  # sens ambigu (derby « Inter – AC Milan ») : refusé plutôt que risquer l'inversion
                 continue
             if min(sh, sa) >= min_sim or (max(sh, sa) >= 0.95 and min(sh, sa) >= 0.35):
-                cands.append((sh + sa, i, j))
+                cands.append((sh + sa, i, j, swap))
     cands.sort(reverse=True)
     used_r, used_b, out = set(), set(), []
-    for _, i, j in cands:
+    for _, i, j, swap in cands:
         if i not in used_r and j not in used_b:
             used_r.add(i)
             used_b.add(j)
-            out.append((ref_games[i], book_events[j]))
+            out.append((ref_games[i], book_events[j], swap) if with_swap else (ref_games[i], book_events[j]))
     return out
 
 

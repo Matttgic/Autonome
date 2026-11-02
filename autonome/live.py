@@ -38,6 +38,8 @@ def label(group: str, sel: str, home: str, away: str) -> str:
         fav = home if rest[0] == "home" else away
         dog = away if rest[0] == "home" else home
         return f"Handicap {fav} ({rest[1]})" if sel == "fav" else f"Handicap {dog} (+{rest[1].lstrip('-')})"
+    if kind == "ml":
+        return f"Vainqueur : {home if sel == 'home' else away}"
     name = {"1x2": "1X2", "ht1x2": "1X2 mi-temps", "dc": "Double chance", "btts": "Les 2 marquent"}.get(kind, kind)
     return f"{name} : {SEL_FR.get(sel, sel).format(home=home, away=away)}"
 
@@ -83,8 +85,17 @@ def compare(ref: dict, book: dict, book_key: str, now: datetime, cfg: dict | Non
 
 
 def scan(ref_games: list[dict], book_events: list[dict], book_key: str, now: datetime, cfg=None):
-    pairs = pair(ref_games, book_events)
-    cands = [b for r, e in pairs for b in compare(r, e, book_key, now, cfg)]
+    trip = pair(ref_games, book_events, with_swap=True)
+    pairs, cands = [], []
+    for r, e, swap in trip:
+        if swap:  # sport à 2 issues listé dans l'autre sens : on retourne le match côté book
+            o = dict(e["odds"])
+            if "ml" in o:
+                o["ml"] = {{"home": "away", "away": "home"}[k]: v for k, v in o["ml"].items()}
+            o = {k: v for k, v in o.items() if k == "ml"}  # seuls les marchés symétriques sont retournés sans risque
+            e = {**e, "home": e["away"], "away": e["home"], "odds": o}
+        pairs.append((r, e))
+        cands += compare(r, e, book_key, now, cfg)
     return pairs, cands
 
 

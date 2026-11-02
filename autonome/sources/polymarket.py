@@ -18,7 +18,9 @@ import urllib.request
 
 GAMMA = "https://gamma-api.polymarket.com"
 UA = "autonome/0.3 (outil perso; requetes espacees)"
-TAGS = ["ligue-1", "epl", "la-liga", "bundesliga", "serie-a", "ucl", "uel"]
+TAGS = ["ligue-1", "epl", "la-liga", "bundesliga", "serie-a", "ucl", "uel", "mls", "brazil-serie-a", "primeira-liga",
+        "efl-championship"]
+TAGS_2WAY = ["nba", "nhl", "tennis", "ufc", "ncaa-basketball", "boxing"]
 MAX_SPREAD = 0.03
 MIN_LIQ = 2000.0
 
@@ -83,7 +85,29 @@ def build_reference(raw_events: list[dict], max_spread: float = MAX_SPREAD, min_
     return [g for g in games.values() if g["markets"] and g["main"]]
 
 
+def _two_way(games: dict, e: dict, max_spread: float, min_liq: float) -> bool:
+    """Sports à deux issues (tennis, NBA, NHL, UFC…) : un marché « moneyline » dont les issues sont les 2 noms."""
+    ml = [m for m in e.get("markets") or [] if m.get("sportsMarketType") == "moneyline"]
+    if len(ml) != 1:
+        return False
+    m = ml[0]
+    outs = m.get("outcomes") or "[]"
+    outs = json.loads(outs) if isinstance(outs, str) else list(outs)
+    if len(outs) != 2 or outs[0] in ("Yes", "No") or not e.get("startTime") or not e.get("slug"):
+        return False
+    q = _quote(m, max_spread, min_liq)
+    if not q:
+        return True  # c'est bien un match à 2 issues, mais pas assez liquide : ignoré
+    a, b = outs
+    games[f"2w|{e['slug']}"] = {"key": f"pm|{e['slug']}", "commence": e["startTime"], "home": a, "away": b,
+                                "two_way": True, "main": True, "updated": e.get("updatedAt") or "",
+                                "markets": {"ml": {"home": _leg(q, 0), "away": _leg(q, 1)}}}
+    return True
+
+
 def _add_event(games: dict, e: dict, max_spread: float, min_liq: float) -> None:
+    if _two_way(games, e, max_spread, min_liq):
+        return
     title = e.get("title") or ""
     base, _, suffix = title.partition(" - ")
     if " vs. " not in base:
@@ -153,7 +177,7 @@ def _add_more(mk: dict, m: dict, home: str, away: str, max_spread: float, min_li
             mk[f"ah@{fav}@{_line(m['line'])}"] = {"fav": _leg(q, 0), "dog": _leg(q, 1)}
 
 
-def fetch(tags=TAGS) -> tuple[list[dict], list[str]]:
+def fetch(tags=TAGS + TAGS_2WAY) -> tuple[list[dict], list[str]]:
     raw, errors = [], []
     for t in tags:
         for off in (0, 300, 600):  # pagination : une page tronquée ferait perdre l'événement principal
