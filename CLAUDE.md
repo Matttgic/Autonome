@@ -3,10 +3,12 @@ Outil perso de value betting (bookmakers ANJ uniquement, 0 €, détection seule
 Le propriétaire refuse toute clé d'API/compte et toute installation sur son téléphone : tout tourne sur GitHub Actions.
 - Tests : `python -m unittest discover -s tests -t .` (doit passer avant tout merge dans main).
 - **Voie principale** : `python -m autonome live --state state` (workflow `live.yml`, horaire) =
-  référence Polymarket (API publique Gamma, milieu bid/ask ; foot + NBA/NHL/tennis/UFC/NCAAB/boxe) vs cotes :
+  référence Polymarket (API publique Gamma, milieu bid/ask ; foot et basket tous championnats via tags
+  100350/28, + NBA/NHL/tennis/UFC/NCAAB/boxe) vs cotes :
   PMU (flux public Kambi), NetBet (état Nuxt lu sans exécution), Unibet (page publique), Betclic/Unibet/Betsson/
   Olybet/Vbet/DAZN… via l'instantané coteur.com (`coteur_odds.json`, workflow `coteur` = navigateur Playwright).
   Matchs sans Polymarket : référence « consensus ANJ » (leave-one-out, clones fusionnés). Boosts Winamax via coteur.
+  Règlement : résolution Polymarket ; paris « consensus » via LiveScore (API publique, `sources/livescore.py`).
   Alertes : issue GitHub « Paris du JJ/MM » (e-mail au propriétaire) ; issue « Tableau de bord » réécrite à chaque run.
 - Ordonnancement : le cron GitHub ne s'est pas déclenché sur ce dépôt → workflow `pulse` (relais auto-relancé,
   vérifie toutes les 55 min que live/coteur ont tourné). La branche par défaut est `ccr-0a28d713-rav38k` (= main).
@@ -18,6 +20,7 @@ Le propriétaire refuse toute clé d'API/compte et toute installation sur son t�
 - Jamais d'invention de cotes/résultats : donnée absente = signalée absente. Fixtures de test = format seulement.
 - État (paris, CLV, observations) sur la branche git `data`, pas sur main.
 - Reprendre : lire PROGRESS.md puis docs/FAISABILITE.md et docs/RECHERCHE.md.
+- Autres dépôts du propriétaire (cotes-value surtout) : chiffres et idées déjà repris dans docs/RECHERCHE.md « Session 4 ».
 ## Erreurs à ne plus faire
 - Depuis la session cloud : sondes d'endpoints internes de bookmakers et exécution de JS de pages tierces
   (node/vm) refusées par le classifieur → passer par les pages publiques via Actions et un analyseur sans exécution.

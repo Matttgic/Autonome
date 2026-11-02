@@ -83,3 +83,15 @@ Prochaine étape : laisser tourner ; règlement automatique des boosts (score ex
   GitHub ne s'est pas déclenché (06h–08h UTC le 02/11). Collecte coteur complète : 744 matchs, Betclic sur 683.
   Limites ouvertes : paris « consensus » non réglés automatiquement (CLV indicative seulement) ; Betclic/Unibet via
   coteur = marché principal seulement ; Winamax = boosts seulement.
+
+## Session 4 (2026-11-02) — leçons des autres dépôts (cotes-value, cotes-boostees, Grotonome, Revue, Boost)
+- Lu et chiffré : docs/RECHERCHE.md « Session 4 ». cotes-value (4 672 paris simulés) : Polymarket ROI +9 % [−1 ; +20],
+  CLV +3 % ; Pinnacle lu depuis GitHub ≈ 0 % (cache Cloudflare périmé) ; cotes > 10 : −70 %. Boosts en bloc : −4 à −7 %.
+- Fait : Polymarket lu sur TOUS les championnats de foot (tag 100350) et de basket (tag 28), fenêtre end_date
+  [−1 h ; +36 h], féminines/jeunes/réserves exclues, repli sur l'ancienne liste si la lecture large échoue.
+  Foot dans les 30 h : 92 matchs (contre 6).
+- Fait : règlement automatique des paris « consensus » par LiveScore (API publique sans clé) : 1N2 foot/basket au
+  temps réglementaire, vainqueur basket (prolongation incluse) et tennis (FT seulement). Reporté/annulé/abandon/
+  appariement ambigu => reste ouvert. Hockey, rugby, handball, volley : non réglés automatiquement.
+Prochaine étape : laisser tourner ; si toujours 0 EV>0 après une semaine, regarder les marchés « vainqueur »
+tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jour des books (PMU via Kambi le plus frais).

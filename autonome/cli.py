@@ -211,6 +211,24 @@ def cmd_live(a, cfg):
         settled += settle_boosts(a.state, get_event, now)
     except Exception as e:  # noqa: BLE001
         errors.append(f"règlement boosts: {type(e).__name__}")
+    # Paris « consensus » : résultat LiveScore (API publique sans clé), une requête par sport et par jour UTC,
+    # seulement pour les jours où un pari attend son résultat (idée reprise de cotes-value).
+    try:
+        from . import consensus as CS0
+        from .sources import livescore
+        rows_s = store.read(a.state, tracker.BETS)
+        results = []
+        for sport, day in sorted(CS0.days_to_fetch(rows_s, now)):
+            try:
+                results += livescore.fetch(sport, day)
+            except livescore.SourceError as ex:
+                errors.append(str(ex))
+        n_cons = CS0.settle(rows_s, results, now) if results else 0
+        if n_cons:
+            store.write_all(a.state, tracker.BETS, rows_s)
+            settled += n_cons
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"règlement consensus: {type(e).__name__}")
     # NetBet : pages de compétition -> événements dans la fenêtre -> pages d'événements (1 req / 5 s)
     soon = [g for g in ref if 0 < live._mins(g["commence"], now) <= lcfg["max_hours_to_start"] * 60]
     book_events, urls = [], []

@@ -343,3 +343,51 @@ Olybet −8,4 % / −7,8 % ; PMU 1X2 −9,9 %, vainqueur −6,9 %, plus/moins �
 DAZN Bet −10,5 % / −14,0 % ; Vbet −16,7 % / −14,3 %. Consensus ANJ (matchs sans Polymarket) : meilleure −1,2 %.
 Lecture : les marchés « vainqueur » de tennis/basket sont les plus proches du juste (−1 à −3 % pour les meilleures cotes) :
 c'est là qu'un décalage ponctuel a le plus de chances de devenir positif.
+
+## Session 4 — ce que les autres dépôts du propriétaire ont déjà mesuré (2026-11-02)
+Lus : cotes-value (le plus avancé : 4 672 paris simulés depuis le 05/10, branche `donnees`), cotes-boostees (941 boosts
+suivis), Grotonome (relevé ANJ vs Smarkets/Pinnacle, toutes les 6 min), Revue (audit de 44 dépôts publics), Boost
+(tracker de boosts transfermarkt), Cotescope (console qui relit cotes-value). Chiffres recalculés ici depuis leurs
+fichiers publics (`paris.json`, `BILAN.md`), pas recopiés de leurs README.
+
+### cotes-value : quelle référence a rapporté ? (paris simulés 10 €, premières détections, réglés au 02/11 08:44 UTC)
+Hors tranche X (cotes > 10) ; IC 95 % naïf (les paris d'un même match sur plusieurs books sont corrélés : IC trop étroit).
+
+| Référence | Réglés | ROI | IC 95 % | CLV moy. |
+|---|---:|---:|---|---:|
+| Polymarket | 670 | +9,3 % | [−0,8 ; +19,5] | +3,0 % |
+| Pinnacle (API guest, cache Cloudflare) | 2 248 | −0,5 % | [−5,0 ; +3,9] | +1,3 % |
+| Consensus des références | 373 | +6,9 % | [−5,7 ; +19,5] | +2,9 % |
+| Betfair (arrêté le 18/10) | 196 | +13,9 % | [−5,0 ; +32,9] | +4,7 % |
+| Matchbook | 137 | +11,0 % | [−11,1 ; +33,2] | +2,9 % |
+| Kalshi (abandonné) | 191 | −28,4 % | — | −2,0 % |
+
+- Polymarket « vainqueur » (tennis, NBA…) : 145 paris, ROI +33,8 % [+14,5 ; +53,1], CLV +7,4 % : seul segment dont l'IC
+  exclut 0, à confirmer (choisi après coup). Polymarket 1N2 foot : +14 % mais IC [−10 ; +38].
+- Tranche X (cotes > 10) contre Pinnacle : 545 paris, ROI −70 % malgré une CLV « +7,9 % » : les grosses cotes et la
+  CLV mesurée contre une référence en cache trompent. Autonome plafonne déjà à 5 (Polymarket) et 6 (consensus) : garder.
+- Pinnacle lu depuis GitHub (runners américains) : prix servis par le cache Cloudflare jusqu'à 15 min, d'où un
+  « réchauffeur » Supabase à Paris chez cotes-value (compte requis : exclu ici). Confirme le choix de Polymarket.
+- Leur règlement automatique tient sur LiveScore (API publique sans clé), ESPN, Flashscore et la source NHL officielle.
+
+### cotes-boostees : les boosts ne sont pas rentables en bloc
+Témoin « tout miser » : 293 réglés, ROI −3,9 % (protocole gelé : −6,9 % sur 166) ; boosts à EV ≥ +5 % face à Pinnacle :
+2 sur 941. Cohérent avec notre backtest (#14 : EV moyenne −6,9 %, ~4 % des boosts > +5 %). Ne pas investir davantage
+dans les boosts ; leurs modèles K/L/M (+14 à +43 %) sont exploratoires et choisis après lecture des résultats.
+
+### Grotonome et Revue
+- Grotonome : Smarkets (API publique, 60 req/min, milieu ≤ 10 pts d'écart) et Pinnacle guest servent de référence ;
+  Betclic relayé par SportyTrader (horloge recalée, cote « figée » écartée). Aucune piste déclarée rentable.
+- Revue : règle de décision à ≥ 300 paris pré-match à cote observée, ROI ET CLV positifs (IC 95 %). Leçon reprise :
+  distinguer CLV contre la référence et ROI ; un résultat absent reste « non mesurable ».
+
+### Repris dans Autonome (session 4)
+1. **Polymarket tous championnats** (idée cotes-value : lecture par étiquette « soccer » 100350 et « basket » 28,
+   bornée par la date de fin) : foot dans les 30 h = 92 matchs contre 6 avec l'ancienne liste de 11 championnats
+   (02/11 09 h UTC). Contre l'instantané coteur de 08:33 : 90 matchs appariés, 1 348 cotes comparables, **0 à EV > 0**
+   (médiane −12,7 % en 1N2 foot). Plus de chances de trouver un décalage ; aucune promesse.
+2. **Règlement des paris « consensus » via LiveScore** (avant : jamais réglés, CLV seule). Contrôle sur la vraie
+   journée du 01/11 (832 matchs finis) : 19 paris fictifs sur 28 réglés sur le bon match, 9 laissés ouverts (noms trop
+   vagues), aucun mauvais appariement.
+Non repris : Winamax/Betclic directs (proxy français + empreinte Chrome chez cotes-boostees = contournement exclu),
+Pinnacle (cache périmé depuis GitHub), Supabase/Bright Data (comptes).

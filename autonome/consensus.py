@@ -87,3 +87,78 @@ def closing(rows: list[dict], matches: list[dict], now: datetime) -> int:
                       "note": "clôture = même méthode de consensus : CLV indicative seulement"}
         n += 1
     return n
+
+
+def _when(iso: str) -> datetime:
+    return datetime.fromisoformat(iso.replace("Z", "+00:00"))
+
+
+def days_to_fetch(rows: list[dict], now: datetime, after_h: float = 3.0, max_days: int = 14) -> set[tuple[str, str]]:
+    """(sport, AAAAMMJJ UTC) à lire pour régler les paris « consensus » ouverts commencés depuis after_h heures."""
+    from datetime import timedelta
+    from .sources.livescore import SLUG
+    need = set()
+    for r in rows:
+        if r.get("status") != "open" or r.get("ref_kind") != "consensus-anj" or r.get("sport") not in SLUG:
+            continue
+        try:
+            start = _when(r["commence"])
+        except (KeyError, ValueError, AttributeError):
+            continue
+        if timedelta(hours=after_h) <= now - start <= timedelta(days=max_days):
+            for d in (start - timedelta(minutes=30), start, start + timedelta(minutes=30)):
+                need.add((r["sport"], d.strftime("%Y%m%d")))
+    return need
+
+
+def settle(rows: list[dict], results: list[dict], now: datetime, after_h: float = 3.0,
+           max_dt_min: float = 20, min_sim: float = 0.6) -> int:
+    """Règle les paris « consensus » (1N2 foot/basket, vainqueur basket/tennis) sur un résultat LiveScore apparié
+    sans ambiguïté : même sport, même heure (±max_dt_min), les deux noms ressemblants. Deux candidats possibles,
+    un sens douteux ou un statut non final => le pari reste ouvert (jamais deviné)."""
+    from .match import sim
+    from .sources.livescore import outcome
+    n = 0
+    for r in rows:
+        if r.get("status") != "open" or r.get("ref_kind") != "consensus-anj":
+            continue
+        try:
+            start = _when(r["commence"])
+        except (KeyError, ValueError, AttributeError):
+            continue
+        if (now - start).total_seconds() < after_h * 3600:
+            continue
+        two_way = r.get("group") == "ml"
+        found = []
+        for res in results:
+            if res.get("sport") != r.get("sport") or abs((_when(res["commence"]) - start).total_seconds()) > max_dt_min * 60:
+                continue
+            sh = max(sim(r["home"], x) for x in res["homes"])
+            sa = max(sim(r["away"], x) for x in res["aways"])
+            xh = max(sim(r["home"], x) for x in res["aways"])
+            xa = max(sim(r["away"], x) for x in res["homes"])
+            swap = two_way and xh + xa > sh + sa
+            if swap:
+                sh, sa, xh, xa = xh, xa, sh, sa
+            if sh + sa < xh + xa + 0.5:
+                continue  # sens ambigu
+            if min(sh, sa) >= min_sim or (max(sh, sa) >= 0.95 and min(sh, sa) >= 0.35):
+                found.append((res, swap))
+        if len({f[0]["id"] or id(f[0]) for f in found}) != 1:
+            continue  # aucun ou plusieurs matchs possibles : à régler à la main
+        res, swap = found[0]
+        win = outcome(res, r.get("group"))
+        if win is None:
+            continue
+        if swap:
+            win = {"home": "away", "away": "home"}.get(win, win)
+        score = res["regular"] if r.get("group") == "1x2" else res["final"]
+        if swap:
+            score = (score[1], score[0])
+        r["status"] = "settled"
+        r["result"] = {"won": r["selection"] == win, "payout": 1.0 if r["selection"] == win else 0.0,
+                       "source": f"LiveScore {res['id']} ({res['status']})",
+                       "score": f"{score[0]}-{score[1]}", "match": f"{res['homes'][0]} - {res['aways'][0]}",
+                       "note": "score du temps réglementaire" if r.get("group") == "1x2" else "prolongation incluse"}
+        n += 1
+    return n
