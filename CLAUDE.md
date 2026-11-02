@@ -7,9 +7,9 @@ Le propriétaire refuse toute clé d'API/compte et toute installation sur son t�
   PMU (flux public Kambi), NetBet (état Nuxt lu sans exécution), Unibet (page publique), Betclic/Unibet/Betsson/
   Olybet/Vbet/DAZN… via l'instantané coteur.com (`coteur_odds.json`, workflow `coteur` = navigateur Playwright).
   Matchs sans Polymarket : référence « consensus ANJ » (leave-one-out, clones fusionnés). Boosts Winamax via coteur.
+  Alertes : issue GitHub « Paris du JJ/MM » (e-mail au propriétaire) ; issue « Tableau de bord » réécrite à chaque run.
 - Ordonnancement : le cron GitHub ne s'est pas déclenché sur ce dépôt → workflow `pulse` (relais auto-relancé,
   vérifie toutes les 55 min que live/coteur ont tourné). La branche par défaut est `ccr-0a28d713-rav38k` (= main).
-  Alertes : issue GitHub « Paris du JJ/MM » (e-mail au propriétaire) ; issue « Tableau de bord » réécrite à chaque run.
 - Diagnostic réseau depuis GitHub : workflows `probe.yml` (tableau des accès) et `capture.yml` (pages publiques
   enregistrées sur la branche `captures`, à analyser localement). Lancement : MCP `actions_run_trigger`.
 - Voies secondaires : `python -m autonome fair` (CSV football-data.co.uk) ; backtest `python tools/backtest_fd.py`.
