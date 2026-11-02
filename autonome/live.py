@@ -130,3 +130,21 @@ def settle(root, get_market, now: datetime, delay_h: float = 3.0) -> int:
         n += 1
     store.write_all(root, BETS, rows)
     return n
+
+
+def summarize(cands: list[dict], now: datetime) -> dict:
+    """Résumé d'une exécution : distribution de l'EV des cotes du book contre la référence, par famille."""
+    fam: dict[str, list[float]] = {}
+    for c in cands:
+        fam.setdefault(c["group"].split("@")[0], []).append(c["ev"])
+
+    def q(xs, f):
+        xs = sorted(xs)
+        return round(xs[min(len(xs) - 1, int(f * len(xs)))], 4) if xs else None
+    top = sorted(cands, key=lambda c: -c["ev"])[:10]
+    return {"at": now.isoformat(), "n": len(cands), "n_ev_pos": sum(c["ev"] > 0 for c in cands),
+            "n_ev_pos_cons": sum(c["ev_cons"] > 0 for c in cands),
+            "by_family": {k: {"n": len(v), "median_ev": q(v, 0.5), "p90_ev": q(v, 0.9), "max_ev": max(v)}
+                          for k, v in sorted(fam.items())},
+            "top": [{k: c[k] for k in ("home", "away", "label", "odds", "fair_odds", "ev", "ev_cons", "spread", "commence")}
+                    for c in top]}

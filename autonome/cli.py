@@ -196,6 +196,10 @@ def cmd_live(a, cfg):
             except nb.SourceError as e:
                 errors.append(str(e))
     pairs, cands = live.scan(ref, book_events, "netbet_fr", now, lcfg)
+    # Mesure de recherche : TOUTES les cotes comparables (même négatives), agrégées par famille de marché.
+    _, allc = live.scan(ref, book_events, "netbet_fr", now,
+                        {**lcfg, "min_ev": -9, "min_ev_cons": -9, "diagnostic": True, "min_odds": 1.01, "max_odds": 100})
+    store.append(a.state, "observations.jsonl", [live.summarize(allc, now)])
     rows = store.read(a.state, tracker.BETS)
     seen = {(r["event_id"], r["group"]) for r in rows}
     today = now.date().isoformat()
