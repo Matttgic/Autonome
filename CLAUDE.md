@@ -27,7 +27,8 @@ Le propriétaire refuse toute clé d'API/compte et toute installation sur son t�
 - Winamax et Betclic : 403 depuis GitHub (anti-bot). Le propriétaire a autorisé le contournement le 02/11/2026 :
   Betclic lu par son API publique gRPC-web (`sources/betclic.py`, urllib, en-têtes Origin/Referer betclic.fr, aucune empreinte TLS imitée).
   Imiter l'empreinte TLS de Chrome (curl_cffi, Winamax socket) est REFUSÉ par le classifieur de la session cloud :
-  ne pas réessayer ; Winamax reste limité aux boosts via coteur.
+  ne pas réessayer. Winamax : page publique tentée par requête ordinaire (`sources/winamax.py`, 403 le plus souvent
+  → pause 6 h) ; SportyTrader 403 depuis GitHub, matchendirect sans cotes, OddsPapi = compte (02/11/2026).
 - ZEbet et Parions Sport redirigent vers unibet.fr (observé le 2026-11-02 depuis GitHub).
 - `python -m unittest discover` exige `tests/__init__.py` et `-t .`.
 - football-data.co.uk : plus de Pinnacle en 2026/27 ; ne jamais comparer une cote ANJ à une référence périmée (CLV ≈ −5 %).

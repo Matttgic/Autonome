@@ -317,7 +317,21 @@ def cmd_live(a, cfg):
         except Exception as e:  # noqa: BLE001 - une source en panne n'arrête jamais le passage
             errors.append(f"betclic: {type(e).__name__}: {e}"[:160])
     _maybe_block(a.state, "betclic", bc0, errors, now)
-    books = {"netbet_fr": book_events, "unibet_fr": ub_events, "pmu_fr": pmu_events, "betclic_fr": bc_events}
+    # Winamax : page publique (requête ordinaire, sans exécuter de JS) ; 403 la plupart du temps depuis GitHub -> pause 6 h.
+    from .sources import winamax as wmx
+    wx_events, wx0 = [], len(errors)
+    if not _blocked(a.state, "winamax", now):
+        for pg in wmx.PAGES:
+            try:
+                wx_events += wmx.events_from(wmx.state(wmx.fetch(pg)), now, lcfg["max_hours_to_start"])
+            except wmx.SourceError as ex:
+                errors.append(str(ex))
+                break
+            except Exception as ex:  # noqa: BLE001
+                errors.append(f"winamax: {type(ex).__name__}")
+    _maybe_block(a.state, "winamax", wx0, errors, now)
+    books = {"netbet_fr": book_events, "unibet_fr": ub_events, "pmu_fr": pmu_events, "betclic_fr": bc_events,
+             "winamax_fr": wx_events}
     # coteur.com (instantané du workflow coteur) : Betclic, Unibet, Betsson, Olybet, Vbet, DAZN Bet, etc.
     from . import consensus as CS
     from .sources import coteur_odds
@@ -422,7 +436,7 @@ def cmd_live(a, cfg):
         store.write_all(a.state, "observations.jsonl", store.read(a.state, "observations.jsonl")[:-1] + [obs])
     meta = {"at": now.isoformat(), "mode": "live", "ref_games": len(ref), "ref_soon": len(soon),
             "netbet_pages": len(book_events), "unibet_events": len(ub_events), "pmu_events": len(pmu_events),
-            "betclic_events": len(bc_events),
+            "betclic_events": len(bc_events), "winamax_events": len(wx_events),
             "pmu_par_sport": pmu_cov, "coteur_matchs": len(ct_matches),
             "coteur_books": {k: len(v) for k, v in ct_books.items()}, "pairs": len(pairs), "candidates": len(cands), "picked": len(picks),
             "closing_updates": closed, "settled": settled, "boosts_lus": len(boost_eval),
