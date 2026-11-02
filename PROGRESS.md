@@ -79,3 +79,7 @@ Prochaine étape : laisser tourner ; règlement automatique des boosts (score ex
   /2 h), Polymarket NBA/NHL/tennis/UFC/NCAAB/boxe + 4 championnats foot, consensus ANJ pour les matchs sans Polymarket,
   pause auto 6 h sur 403/429 (NetBet bloque depuis 03:51). Winamax : boosts seulement (désactivé chez coteur). 91 tests.
   Prochaine étape : laisser tourner une semaine, lire observations.jsonl (fréquence réelle d'EV>0 par book/sport).
+- 4e revue adverse (PMU/coteur/consensus) : 13 défauts corrigés ; 99 tests. Relais `pulse` ajouté car le cron
+  GitHub ne s'est pas déclenché (06h–08h UTC le 02/11). Collecte coteur complète : 744 matchs, Betclic sur 683.
+  Limites ouvertes : paris « consensus » non réglés automatiquement (CLV indicative seulement) ; Betclic/Unibet via
+  coteur = marché principal seulement ; Winamax = boosts seulement.

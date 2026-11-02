@@ -3,7 +3,12 @@ Outil perso de value betting (bookmakers ANJ uniquement, 0 €, détection seule
 Le propriétaire refuse toute clé d'API/compte et toute installation sur son téléphone : tout tourne sur GitHub Actions.
 - Tests : `python -m unittest discover -s tests -t .` (doit passer avant tout merge dans main).
 - **Voie principale** : `python -m autonome live --state state` (workflow `live.yml`, horaire) =
-  référence Polymarket (API publique Gamma, milieu bid/ask) vs cotes publiques NetBet (état Nuxt lu sans exécution).
+  référence Polymarket (API publique Gamma, milieu bid/ask ; foot + NBA/NHL/tennis/UFC/NCAAB/boxe) vs cotes :
+  PMU (flux public Kambi), NetBet (état Nuxt lu sans exécution), Unibet (page publique), Betclic/Unibet/Betsson/
+  Olybet/Vbet/DAZN… via l'instantané coteur.com (`coteur_odds.json`, workflow `coteur` = navigateur Playwright).
+  Matchs sans Polymarket : référence « consensus ANJ » (leave-one-out, clones fusionnés). Boosts Winamax via coteur.
+- Ordonnancement : le cron GitHub ne s'est pas déclenché sur ce dépôt → workflow `pulse` (relais auto-relancé,
+  vérifie toutes les 55 min que live/coteur ont tourné). La branche par défaut est `ccr-0a28d713-rav38k` (= main).
   Alertes : issue GitHub « Paris du JJ/MM » (e-mail au propriétaire) ; issue « Tableau de bord » réécrite à chaque run.
 - Diagnostic réseau depuis GitHub : workflows `probe.yml` (tableau des accès) et `capture.yml` (pages publiques
   enregistrées sur la branche `captures`, à analyser localement). Lancement : MCP `actions_run_trigger`.
@@ -22,3 +27,7 @@ Le propriétaire refuse toute clé d'API/compte et toute installation sur son t�
 - football-data.co.uk : plus de Pinnacle en 2026/27 ; ne jamais comparer une cote ANJ à une référence périmée (CLV ≈ −5 %).
 - Appariement d'équipes : « Paris FC » ≠ « Paris SG », « Man City » ≠ « Man Utd » : garder les tests de match.py.
 - Pas de `sleep` en chaîne dans Bash : utiliser une boucle until en arrière-plan.
+- Une source qui répond 403/429 est mise en pause 6 h (backoff.jsonl) : ne jamais insister (NetBet a fini par bloquer).
+- Winamax : cotes « désactivées » chez coteur depuis le 29/10 → seulement les boosts. Bet365 : non ANJ, exclu.
+- Toujours une revue adverse indépendante (sous-agent sans contexte) sur tout nouveau code de cotes : 4 revues ont
+  trouvé 57 défauts dont plusieurs faux positifs (joueur+équipe, réserves/féminines, Venus/Serena, foot vs handball).
