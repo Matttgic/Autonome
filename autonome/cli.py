@@ -216,10 +216,12 @@ def cmd_live(a, cfg):
     try:
         from . import consensus as CS0
         from .sources import livescore
+        from . import paper as PP0
         rows_s = store.read(a.state, tracker.BETS)
+        rows_p = store.read(a.state, PP0.FILE)
         results = []
         ls0 = len(errors)
-        for sport, day in sorted(CS0.days_to_fetch(rows_s, now)) if not _blocked(a.state, "livescore", now) else []:
+        for sport, day in sorted(CS0.days_to_fetch(rows_s + rows_p, now)) if not _blocked(a.state, "livescore", now) else []:
             try:
                 results += livescore.fetch(sport, day)
             except livescore.SourceError as ex:
@@ -231,6 +233,8 @@ def cmd_live(a, cfg):
         if n_cons:
             store.write_all(a.state, tracker.BETS, rows_s)
             settled += n_cons
+        if results and CS0.settle(rows_p, results, now):
+            store.write_all(a.state, PP0.FILE, rows_p)
     except Exception as e:  # noqa: BLE001
         errors.append(f"règlement consensus: {type(e).__name__}")
     # NetBet : pages de compétition -> événements dans la fenêtre -> pages d'événements (1 req / 5 s)
@@ -357,6 +361,7 @@ def cmd_live(a, cfg):
     # consensus : uniquement les matchs SANS référence Polymarket (sinon deux références pour un même match)
     from .match import pair as _pair2
     covered = {id(b) for _, b in _pair2(ref, ct_matches)}
+    ct_all = ct_matches  # stratégies fictives (paper.py) : tous les matchs coteur, couverts ou non par Polymarket
     ct_matches = [m for m in ct_matches if id(m) not in covered]
     cons_diag = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"],
                                                                 {"min_ev": -9, "max_ev": 9, "max_dispersion": 9, "diagnostic": True})]
@@ -428,6 +433,16 @@ def cmd_live(a, cfg):
     rows2 = store.read(a.state, tracker.BETS)
     if CS.closing(rows2, ct_matches, now):
         store.write_all(a.state, tracker.BETS, rows2)
+    # Stratégies suivies en paris fictifs (aucune alerte) : « Valeur 4 % » et « Témoin » (paper.py).
+    try:
+        from . import paper as PP
+        prows = store.read(a.state, PP.FILE)
+        new = PP.picks(ct_all, now, {(r.get("strategy"), r.get("event_id")) for r in prows}, lcfg["max_book_age_min"])
+        prows += [{**r, "status": "open", "close": None, "result": None, "found_at": now.isoformat()} for r in new]
+        CS.closing(prows, ct_all, now)
+        store.write_all(a.state, PP.FILE, prows)
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"paper: {type(e).__name__}: {e}"[:160])
     obs["boosts"] = {"lus": len(boost_eval), "evaluables": sum(e["evaluable"] for e in boost_eval),
                      "value": len(boost_picks),
                      "top": [{k: e.get(k) for k in ("event", "text", "odds", "fair_odds", "ev", "ev_cons", "commence")}
@@ -503,6 +518,15 @@ def dashboard_md(root, meta, obs=None) -> str:
                   "| Match | Pari | Book | Début (UTC) |", "|---|---|---|---|"]
         lines += [f"| {notify.md(r['home'])}–{notify.md(r['away'])} | {notify.md(r.get('label', r['selection']))} | "
                   f"{notify.md(r.get('book', ''))} | {r['commence'][:16]} |" for r in stale[-20:]]
+    from . import paper as PP
+    paper = PP.summary(store.read(root, PP.FILE))
+    if any(x["n"] for x in paper):
+        lines += ["", "## Stratégies suivies en fictif (bankroll 1 000 €, aucune alerte)",
+                  "| Stratégie | Paris (en cours) | Réglés | ROI | Réussite | CLV moy. | Bankroll |", "|---|---|---|---|---|---|---|"]
+        for x in paper:
+            lines.append(f"| {x['name']} | {x['n']} ({x['open']}) | {x['settled']} | {pct(x['roi'])} | {pct(x['hit'])} | "
+                         f"{pct(x['clv'])} (n={x['n_clv']}) | {x['bankroll']:.2f} € |")
+        lines.append("Si « Valeur 4 % » ne bat pas le Témoin sur plusieurs centaines de paris, elle ne vaut pas mieux que le hasard.")
     if obs and obs.get("ecartes_top"):
         lines += ["", "## Values écartées par les garde-fous (dernier passage)",
                   "| Raison | Book · sport · marché | Match | Cote | EV | Âge (min) | Groupe : matchs, EV médiane |",

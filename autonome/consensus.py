@@ -11,6 +11,9 @@ from datetime import datetime
 from . import value as V
 from .devig import shin
 
+# Paris réglés/clôturés comme le consensus : le consensus lui-même et les stratégies fictives de paper.py.
+KINDS = {"consensus-anj", "paper-valeur4", "paper-temoin"}
+
 CFG = {"min_books": 6, "min_groups": 5, "min_ev": 0.07, "max_ev": 0.4, "min_odds": 1.3, "max_odds": 6.0,
        "min_minutes_to_start": 20, "max_hours_to_start": 48, "max_dispersion": 0.04,
        "max_book_age_min": 60}  # remplacé par live.CFG au passage live (une seule valeur de réglage)
@@ -76,7 +79,7 @@ def closing(rows: list[dict], matches: list[dict], now: datetime) -> int:
     by = {m["renc"]: m for m in matches}
     n = 0
     for r in rows:
-        if r.get("status") != "open" or r.get("ref_kind") != "consensus-anj" or r.get("coteur_renc") not in by:
+        if r.get("status") != "open" or r.get("ref_kind") not in KINDS or r.get("coteur_renc") not in by:
             continue
         m = by[r["coteur_renc"]]
         mins = (datetime.fromisoformat(m["commence"].replace("Z", "+00:00")) - now).total_seconds() / 60
@@ -105,7 +108,7 @@ def days_to_fetch(rows: list[dict], now: datetime, after_h: float = 3.0, max_day
     from .sources.livescore import SLUG
     need = set()
     for r in rows:
-        if r.get("status") != "open" or r.get("ref_kind") != "consensus-anj" or r.get("sport") not in SLUG:
+        if r.get("status") != "open" or r.get("ref_kind") not in KINDS or r.get("sport") not in SLUG:
             continue
         try:
             start = _when(r["commence"])
@@ -126,7 +129,7 @@ def settle(rows: list[dict], results: list[dict], now: datetime, after_h: float 
     from .sources.livescore import outcome
     n = 0
     for r in rows:
-        if r.get("status") != "open" or r.get("ref_kind") != "consensus-anj":
+        if r.get("status") != "open" or r.get("ref_kind") not in KINDS:
             continue
         try:
             start = _when(r["commence"])
