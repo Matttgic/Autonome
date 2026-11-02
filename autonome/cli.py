@@ -314,7 +314,9 @@ def cmd_live(a, cfg):
     cons_diag = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"],
                                                                 {"min_ev": -9, "max_ev": 9, "max_dispersion": 9, "diagnostic": True})]
     cons_picks = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"])]
+    cands, gated = live.gate(cands, allc, lcfg)
     obs = live.summarize(allc, now)
+    obs["ecartes"] = gated
     obs["consensus"] = {bk: live.summarize([c for c in cons_diag if c["book"] == bk], now)["by_family"]
                         for bk in sorted({c["book"] for c in cons_diag})}
     obs["consensus_top"] = [{k: c[k] for k in ("book", "sport", "home", "away", "label", "odds", "fair_odds", "ev")}

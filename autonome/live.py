@@ -20,6 +20,9 @@ CFG = {
     "min_minutes_to_start": 20, "max_hours_to_start": 30,
     "bankroll": 100.0, "kelly_mult": 0.25, "stake_cap_pct": 0.02,
     "max_bets_per_day": 6,
+    # Garde-fous repris de cotes-value (controle.py) et Revue/Cotescope (fraîcheur) :
+    "max_book_age_min": 45,      # cote de book relevée il y a plus longtemps (instantané coteur) : mesurée, jamais proposée
+    "conf_min_n": 5, "conf_median_lo": -0.25, "conf_median_hi": -0.01,
 }
 
 SEL_FR = {"home": "{home}", "draw": "Nul", "away": "{away}", "1X": "{home} ou nul", "X2": "Nul ou {away}",
@@ -80,6 +83,7 @@ def compare(ref: dict, book: dict, book_key: str, now: datetime, cfg: dict | Non
                 "devig_method": "milieu bid/ask", "p_fair": leg["p"], "p_cons": leg["lo"], "p_hi": leg["hi"],
                 "spread": leg["spread"], "fair_odds": 1 / leg["p"], "ev": ev_mid, "ev_cons": ev_cons,
                 "legs": leg["legs"], "stake": stake, "found_at": now.isoformat(),
+                "book_age_min": book.get("snapshot_age_min"),
             })
     return out
 
@@ -177,3 +181,29 @@ def _age(iso, now):
         return max(0.0, (now - datetime.fromisoformat(iso.replace("Z", "+00:00"))).total_seconds() / 60)
     except (AttributeError, ValueError, TypeError):
         return None
+
+
+def gate(cands: list[dict], measured: list[dict], cfg: dict | None = None) -> tuple[list[dict], dict]:
+    """Écarte les candidats dont la cote de book est trop vieille, ou dont le groupe (book, famille de marché) n'est pas
+    « conforme » sur ce passage : un marché bien traduit cote en médiane un peu SOUS la cote juste (EV médiane entre
+    conf_median_lo et conf_median_hi sur au moins conf_min_n cotes). Médiane aberrante = traduction ou appariement
+    douteux (idée de cotes-value/controle.py). measured = toutes les cotes comparables du passage (diagnostic)."""
+    c = {**CFG, **(cfg or {})}
+    groups: dict = {}
+    for m in measured:
+        groups.setdefault((m.get("book"), m["group"].split("@")[0]), []).append(m["ev"])
+    status = {}
+    for k, v in groups.items():
+        v = sorted(v)
+        med = v[len(v) // 2]
+        status[k] = len(v) >= c["conf_min_n"] and c["conf_median_lo"] <= med <= c["conf_median_hi"]
+    kept, why = [], {"cote_trop_vieille": 0, "groupe_non_conforme": 0}
+    for x in cands:
+        age = x.get("book_age_min")
+        if age is not None and age > c["max_book_age_min"]:
+            why["cote_trop_vieille"] += 1
+        elif not status.get((x.get("book"), x["group"].split("@")[0]), False):
+            why["groupe_non_conforme"] += 1
+        else:
+            kept.append(x)
+    return kept, why

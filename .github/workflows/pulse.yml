@@ -2,7 +2,7 @@ name: pulse
 # Relais : les tâches programmées GitHub (cron) ne se déclenchent pas sur ce dépôt. Idée reprise de cotes-value
 # (chaîne auto-relancée, 5 min) et Grotonome (boucle de 5 h, relevé toutes les 6 min) : ce job contrôle toutes les
 # 5 min l'âge du dernier passage `live` (relancé dès LIVE_EVERY_MIN, défaut 15) et `coteur` (COTEUR_EVERY_MIN, défaut
-# 120), puis se relance lui-même au bout de ~5 h. Toujours sur la branche par défaut (jamais une branche figée).
+# 60 : une cote coteur de plus de 45 min n'est jamais proposée), puis se relance lui-même au bout de ~5 h. Toujours sur la branche par défaut (jamais une branche figée).
 # Dépôt public : minutes Actions gratuites. Arrêt : variable de dépôt PULSE = off.
 on:
   workflow_dispatch:
@@ -22,7 +22,7 @@ jobs:
       GH_REPO: ${{ github.repository }}
       REF: ${{ github.event.repository.default_branch }}
       LIVE_EVERY: ${{ vars.LIVE_EVERY_MIN || '15' }}
-      COTEUR_EVERY: ${{ vars.COTEUR_EVERY_MIN || '120' }}
+      COTEUR_EVERY: ${{ vars.COTEUR_EVERY_MIN || '60' }}
     steps:
       - name: Relayer (5 h, contrôle toutes les 5 min)
         run: |

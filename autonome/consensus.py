@@ -12,7 +12,8 @@ from . import value as V
 from .devig import shin
 
 CFG = {"min_books": 6, "min_groups": 5, "min_ev": 0.07, "max_ev": 0.4, "min_odds": 1.3, "max_odds": 6.0,
-       "min_minutes_to_start": 20, "max_hours_to_start": 48, "max_dispersion": 0.04}
+       "min_minutes_to_start": 20, "max_hours_to_start": 48, "max_dispersion": 0.04,
+       "max_book_age_min": 45}  # instantané coteur plus vieux : mesuré, jamais proposé (cotes peut-être déjà bougées)
 
 
 def evaluate(match: dict, now: datetime, bankroll: float, cfg=None) -> list[dict]:
@@ -20,6 +21,8 @@ def evaluate(match: dict, now: datetime, bankroll: float, cfg=None) -> list[dict
     start = datetime.fromisoformat(match["commence"].replace("Z", "+00:00"))
     mins = (start - now).total_seconds() / 60
     if not c["min_minutes_to_start"] <= mins <= c["max_hours_to_start"] * 60:
+        return []
+    if (match.get("snapshot_age_min") or 0) > c["max_book_age_min"] and not c.get("diagnostic"):
         return []
     out = []
     for mk in ("1x2", "ml"):
