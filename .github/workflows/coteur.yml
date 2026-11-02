@@ -1,0 +1,36 @@
+name: coteur
+# Cotes des bookmakers ANJ (Winamax, Betclic, PMU, Unibet, ParionsSport…) via les pages publiques de coteur.com,
+# rendues dans un navigateur ; instantané écrit sur la branche `data` (coteur_odds.json), lu par le workflow live.
+on:
+  schedule:
+    - cron: "41 5-21/2 * * *"
+  workflow_dispatch:
+    inputs:
+      sports: {description: "sports (vide = tous)", default: ""}
+permissions:
+  contents: write
+concurrency: {group: autonome-coteur, cancel-in-progress: false}
+jobs:
+  coteur:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SPORTS: ${{ github.event.inputs.sports }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -q playwright==1.48.0 && python -m playwright install --with-deps chromium >/dev/null
+      - name: Collecter
+        run: python tools/coteur_stream.py coteur_odds.json $SPORTS
+      - name: Écrire sur la branche data
+        run: |
+          URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+          for i in 1 2 3 4 5; do
+            rm -rf state && git clone -q --branch data --single-branch --depth 1 "$URL" state || exit 1
+            cp coteur_odds.json state/coteur_odds.json
+            cd state && git add -A && (git diff --cached --quiet || git -c user.name=autonome -c user.email=autonome@users.noreply.github.com commit -qm "coteur $(date -u +%FT%TZ)")
+            git push -q origin data && exit 0
+            cd .. && sleep $((i * 7))
+          done
+          exit 1
