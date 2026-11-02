@@ -335,3 +335,11 @@ tests de régression dans tests/test_boosts.py (85 tests au total).
 | 18 | Polymarket comme référence hors foot | NBA/NHL/tennis/UFC liquides | Tags testés : NBA 28, NHL 59, tennis 46, NCAAB 35 matchs liquides ; e-sport, tennis de table, volley, fléchettes : 0 liquide | Référence sharp utilisable pour 4 sports US + tennis ; pas pour les sports de niche | Niche → consensus seulement |
 Constat structurel : les bookmakers français sont très alignés (mêmes fournisseurs de cotes), marges 10–18 %. Les
 « erreurs » exploitables sont rares et brèves ; l'outil les cherche chaque heure sur ~600 matchs et ~20 bookmakers.
+
+### Mesure du 2026-11-02 08:33 UTC (premier passage complet : PMU + coteur + Polymarket tous sports)
+537 cotes de 10 bookmakers ANJ comparées à la cote juste Polymarket : **0 à EV > 0** ; meilleure −0,9 % (PMU, tennis).
+EV médiane par bookmaker et marché : Betclic 1X2 −8,5 % / vainqueur (tennis, basket) −6,6 % ; Betsson −7,8 % / −8,4 % ;
+Olybet −8,4 % / −7,8 % ; PMU 1X2 −9,9 %, vainqueur −6,9 %, plus/moins −13,9 % ; NetBet 1X2 −9,2 %, secondaires −13 à −20 % ;
+DAZN Bet −10,5 % / −14,0 % ; Vbet −16,7 % / −14,3 %. Consensus ANJ (matchs sans Polymarket) : meilleure −1,2 %.
+Lecture : les marchés « vainqueur » de tennis/basket sont les plus proches du juste (−1 à −3 % pour les meilleures cotes) :
+c'est là qu'un décalage ponctuel a le plus de chances de devenir positif.
