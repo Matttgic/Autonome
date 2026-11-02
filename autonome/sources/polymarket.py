@@ -9,6 +9,7 @@ est normalisé par la somme des milieux. Une jambe sans prix, trop large ou peu 
 """
 from __future__ import annotations
 
+import http.client
 import json
 import re
 import time
@@ -31,7 +32,7 @@ def get(path: str, timeout: int = 30, pause: float = 1.0):
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             data = json.load(r)
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
+    except (OSError, http.client.HTTPException, ValueError) as e:  # URLError, reset, IncompleteRead, JSON, UTF-8
         raise SourceError(f"polymarket {path.split('?')[0]}: {type(e).__name__}") from None
     time.sleep(pause)
     return data
@@ -64,7 +65,7 @@ def _leg(q: dict, idx: int) -> dict:
 
 def _sum(*legs: dict) -> dict:
     return {"p": sum(l["p"] for l in legs), "lo": sum(l["lo"] for l in legs), "hi": sum(l["hi"] for l in legs),
-            "legs": [x for l in legs for x in l["legs"]], "spread": max(l["spread"] for l in legs)}
+            "legs": [x for l in legs for x in l["legs"]], "spread": sum(l["spread"] for l in legs)}
 
 
 def _line(x) -> str:
@@ -75,24 +76,36 @@ def build_reference(raw_events: list[dict], max_spread: float = MAX_SPREAD, min_
     """Regroupe les événements Gamma par match -> [{key, commence, home, away, markets:{canon:{sel:jambe}}}]."""
     games: dict[str, dict] = {}
     for e in raw_events:
-        title = e.get("title", "")
+        try:
+            _add_event(games, e, max_spread, min_liq)
+        except (TypeError, ValueError, KeyError, AttributeError):
+            continue  # événement malformé ignoré, jamais bloquant
+    return [g for g in games.values() if g["markets"] and g["main"]]
+
+
+def _add_event(games: dict, e: dict, max_spread: float, min_liq: float) -> None:
+    if True:
+        title = e.get("title") or ""
         base, _, suffix = title.partition(" - ")
         if " vs. " not in base:
-            continue
+            return
         home, away = [x.strip() for x in base.split(" vs. ", 1)]
         start = e.get("startTime")
         if not start:
-            continue
+            return
         g = games.setdefault(f"{base}|{start[:16]}", {"key": f"pm|{e.get('slug', base)}", "commence": start,
-                                                       "home": home, "away": away, "markets": {}, "updated": ""})
-        if not suffix:
-            g["key"] = f"pm|{e.get('slug')}"
+                                                       "home": home, "away": away, "markets": {}, "updated": "",
+                                                       "main": False})
+        if not suffix:  # clé stable = slug de l'événement principal (sans lui, le match est ignoré)
+            if not e.get("slug"):
+                return
+            g["key"], g["main"] = f"pm|{e['slug']}", True
         g["updated"] = max(g["updated"], e.get("updatedAt") or "")
         mk = g["markets"]
         ms = e.get("markets", [])
         if not suffix or suffix == "Halftime Result":
             q = {}
-            for m in ms:
+            for m in ms or []:
                 lab = (m.get("groupItemTitle") or "")
                 sel = "draw" if lab.lower().startswith("draw") else "home" if lab == home else "away" if lab == away else None
                 qq = _quote(m, max_spread, min_liq)
@@ -109,15 +122,15 @@ def build_reference(raw_events: list[dict], max_spread: float = MAX_SPREAD, min_
                         mk["dc"] = {"1X": _sum(legs["home"], legs["draw"]), "X2": _sum(legs["draw"], legs["away"]),
                                     "12": _sum(legs["home"], legs["away"])}
         elif suffix == "More Markets":
-            for m in ms:
+            for m in ms or []:
                 t, lab = m.get("sportsMarketType"), (m.get("groupItemTitle") or "")
                 q = _quote(m, max_spread, min_liq)
                 if not q:
-                    continue
+                    return
                 try:
                     outs = json.loads(m.get("outcomes") or "[]")
                 except json.JSONDecodeError:
-                    continue
+                    return
                 if t == "totals" and outs == ["Over", "Under"]:
                     mk[f"ou@{_line(m['line'])}"] = {"over": _leg(q, 0), "under": _leg(q, 1)}
                 elif t == "first_half_totals" and outs == ["Over", "Under"]:
@@ -128,20 +141,24 @@ def build_reference(raw_events: list[dict], max_spread: float = MAX_SPREAD, min_
                     side = "home" if lab.startswith(home) else "away" if lab.startswith(away) else None
                     if side:
                         mk[f"team_ou@{side}@{_line(m['line'])}"] = {"over": _leg(q, 0), "under": _leg(q, 1)}
-                elif t == "spreads" and m.get("line") is not None and len(outs) == 2:
+                elif t == "spreads" and _f(m.get("line")) is not None and _f(m.get("line")) < 0 and len(outs) == 2:
                     fav = "home" if outs[0] == home else "away" if outs[0] == away else None
                     if fav:  # issue 0 = fav gagne avec plus de |ligne| buts d'écart
                         mk[f"ah@{fav}@{_line(m['line'])}"] = {"fav": _leg(q, 0), "dog": _leg(q, 1)}
-    return [g for g in games.values() if g["markets"]]
 
 
 def fetch(tags=TAGS) -> tuple[list[dict], list[str]]:
     raw, errors = [], []
     for t in tags:
-        try:
-            raw += get(f"/events?tag_slug={t}&closed=false&limit=300")
-        except SourceError as ex:
-            errors.append(str(ex))
+        for off in (0, 300, 600):  # pagination : une page tronquée ferait perdre l'événement principal
+            try:
+                page = get(f"/events?tag_slug={t}&closed=false&limit=300&offset={off}")
+            except SourceError as ex:
+                errors.append(str(ex))
+                break
+            raw += page if isinstance(page, list) else []
+            if not isinstance(page, list) or len(page) < 300:
+                break
     seen, uniq = set(), []
     for e in raw:
         if e.get("id") not in seen:

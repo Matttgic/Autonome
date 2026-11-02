@@ -168,13 +168,16 @@ def cmd_live(a, cfg):
     if os.environ.get("BANKROLL"):
         lcfg["bankroll"] = float(os.environ["BANKROLL"])
     errors = []
-    ref, err = pm.fetch(cfg.get("polymarket_tags", pm.TAGS))
+    try:
+        ref, err = pm.fetch(cfg.get("polymarket_tags", pm.TAGS))
+    except Exception as e:  # noqa: BLE001
+        ref, err = [], [f"polymarket: {type(e).__name__}"]
     errors += err
     closed = live.update_closing(a.state, ref, now)
 
     def get_market(mid):
         try:
-            r = pm.get(f"/markets?id={mid}", pause=0.3)
+            r = pm.get(f"/markets?id={mid}&closed=true", pause=0.3) or pm.get(f"/markets?id={mid}", pause=0.3)
             return r[0] if r else None
         except pm.SourceError:
             return None
@@ -193,8 +196,8 @@ def cmd_live(a, cfg):
         for u in wanted[: lcfg.get("max_event_pages", 40)]:
             try:
                 book_events += nb.parse_event_page(nb.fetch(u), u)
-            except nb.SourceError as e:
-                errors.append(str(e))
+            except Exception as e:  # noqa: BLE001 - une page défectueuse ne doit jamais arrêter le run
+                errors.append(f"netbet {u}: {type(e).__name__}")
     pairs, cands = live.scan(ref, book_events, "netbet_fr", now, lcfg)
     # Mesure de recherche : TOUTES les cotes comparables (même négatives), agrégées par famille de marché.
     _, allc = live.scan(ref, book_events, "netbet_fr", now,
@@ -202,10 +205,14 @@ def cmd_live(a, cfg):
     obs = live.summarize(allc, now)
     store.append(a.state, "observations.jsonl", [obs])
     rows = store.read(a.state, tracker.BETS)
-    seen = {(r["event_id"], r["group"]) for r in rows}
+    seen = {r["event_id"] for r in rows if r.get("ref_kind") == "polymarket"}
     today = now.date().isoformat()
     done_today = sum(1 for r in rows if r.get("found_at", "")[:10] == today)
-    cands = [c for c in cands if (c["event_id"], c["group"]) not in seen]
+    best: dict = {}
+    for c in cands:  # un seul pari par match : les marchés d'un même match sont corrélés
+        if c["event_id"] not in seen and (c["event_id"] not in best or c["ev_cons"] > best[c["event_id"]]["ev_cons"]):
+            best[c["event_id"]] = c
+    cands = list(best.values())
     picks = engine.select_daily(cands, {"max_bets_per_day": lcfg["max_bets_per_day"]},
                                 {r["bet_id"] for r in rows}, done_today)
     tracker.record_bets(a.state, picks)
@@ -221,9 +228,10 @@ def cmd_live(a, cfg):
         print(notify.send(f"{len(picks)} value bet(s)", notify.message(picks), a.link))
     print(notify.github_dashboard(dashboard_md(a.state, meta, obs) + "\n\n" + fair_table_md(
         [g for g in ref if 0 < live._mins(g["commence"], now) <= 72 * 60])))
-    if errors and not ref:
-        print(notify.github_issue(f"Panne source {now:%d/%m/%Y}", "Sources en erreur :\n- " + "\n- ".join(errors[:20])))
-        return 2
+    if (errors and not ref) or (soon and not book_events):
+        print(notify.github_issue_once(f"Panne source {now:%d/%m/%Y}",
+                                       "Sources en erreur (une alerte par jour) :\n- " + "\n- ".join(errors[:20] or ["NetBet : aucune page lue"])))
+        return 2 if not ref else 0
     return 0
 
 
@@ -239,7 +247,7 @@ def fair_table_md(games, limit=40) -> str:
         m = g["markets"]
         t = datetime.fromisoformat(g["commence"].replace("Z", "+00:00")).astimezone(ZoneInfo("Europe/Paris"))
         jour = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"][t.weekday()]
-        rows.append(f"| {jour} {t:%d/%m %H:%M} | {g['home']} – {g['away']} | {o(m, '1x2', 'home')} | {o(m, '1x2', 'draw')} | "
+        rows.append(f"| {jour} {t:%d/%m %H:%M} | {notify.md(g['home'])} – {notify.md(g['away'])} | {o(m, '1x2', 'home')} | {o(m, '1x2', 'draw')} | "
                     f"{o(m, '1x2', 'away')} | {o(m, 'ou@2.5', 'over')} | {o(m, 'ou@2.5', 'under')} | {o(m, 'btts', 'yes')} |")
     if len(rows) == 3:
         rows.append("| — | aucun match liquide dans les 72 h | | | | | | |")
@@ -262,7 +270,7 @@ def dashboard_md(root, meta, obs=None) -> str:
              f"- {st['note']}", "", "## Derniers paris", "| Match | Pari | Cote | EV | CLV | Résultat |", "|---|---|---|---|---|---|"]
     for r in rows:
         res = (r.get("result") or {}).get("won")
-        lines.append(f"| {r['home']}–{r['away']} | {r.get('label', r['selection'])} | {r['odds']:.2f} | {r['ev']:+.1%} | "
+        lines.append(f"| {notify.md(r['home'])}–{notify.md(r['away'])} | {notify.md(r.get('label', r['selection']))} | {r['odds']:.2f} | {r['ev']:+.1%} | "
                      f"{pct(r['close']['clv_odds']) if r.get('close') else '—'} | "
                      f"{'✅' if res is True else '❌' if res is False else ('remboursé' if r['status'] == 'settled' else '…')} |")
     if obs and obs.get("n"):
@@ -271,7 +279,7 @@ def dashboard_md(root, meta, obs=None) -> str:
         for k, v in obs["by_family"].items():
             lines.append(f"| {k} | {v['n']} | {v['median_ev']:+.1%} | {v['max_ev']:+.1%} |")
         t = obs["top"][0]
-        lines.append(f"\nMeilleure cote vue : {t['home']}–{t['away']}, {t['label']} @ {t['odds']} "
+        lines.append(f"\nMeilleure cote vue : {notify.md(t['home'])}–{notify.md(t['away'])}, {notify.md(t['label'])} @ {t['odds']} "
                      f"(juste {t['fair_odds']:.2f}, EV {t['ev']:+.1%}). Seuil d'alerte : EV ≥ +3 % et EV prudente > 0.")
     return "\n".join(lines)
 

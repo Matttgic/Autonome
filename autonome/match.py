@@ -53,6 +53,9 @@ def pair(ref_games: list[dict], book_events: list[dict], max_dt_min: float = 20,
             if abs(_ts(r["commence"]) - _ts(b["commence"])) > max_dt_min * 60:
                 continue
             sh, sa = sim(r["home"], b["home"]), sim(r["away"], b["away"])
+            cross = sim(r["home"], b["away"]) + sim(r["away"], b["home"])
+            if sh + sa < cross + 0.5:  # sens ambigu (derby « Inter – AC Milan ») : refusé plutôt que risquer l'inversion
+                continue
             if min(sh, sa) >= min_sim or (max(sh, sa) >= 0.95 and min(sh, sa) >= 0.35):
                 cands.append((sh + sa, i, j))
     cands.sort(reverse=True)

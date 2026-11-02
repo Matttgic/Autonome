@@ -102,7 +102,7 @@ def update_closing(root, ref_games: list[dict], now: datetime) -> int:
         if mins <= 0 or not leg:
             continue
         r["close"] = {"book": "polymarket", "p_fair": leg["p"], "seen_at": now.isoformat(), "minutes_to_start": mins,
-                      "ref_age_min": 0.0, "spread": leg["spread"], **V.clv(r["odds"], leg["p"])}
+                      "ref_age_min": _age(g.get("updated"), now), "spread": leg["spread"], **V.clv(r["odds"], leg["p"])}
         n += 1
     store.write_all(root, BETS, rows)
     return n
@@ -116,16 +116,16 @@ def settle(root, get_market, now: datetime, delay_h: float = 3.0) -> int:
     for r in rows:
         if r["status"] != "open" or r.get("ref_kind") != "polymarket" or _mins(r["commence"], now) > -60 * delay_h:
             continue
-        pay, ok = 0.0, True
+        vals = []
         for mid, idx in r["legs"]:
             res = resolved(get_market(mid) or {})
             if res is None:
-                ok = False
                 break
-            pay += res[idx]
-        if not ok:
+            vals.append(res[idx])
+        if len(vals) != len(r["legs"]):
             continue
-        won = None if abs(pay - 0.5) < 1e-6 else pay >= 0.999
+        pay = sum(vals)
+        won = None if any(v == 0.5 for v in vals) else pay >= 0.999  # une jambe annulée => pari annulé
         r["status"], r["result"] = "settled", {"won": won, "payout": pay, "source": "résolution Polymarket"}
         n += 1
     store.write_all(root, BETS, rows)
@@ -148,3 +148,10 @@ def summarize(cands: list[dict], now: datetime) -> dict:
                           for k, v in sorted(fam.items())},
             "top": [{k: c[k] for k in ("home", "away", "label", "odds", "fair_odds", "ev", "ev_cons", "spread", "commence")}
                     for c in top]}
+
+
+def _age(iso, now):
+    try:
+        return max(0.0, (now - datetime.fromisoformat(iso.replace("Z", "+00:00"))).total_seconds() / 60)
+    except (AttributeError, ValueError, TypeError):
+        return None

@@ -41,4 +41,9 @@ jobs:
         if: always()
         run: |
           cd state && git config user.name autonome && git config user.email autonome@users.noreply.github.com
-          git add -A && (git diff --cached --quiet || git commit -qm "state $(date -u +%FT%TZ)") && git push -q origin data
+          git add -A && (git diff --cached --quiet || git commit -qm "state $(date -u +%FT%TZ)")
+          for i in 1 2 3 4; do
+            git push -q origin data && exit 0
+            git pull -q --rebase origin data || true; sleep $((i * 5))
+          done
+          echo "::error::sauvegarde de l'état impossible"; exit 1

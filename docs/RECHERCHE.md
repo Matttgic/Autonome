@@ -295,3 +295,19 @@ Conclusion honnête à ce stade : la marge française (fiscalité sur les mises,
 value systématique quasi inexistante sur NetBet. Les seules sources plausibles : (a) cotes figées après un mouvement de
 marché (mesurées chaque heure dans `observations.jsonl`), (b) cotes boostées des books bloqués (Winamax, Betclic) —
 non lisibles automatiquement ; à évaluer à la main avec la cote juste affichée.
+
+## Session 3 — Polymarket est-il une référence « sharp » ? (validation réelle)
+Données : 251 matchs de Premier League 2025/26 sur Polymarket (série 10188), prix CLOB (prices-history, pas de 5 min)
+au dernier point ≥ 5 min avant le coup d'envoi ; 189 appariés à football-data E0 avec clôture Pinnacle (PSC*, dé-vig Shin).
+Scripts : `tools/pm_collect.py`, `tools/pm_vs_pinnacle.py`.
+
+| Mesure | Polymarket | Pinnacle clôture |
+|---|---|---|
+| Écart absolu moyen de proba | 0,63 point | — |
+| Log-loss (1X2) | **0,97812** | 0,98262 |
+| Brier | **0,58676** | 0,58935 |
+| Δ log-loss PM − PS | −0,0045, IC95 [−0,0083 ; −0,0008] | |
+Délai médian du dernier prix PM : 10 min avant le coup d'envoi ; somme médiane des 3 prix : 1,000.
+Conclusion : sur la Premier League, Polymarket près du coup d'envoi est au moins aussi bien calibré que Pinnacle.
+Limites : un seul championnat, matchs très liquides, prix de dernière transaction et non milieu de carnet ;
+les championnats moins liquides (Ligue 1, Liga) ne sont pas validés — d'où les filtres écart ≤ 3 % et liquidité ≥ 2 000 $.

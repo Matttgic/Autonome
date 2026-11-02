@@ -56,8 +56,14 @@ def _gh(method: str, path: str, payload: dict | None = None):
                                  data=json.dumps(payload).encode() if payload is not None else None,
                                  headers={"Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json",
                                           "Content-Type": "application/json", "User-Agent": "autonome"})
-    with urllib.request.urlopen(req, timeout=20) as r:
+    opener = urllib.request.build_opener(_NoRedirect)  # le jeton ne suit jamais une redirection
+    with opener.open(req, timeout=20) as r:
         return json.load(r)
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *a, **k):
+        return None
 
 
 def github_issue(title: str, body: str, label: str = "paris") -> str:
@@ -72,6 +78,25 @@ def github_issue(title: str, body: str, label: str = "paris") -> str:
         return f"issue #{r['number']}" if r else "pas de GITHUB_TOKEN"
     except Exception as e:  # noqa: BLE001
         return f"échec {type(e).__name__}"
+
+
+def github_issue_once(title: str, body: str, label: str = "panne") -> str:
+    try:
+        issues = _gh("GET", f"/issues?state=all&labels={label}&per_page=30") or []
+        if any(i.get("title") == title for i in issues):
+            return "déjà signalé aujourd'hui"
+        r = _gh("POST", "/issues", {"title": title, "body": body, "labels": [label]})
+        return f"issue #{r['number']}" if r else "pas de GITHUB_TOKEN"
+    except Exception as e:  # noqa: BLE001
+        return f"échec {type(e).__name__}"
+
+
+def md(s) -> str:
+    """Échappe un texte venant d'une source externe (noms d'équipes) pour Markdown GitHub."""
+    s = str(s if s is not None else "?")
+    for ch in "\\`*_[]<>|#@!":
+        s = s.replace(ch, "\\" + ch)
+    return s.replace("\n", " ")[:80]
 
 
 def github_dashboard(body: str, title: str = "📊 Tableau de bord Autonome") -> str:
@@ -92,8 +117,8 @@ def md_bet(b: dict) -> str:
     """Un pari en Markdown, avec tout le détail vérifiable."""
     when = b["commence"][:16].replace("T", " ")
     url = f"https://www.netbet.fr{b['url']}" if b.get("url") else ""
-    return (f"### {b['home']} – {b['away']}  ·  {when} UTC\n"
-            f"**{b['label']}** @ **{b['odds']:.2f}** chez **{b['book']}** {('— ' + url) if url else ''}\n"
+    return (f"### {md(b['home'])} – {md(b['away'])}  ·  {when} UTC\n"
+            f"**{md(b['label'])}** @ **{b['odds']:.2f}** chez **{b['book']}** {('— ' + url) if url else ''}\n"
             f"- Mise conseillée : **{b['stake']:.1f} €** (¼ Kelly sur la proba prudente, plafond 2 %)\n"
             f"- EV : **{b['ev']:+.1%}** au milieu, {b['ev_cons']:+.1%} en prudent\n"
             f"- Référence Polymarket : proba juste {b['p_fair']:.2%} (cote juste {b['fair_odds']:.2f}), "

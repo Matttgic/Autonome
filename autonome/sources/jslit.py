@@ -13,6 +13,11 @@ class JsLitError(ValueError):
     pass
 
 
+MAX_ARRAY = 100_000
+MAX_DEPTH = 200
+MAX_INPUT = 8_000_000
+
+
 _ID = re.compile(r"[A-Za-z_$][A-Za-z0-9_$]*")
 _ACCESS = re.compile(r"\[(\d+)\]|\.([A-Za-z_$][\w$]*)|\[\"([^\"]*)\"\]")
 _ASSIGN = re.compile(r"([A-Za-z_$][\w$]*)((?:\[\d+\]|\.[A-Za-z_$][\w$]*|\[\"[^\"]*\"\])+)=(?!=)")
@@ -43,21 +48,41 @@ class _P:
         while True:
             c = self.s[j]
             if c == "\\":
-                buf.append(self.s[j:j + 2] if self.s[j + 1] != "u" else self.s[j:j + 6])
-                j += 2 if self.s[j + 1] != "u" else 6
+                nx = self.s[j + 1]
+                if nx == "u":
+                    buf.append(self.s[j:j + 6])
+                    j += 6
+                elif nx == "x":
+                    buf.append("\\u00" + self.s[j + 2:j + 4])
+                    j += 4
+                elif nx == "'":
+                    buf.append("'")
+                    j += 2
+                else:
+                    buf.append(self.s[j:j + 2])
+                    j += 2
                 continue
             if c == q:
                 break
             buf.append('\\"' if c == '"' else c)
             j += 1
         self.i = j + 1
-        raw = "".join(buf).replace("\\'", "'")
+        raw = "".join(buf)
         try:
             return json.loads('"' + raw + '"')
         except json.JSONDecodeError as e:
             raise JsLitError(f"chaîne invalide à {self.i}") from e
 
     def value(self):
+        self.depth = getattr(self, "depth", 0) + 1
+        if self.depth > MAX_DEPTH:
+            raise JsLitError("imbrication trop profonde")
+        try:
+            return self._value()
+        finally:
+            self.depth -= 1
+
+    def _value(self):
         c = self.peek()
         if c == "{":
             return self.obj()
@@ -88,7 +113,9 @@ class _P:
                 self.eat("(")
                 n = self.value()
                 self.eat(")")
-                return [None] * int(n)
+                if not isinstance(n, int) or not 0 <= n <= MAX_ARRAY:
+                    raise JsLitError(f"Array({n}) hors bornes")
+                return [None] * n
             if name in self.env:
                 return self.env[name]
             raise JsLitError(f"identifiant inconnu {name!r} à {self.i}")
@@ -148,6 +175,18 @@ def _matching(s: str, i: int, o: str, c: str) -> int:
 
 
 def parse_nuxt(html: str) -> dict:
+    """Toute erreur d'analyse devient JsLitError (jamais d'autre exception, jamais d'exécution)."""
+    if len(html) > MAX_INPUT:
+        raise JsLitError("page trop grande")
+    try:
+        return _parse_nuxt(html)
+    except JsLitError:
+        raise
+    except (IndexError, KeyError, TypeError, ValueError, RecursionError, MemoryError, OverflowError) as e:
+        raise JsLitError(f"{type(e).__name__}") from None
+
+
+def _parse_nuxt(html: str) -> dict:
     k = html.find("window.__NUXT__=")
     if k < 0:
         raise JsLitError("pas d'état __NUXT__")
@@ -182,6 +221,8 @@ def parse_nuxt(html: str) -> dict:
             target = target[k] if isinstance(target, (dict, list)) else None
         if not isinstance(target, (dict, list)):
             raise JsLitError(f"cible non objet pour {m.group(0)}")
+        if isinstance(target, list) and not 0 <= keys[-1] < MAX_ARRAY:
+            raise JsLitError("indice hors bornes")
         if isinstance(target, list) and keys[-1] >= len(target):
             target.extend([None] * (keys[-1] + 1 - len(target)))
         target[keys[-1]] = p.value()

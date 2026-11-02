@@ -7,6 +7,7 @@ Cote affichée « - » = sélection fermée -> absente. Une requête toutes les 
 """
 from __future__ import annotations
 
+import http.client
 import re
 import time
 import urllib.error
@@ -16,6 +17,7 @@ from datetime import datetime, timezone
 from .jslit import JsLitError, parse_nuxt
 
 BASE = "https://www.netbet.fr"
+MAX_BYTES = 5_000_000
 UA = "autonome/0.3 (outil perso; 1 requete / 5 s)"
 COMPETITIONS = ["/football/france/ligue-1-mcdonald-s-r", "/football/angleterre/premier-league", "/football/espagne/laliga",
                 "/football/allemagne/bundesliga", "/football/italie/serie-a",
@@ -30,10 +32,10 @@ def fetch(path: str, timeout: int = 30, pause: float = 5.0) -> str:
     req = urllib.request.Request(BASE + path, headers={"User-Agent": UA, "Accept-Language": "fr-FR"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
-            html = r.read().decode("utf-8", "replace")
+            html = r.read(MAX_BYTES).decode("utf-8", "replace")
     except urllib.error.HTTPError as e:
         raise SourceError(f"netbet {path}: HTTP {e.code}") from None
-    except (urllib.error.URLError, TimeoutError) as e:
+    except (OSError, http.client.HTTPException) as e:  # URLError, timeout, reset, lecture incomplète
         raise SourceError(f"netbet {path}: {type(e).__name__}") from None
     finally:
         time.sleep(pause)
@@ -75,11 +77,15 @@ def map_markets(ev: dict) -> dict[str, dict[str, float]]:
         if o:
             out.setdefault(key, {})[sel] = o
 
-    for m in ev.get("markets", []):
+    for m in ev.get("markets") or []:
+        if not isinstance(m, dict):
+            continue
         t = m.get("selection_order_type")
-        for b in m.get("bets", []):
+        for b in m.get("bets") or []:
+            if not isinstance(b, dict):
+                continue
             lab = (b.get("label") or "").strip()
-            sels = b.get("selections") or []
+            sels = [x for x in (b.get("selections") or []) if isinstance(x, dict)]
             if t == "1x2" and lab in ("Qui va gagner le match ?", "Qui va gagner la 1ère mi-temps ?") and len(sels) == 3:
                 key = "1x2" if "match" in lab else "ht1x2"
                 for s, n in zip(sels, ("home", "draw", "away")):
@@ -116,15 +122,20 @@ def map_markets(ev: dict) -> dict[str, dict[str, float]]:
     return out
 
 
-def _find_events(o, acc):
-    if isinstance(o, dict):
-        if "matchId" in o and "markets" in o and "actors" in o:
-            acc[str(o["matchId"])] = o
-        for v in o.values():
-            _find_events(v, acc)
-    elif isinstance(o, list):
-        for v in o:
-            _find_events(v, acc)
+def _find_events(o, acc, seen=None):
+    """Parcours itératif, chaque objet visité une fois (résiste aux cycles et aux partages)."""
+    seen, stack = set(), [o]
+    while stack:
+        x = stack.pop()
+        if id(x) in seen:
+            continue
+        seen.add(id(x))
+        if isinstance(x, dict):
+            if "matchId" in x and "markets" in x and "actors" in x:
+                acc[str(x["matchId"])] = x
+            stack.extend(v for v in x.values() if isinstance(v, (dict, list)))
+        elif isinstance(x, list):
+            stack.extend(v for v in x if isinstance(v, (dict, list)))
 
 
 def parse_event_page(html: str, url: str) -> list[dict]:
@@ -136,14 +147,24 @@ def parse_event_page(html: str, url: str) -> list[dict]:
     _find_events(state, acc)
     out = []
     for e in acc.values():
-        actors = {a.get("type"): a.get("label") for a in e.get("actors") or []}
+        try:
+            ev = _event(e, url)
+        except (TypeError, ValueError, AttributeError, KeyError):
+            continue  # événement malformé : ignoré, jamais bloquant
+        if ev:
+            out.append(ev)
+    return out
+
+
+def _event(e: dict, url: str) -> dict | None:
+    if True:
+        actors = {a.get("type"): a.get("label") for a in e.get("actors") or [] if isinstance(a, dict)}
         if not actors.get("home") or not actors.get("away") or not e.get("start"):
-            continue
+            return None
         start = datetime.fromisoformat(e["start"]).astimezone(timezone.utc)
-        ev = {"id": f"nb|{e['matchId']}", "url": url if url.endswith(str(e.get("id", ""))) or True else url,
+        ev = {"id": f"nb|{e['matchId']}", "url": url,
               "commence": start.isoformat().replace("+00:00", "Z"), "home": actors["home"], "away": actors["away"],
               "competition": e.get("competitionLabel"), "markets": e.get("markets", [])}
         ev["odds"] = map_markets(ev)
         del ev["markets"]
-        out.append(ev)
-    return out
+        return ev
