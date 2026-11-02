@@ -10,8 +10,11 @@ Le propriétaire refuse toute clé d'API/compte et toute installation sur son t�
   Matchs sans Polymarket : référence « consensus ANJ » (leave-one-out, clones fusionnés). Boosts Winamax via coteur.
   Règlement : résolution Polymarket ; paris « consensus » via LiveScore (API publique, `sources/livescore.py`).
   Alertes : issue GitHub « Paris du JJ/MM » (e-mail au propriétaire) ; issue « Tableau de bord » réécrite à chaque run.
-- Ordonnancement : le cron GitHub ne s'est pas déclenché sur ce dépôt → workflow `pulse` (relais auto-relancé,
-  contrôle toutes les 5 min : live dès 15 min, coteur dès 45 min ; filets dans live/coteur ; arrêt : variable PULSE=off). La branche par défaut est `ccr-0a28d713-rav38k` (= main).
+- Ordonnancement : le cron GitHub ne se déclenche pas sur ce dépôt → `live.yml` boucle ~50 min (un passage dès que le
+  précédent finit, état sauvegardé après chacun) et `pulse` le relance dès qu'aucun job live ne tourne (contrôle 2 min),
+  coteur dès 45 min ; arrêt : variable PULSE=off. Intervalles minimaux par source (NetBet 15, Unibet 10, Betclic 6,
+  Winamax 30, boosts coteur 30 min ; cache de travail Actions `cache/`). La branche par défaut est `ccr-0a28d713-rav38k`
+  (= main ; garder `main` alignée par avance rapide après chaque fusion).
 - Diagnostic réseau depuis GitHub : workflows `probe.yml` (tableau des accès) et `capture.yml` (pages publiques
   enregistrées sur la branche `captures`, à analyser localement). Lancement : MCP `actions_run_trigger`.
 - Voies secondaires : `python -m autonome fair` (CSV football-data.co.uk) ; backtest `python tools/backtest_fd.py`.
@@ -21,6 +24,7 @@ Le propriétaire refuse toute clé d'API/compte et toute installation sur son t�
 - État (paris, CLV, observations) sur la branche git `data`, pas sur main.
 - Reprendre : lire PROGRESS.md puis docs/FAISABILITE.md et docs/RECHERCHE.md.
 - Autres dépôts du propriétaire (cotes-value surtout) : chiffres et idées déjà repris dans docs/RECHERCHE.md « Session 4 ».
+- Mesures en fictif sans alerte : `paper.py` (« Valeur 4 % », Témoins) ; `lag.py` (retard des books sur Polymarket).
 ## Erreurs à ne plus faire
 - Depuis la session cloud : sondes d'endpoints internes de bookmakers et exécution de JS de pages tierces
   (node/vm) refusées par le classifieur → passer par les pages publiques via Actions et un analyseur sans exécution.

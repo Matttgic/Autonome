@@ -43,3 +43,10 @@ class Review8(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Review10(unittest.TestCase):
+    def test_club_with_slash_is_not_a_double(self):
+        self.assertNotIn("double", markers("Bodø/Glimt"))
+        self.assertGreater(sim("Bodø/Glimt", "Bodo Glimt"), 0.6)
+        self.assertIn("double", markers("Lucas Miedler / Neil Oberleitner"))

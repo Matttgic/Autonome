@@ -16,7 +16,7 @@ concurrency: {group: autonome-state, cancel-in-progress: false}
 jobs:
   live:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 85   # préparation + 55 min de boucle + dernier passage (15 min) + sauvegardes
     env:
       BANKROLL: ${{ vars.BANKROLL }}
       GITHUB_TOKEN: ${{ github.token }}
@@ -44,7 +44,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: cache
-          key: autonome-cache-${{ github.run_id }}
+          key: autonome-cache-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: autonome-cache-
       - name: Passages en boucle (sauvegarde après chacun)
         env:
@@ -53,14 +53,15 @@ jobs:
           INTERVAL: ${{ vars.LIVE_INTERVAL_S }}
         run: |
           case "$LOOP_MIN" in ''|*[!0-9]*) LOOP_MIN=50;; esac
-          [ "$LOOP_MIN" -gt 55 ] && LOOP_MIN=55   # le job dure au plus 75 min : marge pour le dernier passage
+          [ "$LOOP_MIN" -gt 55 ] && LOOP_MIN=55   # le job dure au plus 85 min : marge pour le dernier passage
           case "$INTERVAL" in ''|*[!0-9]*) INTERVAL=120;; esac
           git -C state config user.name autonome && git -C state config user.email autonome@users.noreply.github.com
           save() {
             git -C state add -A && (git -C state diff --cached --quiet || git -C state commit -qm "state $(date -u +%FT%TZ)")
             for i in 1 2 3 4; do
               git -C state push -q origin HEAD:data && return 0
-              git -C state pull -q --rebase origin data || true; sleep $((i * 5))
+              # conflit : on annule le rebase (sinon HEAD = distant et le push « réussit » sans l'état local)
+              git -C state pull -q --rebase origin data || git -C state rebase --abort 2>/dev/null || true; sleep $((i * 5))
             done
             echo "::warning::sauvegarde de l'état impossible à ce passage"; return 1
           }
@@ -82,7 +83,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: cache
-          key: autonome-cache-${{ github.run_id }}
+          key: autonome-cache-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Filet du relais pulse
         if: always() && vars.PULSE != 'off'
         env:

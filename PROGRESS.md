@@ -118,3 +118,6 @@ tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jo
   Actions). 9e revue (Winamax/paper) : CLV seulement sur un instantané plus récent que la prise (touchait aussi les
   vrais paris consensus), même méthode qu'à l'entrée, Témoin apparié, paris fictifs non réglables exclus / abandon
   48 h, cache LiveScore 90 min (8 requêtes max), Winamax ≤ 1 lecture/30 min, état introuvable signalé. 158 tests.
+- 10e revue + skill code-review : mesure du retard réécrite (sources directes, une issue par marché, trous
+  d'observation, suivis dans le passage, retournements, abandons), intervalles minimaux par source, erreurs LiveScore
+  sans blocage des vrais paris, écritures atomiques, « Bodø/Glimt » n'est pas un double, sauvegarde git sûre. 163 tests.
