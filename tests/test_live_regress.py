@@ -55,3 +55,20 @@ class R(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class R2(unittest.TestCase):
+    def test_rejected_market_does_not_drop_following_ones(self):
+        m = lambda i, t, lab, b, a, outs, line=None: {"id": i, "sportsMarketType": t, "groupItemTitle": lab, "bestBid": b,
+                                                      "bestAsk": a, "outcomes": outs, "line": line, "liquidityNum": 9999,
+                                                      "active": True}
+        ev = [{"title": "A vs. B", "slug": "s", "startTime": "2026-11-02T19:45:00Z", "markets": [
+                  {"id": i, "groupItemTitle": n, "bestBid": b, "bestAsk": b + 0.01, "liquidityNum": 9999, "active": True}
+                  for i, n, b in (("1", "A", 0.39), ("2", "Draw (A vs. B)", 0.29), ("3", "B", 0.31))]},
+              {"title": "A vs. B - More Markets", "slug": "s2", "startTime": "2026-11-02T19:45:00Z", "markets": [
+                  m("9", "both_teams_to_score", "BTTS", 0.40, 0.60, '["Yes", "No"]'),         # rejeté (écart)
+                  m("8", "totals", "O/U 2.5", 0.49, 0.51, '["Over", "Under"]', None),          # rejeté (ligne absente)
+                  m("7", "totals", "O/U 2.5", 0.49, 0.51, '["Over", "Under"]', 2.5)]}]       # valide
+        g = pm.build_reference(ev)[0]
+        self.assertIn("ou@2.5", g["markets"])
+        self.assertNotIn("btts", g["markets"])

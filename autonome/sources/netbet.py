@@ -157,14 +157,13 @@ def parse_event_page(html: str, url: str) -> list[dict]:
 
 
 def _event(e: dict, url: str) -> dict | None:
-    if True:
-        actors = {a.get("type"): a.get("label") for a in e.get("actors") or [] if isinstance(a, dict)}
-        if not actors.get("home") or not actors.get("away") or not e.get("start"):
-            return None
-        start = datetime.fromisoformat(e["start"]).astimezone(timezone.utc)
-        ev = {"id": f"nb|{e['matchId']}", "url": url,
-              "commence": start.isoformat().replace("+00:00", "Z"), "home": actors["home"], "away": actors["away"],
-              "competition": e.get("competitionLabel"), "markets": e.get("markets", [])}
-        ev["odds"] = map_markets(ev)
-        del ev["markets"]
-        return ev
+    actors = {a.get("type"): a.get("label") for a in e.get("actors") or [] if isinstance(a, dict)}
+    if not actors.get("home") or not actors.get("away") or not e.get("start"):
+        return None
+    start = datetime.fromisoformat(e["start"]).astimezone(timezone.utc)
+    ev = {"id": f"nb|{e['matchId']}", "url": url,
+          "commence": start.isoformat().replace("+00:00", "Z"), "home": actors["home"], "away": actors["away"],
+          "competition": e.get("competitionLabel"), "markets": e.get("markets", [])}
+    ev["odds"] = map_markets(ev)
+    del ev["markets"]
+    return ev

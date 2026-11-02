@@ -84,67 +84,73 @@ def build_reference(raw_events: list[dict], max_spread: float = MAX_SPREAD, min_
 
 
 def _add_event(games: dict, e: dict, max_spread: float, min_liq: float) -> None:
-    if True:
-        title = e.get("title") or ""
-        base, _, suffix = title.partition(" - ")
-        if " vs. " not in base:
+    title = e.get("title") or ""
+    base, _, suffix = title.partition(" - ")
+    if " vs. " not in base:
+        return
+    home, away = [x.strip() for x in base.split(" vs. ", 1)]
+    start = e.get("startTime")
+    if not start:
+        return
+    g = games.setdefault(f"{base}|{start[:16]}", {"key": f"pm|{e.get('slug', base)}", "commence": start,
+                                                   "home": home, "away": away, "markets": {}, "updated": "",
+                                                   "main": False})
+    if not suffix:  # clé stable = slug de l'événement principal (sans lui, le match est ignoré)
+        if not e.get("slug"):
             return
-        home, away = [x.strip() for x in base.split(" vs. ", 1)]
-        start = e.get("startTime")
-        if not start:
-            return
-        g = games.setdefault(f"{base}|{start[:16]}", {"key": f"pm|{e.get('slug', base)}", "commence": start,
-                                                       "home": home, "away": away, "markets": {}, "updated": "",
-                                                       "main": False})
-        if not suffix:  # clé stable = slug de l'événement principal (sans lui, le match est ignoré)
-            if not e.get("slug"):
-                return
-            g["key"], g["main"] = f"pm|{e['slug']}", True
-        g["updated"] = max(g["updated"], e.get("updatedAt") or "")
-        mk = g["markets"]
-        ms = e.get("markets", [])
-        if not suffix or suffix == "Halftime Result":
-            q = {}
-            for m in ms or []:
-                lab = (m.get("groupItemTitle") or "")
-                sel = "draw" if lab.lower().startswith("draw") else "home" if lab == home else "away" if lab == away else None
-                qq = _quote(m, max_spread, min_liq)
-                if sel and qq:
-                    q[sel] = qq
-            if len(q) == 3:
-                s = sum(v["mid"] for v in q.values())
-                if 0.97 <= s <= 1.03:
-                    legs = {k: {"p": v["mid"] / s, "lo": v["bid"] / s, "hi": v["ask"] / s, "legs": [[v["id"], 0]],
-                                "spread": v["ask"] - v["bid"]} for k, v in q.items()}
-                    key = "1x2" if not suffix else "ht1x2"
-                    mk[key] = legs
-                    if key == "1x2":
-                        mk["dc"] = {"1X": _sum(legs["home"], legs["draw"]), "X2": _sum(legs["draw"], legs["away"]),
-                                    "12": _sum(legs["home"], legs["away"])}
-        elif suffix == "More Markets":
-            for m in ms or []:
-                t, lab = m.get("sportsMarketType"), (m.get("groupItemTitle") or "")
-                q = _quote(m, max_spread, min_liq)
-                if not q:
-                    return
-                try:
-                    outs = json.loads(m.get("outcomes") or "[]")
-                except json.JSONDecodeError:
-                    return
-                if t == "totals" and outs == ["Over", "Under"]:
-                    mk[f"ou@{_line(m['line'])}"] = {"over": _leg(q, 0), "under": _leg(q, 1)}
-                elif t == "first_half_totals" and outs == ["Over", "Under"]:
-                    mk[f"ht_ou@{_line(m['line'])}"] = {"over": _leg(q, 0), "under": _leg(q, 1)}
-                elif t == "both_teams_to_score" and outs == ["Yes", "No"]:
-                    mk["btts"] = {"yes": _leg(q, 0), "no": _leg(q, 1)}
-                elif t == "soccer_team_totals" and outs == ["Over", "Under"]:
-                    side = "home" if lab.startswith(home) else "away" if lab.startswith(away) else None
-                    if side:
-                        mk[f"team_ou@{side}@{_line(m['line'])}"] = {"over": _leg(q, 0), "under": _leg(q, 1)}
-                elif t == "spreads" and _f(m.get("line")) is not None and _f(m.get("line")) < 0 and len(outs) == 2:
-                    fav = "home" if outs[0] == home else "away" if outs[0] == away else None
-                    if fav:  # issue 0 = fav gagne avec plus de |ligne| buts d'écart
-                        mk[f"ah@{fav}@{_line(m['line'])}"] = {"fav": _leg(q, 0), "dog": _leg(q, 1)}
+        g["key"], g["main"] = f"pm|{e['slug']}", True
+    g["updated"] = max(g["updated"], e.get("updatedAt") or "")
+    mk = g["markets"]
+    ms = e.get("markets", [])
+    if not suffix or suffix == "Halftime Result":
+        q = {}
+        for m in ms or []:
+            lab = (m.get("groupItemTitle") or "")
+            sel = "draw" if lab.lower().startswith("draw") else "home" if lab == home else "away" if lab == away else None
+            qq = _quote(m, max_spread, min_liq)
+            if sel and qq:
+                q[sel] = qq
+        if len(q) == 3:
+            s = sum(v["mid"] for v in q.values())
+            if 0.97 <= s <= 1.03:
+                legs = {k: {"p": v["mid"] / s, "lo": v["bid"] / s, "hi": v["ask"] / s, "legs": [[v["id"], 0]],
+                            "spread": v["ask"] - v["bid"]} for k, v in q.items()}
+                key = "1x2" if not suffix else "ht1x2"
+                mk[key] = legs
+                if key == "1x2":
+                    mk["dc"] = {"1X": _sum(legs["home"], legs["draw"]), "X2": _sum(legs["draw"], legs["away"]),
+                                "12": _sum(legs["home"], legs["away"])}
+    elif suffix == "More Markets":
+        for m in ms or []:
+            try:
+                _add_more(mk, m, home, away, max_spread, min_liq)
+            except (TypeError, ValueError, KeyError, AttributeError):
+                continue  # un marché malformé n'invalide pas les autres
+
+
+def _add_more(mk: dict, m: dict, home: str, away: str, max_spread: float, min_liq: float) -> None:
+    t, lab = m.get("sportsMarketType"), (m.get("groupItemTitle") or "")
+    q = _quote(m, max_spread, min_liq)
+    if not q:
+        return
+    outs = m.get("outcomes") or "[]"
+    outs = json.loads(outs) if isinstance(outs, str) else list(outs)
+    if t in ("totals", "first_half_totals", "soccer_team_totals") and _f(m.get("line")) is None:
+        return
+    if t == "totals" and outs == ["Over", "Under"]:
+        mk[f"ou@{_line(m['line'])}"] = {"over": _leg(q, 0), "under": _leg(q, 1)}
+    elif t == "first_half_totals" and outs == ["Over", "Under"]:
+        mk[f"ht_ou@{_line(m['line'])}"] = {"over": _leg(q, 0), "under": _leg(q, 1)}
+    elif t == "both_teams_to_score" and outs == ["Yes", "No"]:
+        mk["btts"] = {"yes": _leg(q, 0), "no": _leg(q, 1)}
+    elif t == "soccer_team_totals" and outs == ["Over", "Under"]:
+        side = "home" if lab.startswith(home) else "away" if lab.startswith(away) else None
+        if side:
+            mk[f"team_ou@{side}@{_line(m['line'])}"] = {"over": _leg(q, 0), "under": _leg(q, 1)}
+    elif t == "spreads" and _f(m.get("line")) is not None and _f(m.get("line")) < 0 and len(outs) == 2:
+        fav = "home" if outs[0] == home else "away" if outs[0] == away else None
+        if fav:  # issue 0 = fav gagne avec plus de |ligne| buts d'écart
+            mk[f"ah@{fav}@{_line(m['line'])}"] = {"fav": _leg(q, 0), "dog": _leg(q, 1)}
 
 
 def fetch(tags=TAGS) -> tuple[list[dict], list[str]]:
