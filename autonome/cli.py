@@ -159,6 +159,31 @@ def cmd_fair(a, cfg):
     return 0
 
 
+def _due(state, source, now, minutes: float) -> bool:
+    """Source à relire ? Au plus une lecture toutes les `minutes` (passages quasi continus : on ne martèle pas les
+    sites). Horodatages dans le cache de travail (hors git) ; cache perdu = lecture immédiate. Marque la lecture."""
+    d = Path(os.environ.get("AUTONOME_CACHE") or state)
+    d.mkdir(parents=True, exist_ok=True)
+    f = d / "fetch_times.json"
+    try:
+        times = json.loads(f.read_text()) if f.exists() else {}
+    except (ValueError, OSError):
+        times = {}
+    last = times.get(source)
+    if last and (now - datetime.fromisoformat(last)).total_seconds() < minutes * 60:
+        return False
+    times[source] = now.isoformat()
+    _atomic_write(f, json.dumps(times))
+    return True
+
+
+def _atomic_write(path, text: str) -> None:
+    """Écriture atomique (un passage tué par timeout ne laisse jamais un JSON tronqué)."""
+    tmp = Path(str(path) + ".tmp")
+    tmp.write_text(text)
+    os.replace(tmp, path)
+
+
 def _blocked(state, source, now) -> bool:
     """Source en pause (elle nous a renvoyé 403/429 récemment) : on respecte le refus, sans insister."""
     rows = store.read(state, "backoff.jsonl")
@@ -216,28 +241,56 @@ def cmd_live(a, cfg):
     try:
         from . import consensus as CS0
         from .sources import livescore
+        from . import paper as PP0
         rows_s = store.read(a.state, tracker.BETS)
+        rows_p = store.read(a.state, PP0.FILE)
         results = []
         ls0 = len(errors)
-        for sport, day in sorted(CS0.days_to_fetch(rows_s, now)) if not _blocked(a.state, "livescore", now) else []:
+        cache_dir = Path(os.environ.get("AUTONOME_CACHE") or a.state)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        ls_path = cache_dir / "livescore_cache.json"
+        try:
+            ls_cache = json.loads(ls_path.read_text()) if ls_path.exists() else {}
+        except (ValueError, OSError):
+            ls_cache = {}
+        real = CS0.days_to_fetch(rows_s, now)
+        wanted = sorted(real) + sorted(CS0.days_to_fetch(rows_p, now) - real)  # vrais paris d'abord
+        n_req, stop = 0, False
+        for sport, day in wanted if not _blocked(a.state, "livescore", now) else []:
+            key = f"{sport}|{day}"
+            hit = ls_cache.get(key)
+            if hit and (now - datetime.fromisoformat(hit["at"])).total_seconds() < 90 * 60:
+                results += hit["results"]  # relu il y a moins de 90 min : pas de nouvelle requête
+                continue
+            if stop or n_req >= lcfg.get("livescore_max_req", 8):
+                continue  # plus de requête ce passage, mais les jours en cache restent utilisés
+            n_req += 1
             try:
-                results += livescore.fetch(sport, day)
+                got = livescore.fetch(sport, day)
+                results += got
+                ls_cache[key] = {"at": now.isoformat(), "results": got}
             except livescore.SourceError as ex:
                 errors.append(str(ex))
-                if "HTTP 403" in str(ex) or "HTTP 429" in str(ex):
-                    break  # refus : on n'insiste pas sur les autres jours
+                if any(x in str(ex) for x in ("HTTP 403", "HTTP 429", "Timeout", "URLError", "timed out")):
+                    stop = True  # refus ou réseau : on n'insiste pas ce passage
+                else:
+                    ls_cache[key] = {"at": now.isoformat(), "results": [], "error": str(ex)[:80]}  # 404, JSON… : 90 min
+        ls_cache = {k: v for k, v in ls_cache.items() if (now - datetime.fromisoformat(v["at"])).total_seconds() < 6 * 3600}
+        _atomic_write(ls_path, json.dumps(ls_cache, separators=(",", ":")))
         _maybe_block(a.state, "livescore", ls0, errors, now)
         n_cons = CS0.settle(rows_s, results, now) if results else 0
         if n_cons:
             store.write_all(a.state, tracker.BETS, rows_s)
             settled += n_cons
+        if results and CS0.settle(rows_p, results, now):
+            store.write_all(a.state, PP0.FILE, rows_p)
     except Exception as e:  # noqa: BLE001
         errors.append(f"règlement consensus: {type(e).__name__}")
     # NetBet : pages de compétition -> événements dans la fenêtre -> pages d'événements (1 req / 5 s)
     soon = [g for g in ref if 0 < live._mins(g["commence"], now) <= lcfg["max_hours_to_start"] * 60]
     book_events, urls = [], []
     nb0 = len(errors)
-    if soon and not _blocked(a.state, "netbet", now):
+    if soon and not _blocked(a.state, "netbet", now) and _due(a.state, "netbet", now, lcfg.get("netbet_every_min", 15)):
         for comp in cfg.get("netbet_competitions", nb.COMPETITIONS):
             try:
                 urls += nb.event_urls(nb.fetch(comp))
@@ -247,7 +300,12 @@ def cmd_live(a, cfg):
                     break  # refus : on arrête immédiatement
         from .match import slug_hits
         wanted = [u for u in dict.fromkeys(urls) if any(slug_hits(u, g["home"], g["away"]) for g in soon)]
+        import time as _t0
+        nb_end = _t0.monotonic() + lcfg.get("netbet_budget_s", 150)
         for u in wanted[: lcfg.get("max_event_pages", 40)]:
+            if _t0.monotonic() > nb_end:
+                errors.append("netbet : budget de temps atteint")
+                break
             try:
                 book_events += nb.parse_event_page(nb.fetch(u), u)
             except Exception as e:  # noqa: BLE001 - une page défectueuse ne doit jamais arrêter le run
@@ -257,7 +315,7 @@ def cmd_live(a, cfg):
     from .sources import unibet as ub
     ub_events = []
     ub0 = len(errors)
-    if soon and not _blocked(a.state, "unibet", now):
+    if soon and not _blocked(a.state, "unibet", now) and _due(a.state, "unibet", now, lcfg.get("unibet_every_min", 10)):
         for pg in cfg.get("unibet_pages", ub.PAGES):
             try:
                 ub_events += ub.parse_page(ub.fetch(pg))
@@ -290,7 +348,8 @@ def cmd_live(a, cfg):
     # liste de 4 sports, puis tous les marchés des seuls matchs appariés à Polymarket.
     from .sources import betclic as bcl
     bc_events, bc0 = [], len(errors)
-    if soon and not _blocked(a.state, "betclic", now) and lcfg.get("betclic", True):
+    if soon and not _blocked(a.state, "betclic", now) and lcfg.get("betclic", True) \
+            and _due(a.state, "betclic", now, lcfg.get("betclic_every_min", 6)):
         import time as _time
         t_end = _time.monotonic() + lcfg.get("betclic_budget_s", 150)
         try:
@@ -317,7 +376,26 @@ def cmd_live(a, cfg):
         except Exception as e:  # noqa: BLE001 - une source en panne n'arrête jamais le passage
             errors.append(f"betclic: {type(e).__name__}: {e}"[:160])
     _maybe_block(a.state, "betclic", bc0, errors, now)
-    books = {"netbet_fr": book_events, "unibet_fr": ub_events, "pmu_fr": pmu_events, "betclic_fr": bc_events}
+    # Winamax : page publique (requête ordinaire, sans exécuter de JS) ; 403 la plupart du temps depuis GitHub -> pause 6 h.
+    from .sources import winamax as wmx
+    wx_events, wx0 = [], len(errors)
+    wx_last = store.read(a.state, "winamax_fetch.jsonl")[-1:]
+    wx_due = not wx_last or (now - datetime.fromisoformat(wx_last[0]["at"])).total_seconds() >= 60 * lcfg.get("winamax_every_min", 30)
+    if wx_due and not _blocked(a.state, "winamax", now):
+        store.write_all(a.state, "winamax_fetch.jsonl", [{"at": now.isoformat()}])
+        for pg in wmx.PAGES:
+            try:
+                wx_events += wmx.events_from(wmx.state(wmx.fetch(pg)), now, lcfg["max_hours_to_start"])
+            except Exception as ex:  # noqa: BLE001 - toute panne : pause d'une heure (403/429 : 6 h, plus bas)
+                errors.append(str(ex)[:160] if isinstance(ex, wmx.SourceError) else f"winamax: {type(ex).__name__}")
+                if "HTTP 403" not in str(ex) and "HTTP 429" not in str(ex):
+                    from datetime import timedelta as _td
+                    store.append(a.state, "backoff.jsonl", [{"source": "winamax", "at": now.isoformat(),
+                                                             "until": (now + _td(hours=1)).isoformat()}])
+                break
+    _maybe_block(a.state, "winamax", wx0, errors, now)
+    books = {"netbet_fr": book_events, "unibet_fr": ub_events, "pmu_fr": pmu_events, "betclic_fr": bc_events,
+             "winamax_fr": wx_events}
     # coteur.com (instantané du workflow coteur) : Betclic, Unibet, Betsson, Olybet, Vbet, DAZN Bet, etc.
     from . import consensus as CS
     from .sources import coteur_odds
@@ -342,13 +420,37 @@ def cmd_live(a, cfg):
         allc += live.scan(ref, evs, bk, now, diag)[1]  # mesure : TOUTES les cotes comparables, même négatives
     # consensus : uniquement les matchs SANS référence Polymarket (sinon deux références pour un même match)
     from .match import pair as _pair2
-    covered = {id(b) for _, b in _pair2(ref, ct_matches)}
+    # couvert = apparié à Polymarket ET au moins un marché comparable (hockey : coteur 1N2, Polymarket vainqueur -> non)
+    covered = {id(b) for r, b in _pair2(ref, ct_matches)
+               if set(r["markets"]) & {mk for o in b["books"].values() for mk in o}}
+    ct_all = ct_matches  # stratégies fictives (paper.py) : tous les matchs coteur, couverts ou non par Polymarket
     ct_matches = [m for m in ct_matches if id(m) not in covered]
     cons_diag = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"],
                                                                 {"min_ev": -9, "max_ev": 9, "max_dispersion": 9, "diagnostic": True})]
     cons_picks = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"],
                                                             {"max_book_age_min": lcfg["max_book_age_min"]})]
     cands, gated, gated_detail = live.gate(cands, allc, lcfg)
+    # Retard des books sur Polymarket (lag.py) : état de travail hors git (cache Actions), résultats sur data.
+    try:
+        from . import lag as LG
+        cache_dir = Path(os.environ.get("AUTONOME_CACHE") or a.state)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        lag_path = cache_dir / "lag_state.json"
+        try:
+            lag_state = json.loads(lag_path.read_text()) if lag_path.exists() else {}
+        except (ValueError, OSError):
+            lag_state = {}
+            errors.append("retard : état de travail illisible, réinitialisé")
+        lag_new = LG.update(lag_state, allc, now)
+        _atomic_write(lag_path, json.dumps(lag_state, separators=(",", ":")))
+        if lag_new:
+            store.append(a.state, "lag.jsonl", lag_new)
+            recs = store.read(a.state, "lag.jsonl")
+            if len(recs) > 20000:  # rotation : 30 derniers jours
+                from datetime import timedelta as _td
+                store.write_all(a.state, "lag.jsonl", [r for r in recs if r.get("at", "") >= (now - _td(days=30)).isoformat()])
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"retard: {type(e).__name__}: {e}"[:160])
     obs = live.summarize(allc, now)
     obs["ecartes"], obs["ecartes_top"] = gated, gated_detail
     obs["consensus"] = {bk: live.summarize([c for c in cons_diag if c["book"] == bk], now)["by_family"]
@@ -357,7 +459,15 @@ def cmd_live(a, cfg):
                             for c in sorted(cons_diag, key=lambda c: -c["ev"])[:8]]
     obs["by_book"] = {bk: live.summarize([c for c in allc if c["book"] == bk], now)["by_family"] for bk in books}
     obs["pairs_by_book"] = {bk: sum(1 for c in {(x["book"], x["event_id"]) for x in allc} if c[0] == bk) for bk in books}
-    store.append(a.state, "observations.jsonl", [obs])
+    # Mesure enregistrée au plus toutes les obs_every_min minutes (passages quasi continus : l'historique git grossirait
+    # de ~3 Mo/jour) ; la détection et le tableau de bord, eux, utilisent chaque passage.
+    prev = store.read(a.state, "observations.jsonl")[-1:]
+    try:
+        keep_obs = not prev or (now - datetime.fromisoformat(prev[0]["at"])).total_seconds() >= 60 * lcfg.get("obs_every_min", 14)
+    except (KeyError, ValueError, TypeError):
+        keep_obs = True
+    if keep_obs:
+        store.append(a.state, "observations.jsonl", [obs])
     rows = store.read(a.state, tracker.BETS)
     seen = {r["event_id"] for r in rows if r.get("ref_kind") == "polymarket"}
     today = now.date().isoformat()
@@ -374,8 +484,23 @@ def cmd_live(a, cfg):
     from . import boosts as BO
     from .sources import coteur
     boost_eval, boost_picks = [], []
+
+    class _NoBoosts(Exception):
+        pass
+    boosts_read = False
     try:
-        parsed = coteur.parse(coteur.fetch())
+        last = store.read(a.state, "boosts_fetch.jsonl")[-1:]
+        recent = bool(last) and (now - datetime.fromisoformat(last[0]["at"])).total_seconds() < 60 * lcfg.get("boosts_every_min", 30)
+        if recent or _blocked(a.state, "coteur_boosts", now):
+            raise _NoBoosts("boosts : relus au plus toutes les 30 min")
+        store.write_all(a.state, "boosts_fetch.jsonl", [{"at": now.isoformat()}])
+        bo0 = len(errors)
+        try:
+            parsed = coteur.parse(coteur.fetch())
+        except Exception as ex:  # noqa: BLE001
+            errors.append(f"boosts coteur: {ex}"[:160])
+            _maybe_block(a.state, "coteur_boosts", bo0, errors, now)
+            raise _NoBoosts("boosts : lecture en échec") from None
         seen_rows = store.read(a.state, "boosts_seen.jsonl")
         seen = {(r.get("event"), r.get("text")) for r in seen_rows}  # clé stable (indépendante de la cote)
         first = not seen_rows  # premier relevé = référence : on ne sait pas dater ces boosts
@@ -385,6 +510,9 @@ def cmd_live(a, cfg):
         store.append(a.state, "boosts_seen.jsonl",
                      [{"id": b["id"], "first_seen": now.isoformat(), "event": b["event"], "text": b["text"],
                        "odds": b["odds"]} for b in parsed if (b["event"], b["text"]) not in seen])
+        boosts_read = True
+    except _NoBoosts:
+        pass  # boosts non relus à ce passage (cadence ou pause) : rien de nouveau
     except Exception as e:  # noqa: BLE001
         errors.append(f"boosts: {type(e).__name__}: {e}"[:160])
     known = {r["bet_id"] for r in rows}
@@ -406,14 +534,33 @@ def cmd_live(a, cfg):
     rows2 = store.read(a.state, tracker.BETS)
     if CS.closing(rows2, ct_matches, now):
         store.write_all(a.state, tracker.BETS, rows2)
+    # Stratégies suivies en paris fictifs (aucune alerte) : « Valeur 4 % » et « Témoin » (paper.py).
+    try:
+        from . import paper as PP
+        prows = store.read(a.state, PP.FILE)
+        before = json.dumps(prows, sort_keys=True)
+        new = PP.picks(ct_all, now, {(r.get("strategy"), r.get("event_id")) for r in prows}, lcfg["max_book_age_min"])
+        prows += [{**r, "status": "open", "close": None, "result": None, "found_at": now.isoformat()} for r in new]
+        CS.closing(prows, ct_all, now)
+        PP.abandon(prows, now)
+        if json.dumps(prows, sort_keys=True) != before:  # pas de commit inutile à chaque passage
+            store.write_all(a.state, PP.FILE, prows)
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"paper: {type(e).__name__}: {e}"[:160])
     obs["boosts"] = {"lus": len(boost_eval), "evaluables": sum(e["evaluable"] for e in boost_eval),
                      "value": len(boost_picks),
                      "top": [{k: e.get(k) for k in ("event", "text", "odds", "fair_odds", "ev", "ev_cons", "commence")}
                              for e in sorted((x for x in boost_eval if x["evaluable"]), key=lambda x: -x["ev"])[:15]]}
-    store.write_all(a.state, "observations.jsonl", store.read(a.state, "observations.jsonl")[:-1] + [obs])
+    if not boosts_read and prev and prev[0].get("boosts"):
+        obs["boosts"] = prev[0]["boosts"]  # boosts non relus à ce passage : dernier relevé (pas « 0 lu »)
+    if boosts_read and not keep_obs:
+        keep_obs = True
+        store.append(a.state, "observations.jsonl", [obs])  # remplacé juste après par la version complète
+    if keep_obs:
+        store.write_all(a.state, "observations.jsonl", store.read(a.state, "observations.jsonl")[:-1] + [obs])
     meta = {"at": now.isoformat(), "mode": "live", "ref_games": len(ref), "ref_soon": len(soon),
             "netbet_pages": len(book_events), "unibet_events": len(ub_events), "pmu_events": len(pmu_events),
-            "betclic_events": len(bc_events),
+            "betclic_events": len(bc_events), "winamax_events": len(wx_events),
             "pmu_par_sport": pmu_cov, "coteur_matchs": len(ct_matches),
             "coteur_books": {k: len(v) for k, v in ct_books.items()}, "pairs": len(pairs), "candidates": len(cands), "picked": len(picks),
             "closing_updates": closed, "settled": settled, "boosts_lus": len(boost_eval),
@@ -480,6 +627,31 @@ def dashboard_md(root, meta, obs=None) -> str:
                   "| Match | Pari | Book | Début (UTC) |", "|---|---|---|---|"]
         lines += [f"| {notify.md(r['home'])}–{notify.md(r['away'])} | {notify.md(r.get('label', r['selection']))} | "
                   f"{notify.md(r.get('book', ''))} | {r['commence'][:16]} |" for r in stale[-20:]]
+    from . import lag as LG
+    lag_sum = LG.summary(store.read(root, "lag.jsonl"), datetime.now(timezone.utc))
+    if lag_sum:
+        lines += ["", "## Retard des bookmakers sur Polymarket (7 jours, mouvements ≥ 2 points, sources directes)",
+                  "| Book | Suivis | Pas suivis avant le match | Sens contraire | Référence revenue | Non observés | "
+                  "Délai médian | 3e quartile | Suivis en ≤ 15 min |", "|---|---|---|---|---|---|---|---|---|"]
+        for x in lag_sum:
+            w15 = "—" if x["within_15"] is None else f"{x['within_15']:.0%}"
+            lines.append(f"| {notify.md(str(x['book']))} | {x['followed']} | {x['not_followed']} | {x['opposite']} | "
+                         f"{x['reverted']} | {x['unobserved']} | "
+                         f"{'—' if x['median_min'] is None else str(x['median_min']) + ' min'} | "
+                         f"{'—' if x['p75_min'] is None else str(x['p75_min']) + ' min'} | {w15} |")
+        lines.append("Un book qui suit lentement (ou pas) les mouvements du marché est celui où une value a le plus de chances d'apparaître.")
+    from . import paper as PP
+    paper = PP.summary(store.read(root, PP.FILE))
+    if any(x["n"] for x in paper):
+        lines += ["", "## Stratégies suivies en fictif (bankroll 1 000 €, aucune alerte)",
+                  "| Stratégie | Paris (en cours, non réglés) | Réglés | ROI | Réussite | CLV moy. (réglés) | Bankroll |",
+                  "|---|---|---|---|---|---|---|"]
+        for x in paper:
+            hit = "—" if x["hit"] is None else f"{x['hit']:.0%}"
+            lines.append(f"| {x['name']} | {x['n']} ({x['open']}, {x['unsettled']}) | {x['settled']} | {pct(x['roi'])} | {hit} | "
+                         f"{pct(x['clv'])} (n={x['n_clv']}) | {x['bankroll']:.2f} € |")
+        lines.append("Battre un Témoin est nécessaire, pas suffisant : il faut aussi un ROI et une CLV positifs sur plusieurs "
+                     "centaines de paris. Le Témoin apparié (même match, même moment) est la comparaison juste.")
     if obs and obs.get("ecartes_top"):
         lines += ["", "## Values écartées par les garde-fous (dernier passage)",
                   "| Raison | Book · sport · marché | Match | Cote | EV | Âge (min) | Groupe : matchs, EV médiane |",

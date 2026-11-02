@@ -79,7 +79,8 @@ def map_offers(event: dict, offers: list[dict]) -> dict[str, dict[str, float]]:
             for t, s in (("OT_ONE", "home"), ("OT_CROSS", "draw"), ("OT_TWO", "away")):
                 _put(out, "ht1x2", s, _odds(by[t]))
         elif typ == "Match" and set(by) == {"OT_ONE", "OT_TWO"} and (
-                crit == "Match Odds" and sport in ("TENNIS", "UFC_MMA", "BOXING", "TABLE_TENNIS", "DARTS", "SNOOKER", "ESPORTS")
+                crit == "Match Odds" and sport in ("TENNIS", "UFC_MMA", "BOXING", "TABLE_TENNIS", "DARTS", "SNOOKER", "ESPORTS",
+                                                  "VOLLEYBALL")
                 or (crit.startswith("Match Odds") and "Including Overtime" in crit
                     and sport in ("BASKETBALL", "ICE_HOCKEY", "AMERICAN_FOOTBALL"))
                 or (crit == "Match Odds" and sport == "BASKETBALL")):

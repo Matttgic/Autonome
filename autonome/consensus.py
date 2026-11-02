@@ -11,6 +11,9 @@ from datetime import datetime
 from . import value as V
 from .devig import shin
 
+# Paris réglés/clôturés comme le consensus : le consensus lui-même et les stratégies fictives de paper.py.
+KINDS = {"consensus-anj", "paper-valeur4", "paper-temoin", "paper-temoin-apparie"}
+
 CFG = {"min_books": 6, "min_groups": 5, "min_ev": 0.07, "max_ev": 0.4, "min_odds": 1.3, "max_odds": 6.0,
        "min_minutes_to_start": 20, "max_hours_to_start": 48, "max_dispersion": 0.04,
        "max_book_age_min": 60}  # remplacé par live.CFG au passage live (une seule valeur de réglage)
@@ -67,29 +70,46 @@ def evaluate(match: dict, now: datetime, bankroll: float, cfg=None) -> list[dict
                             "devig_method": f"Shin, moyenne de {len(others)} bookmakers ANJ (hors {bk})",
                             "p_fair": p, "p_cons": p_cons, "p_hi": p + disp / 2, "spread": disp,
                             "fair_odds": 1 / p, "ev": ev, "ev_cons": V.ev(p_cons, odds), "legs": [],
-                            "stake": stake, "found_at": now.isoformat(), "coteur_renc": match["renc"]})
+                            "stake": stake, "found_at": now.isoformat(), "coteur_renc": match["renc"],
+                            "snap_at": _snap(match, now)})
     return out
 
 
+def _snap(match: dict, now: datetime) -> str | None:
+    """Heure de l'instantané coteur dont vient le match (à la minute), None si inconnue."""
+    from datetime import timedelta
+    age = match.get("snapshot_age_min")
+    return None if age is None else (now - timedelta(minutes=age)).replace(second=0, microsecond=0).isoformat()
+
+
 def closing(rows: list[dict], matches: list[dict], now: datetime) -> int:
-    """Clôture des paris « consensus » : consensus recalculé sur l'instantané coteur le plus récent."""
+    """Clôture : consensus recalculé, avec la MÊME méthode qu'à l'entrée (clones fusionnés, min_groups), sur un
+    instantané coteur STRICTEMENT plus récent que celui de la prise (sinon la « CLV » vaudrait l'EV d'entrée).
+    Pas d'instantané plus récent avant le coup d'envoi = clôture absente (signalée absente)."""
     by = {m["renc"]: m for m in matches}
     n = 0
     for r in rows:
-        if r.get("status") != "open" or r.get("ref_kind") != "consensus-anj" or r.get("coteur_renc") not in by:
+        if r.get("status") != "open" or r.get("ref_kind") not in KINDS or r.get("coteur_renc") not in by:
             continue
         m = by[r["coteur_renc"]]
         mins = (datetime.fromisoformat(m["commence"].replace("Z", "+00:00")) - now).total_seconds() / 60
-        if mins <= 0:
+        snap = _snap(m, now)
+        if mins <= 0 or snap is None:
             continue
+        ref = (r.get("close") or {}).get("snap_at") or r.get("snap_at")
+        if ref and snap <= ref:
+            continue  # même instantané (ou plus ancien) : rien de nouveau
         names = ["home", "draw", "away"] if r["group"] == "1x2" else ["home", "away"]
-        fair = [dict(zip(names, shin([o[r["group"]][x] for x in names]))) for bk, o in m["books"].items()
-                if bk != r["book"] and r["group"] in o and all(x in o[r["group"]] for x in names)]
-        if len(fair) < CFG["min_books"]:
+        full = {bk: o[r["group"]] for bk, o in m["books"].items()
+                if bk != r["book"] and r["group"] in o and all(x in o[r["group"]] for x in names)}
+        groups: dict = {}
+        for bk, o in full.items():  # books aux cotes identiques (même fournisseur) = une seule voix, comme à l'entrée
+            groups.setdefault(tuple(round(o[x], 2) for x in names), dict(zip(names, shin([o[x] for x in names]))))
+        if len(full) < CFG["min_books"] or len(groups) < CFG["min_groups"]:
             continue
-        p = sum(f[r["selection"]] for f in fair) / len(fair)
-        r["close"] = {"book": "consensus-anj", "p_fair": p, "seen_at": now.isoformat(), "minutes_to_start": mins,
-                      "ref_age_min": m.get("snapshot_age_min"), **V.clv(r["odds"], p),
+        p = sum(f[r["selection"]] for f in groups.values()) / len(groups)
+        r["close"] = {"book": "consensus-anj", "p_fair": p, "seen_at": now.isoformat(), "snap_at": snap,
+                      "minutes_to_start": mins, "ref_age_min": m.get("snapshot_age_min"), **V.clv(r["odds"], p),
                       "note": "clôture = même méthode de consensus : CLV indicative seulement"}
         n += 1
     return n
@@ -105,7 +125,7 @@ def days_to_fetch(rows: list[dict], now: datetime, after_h: float = 3.0, max_day
     from .sources.livescore import SLUG
     need = set()
     for r in rows:
-        if r.get("status") != "open" or r.get("ref_kind") != "consensus-anj" or r.get("sport") not in SLUG:
+        if r.get("status") != "open" or r.get("ref_kind") not in KINDS or r.get("sport") not in SLUG:
             continue
         try:
             start = _when(r["commence"])
@@ -126,7 +146,7 @@ def settle(rows: list[dict], results: list[dict], now: datetime, after_h: float 
     from .sources.livescore import outcome
     n = 0
     for r in rows:
-        if r.get("status") != "open" or r.get("ref_kind") != "consensus-anj":
+        if r.get("status") != "open" or r.get("ref_kind") not in KINDS:
             continue
         try:
             start = _when(r["commence"])

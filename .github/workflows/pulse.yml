@@ -1,7 +1,7 @@
 name: pulse
 # Relais : les tâches programmées GitHub (cron) ne se déclenchent pas sur ce dépôt. Idée reprise de cotes-value
 # (chaîne auto-relancée, 5 min) et Grotonome (boucle de 5 h, relevé toutes les 6 min) : ce job contrôle toutes les
-# 5 min l'âge du dernier passage `live` (relancé dès LIVE_EVERY_MIN, défaut 15) et `coteur` (COTEUR_EVERY_MIN,
+# 2 min qu'un job `live` tourne (sinon le relance : live boucle lui-même ~50 min) et l'âge de `coteur` (COTEUR_EVERY_MIN,
 # défaut 45 : une cote coteur de plus de 60 min n'est jamais proposée), puis se relance lui-même au bout de ~5 h.
 # Filets : live.yml et coteur.yml relancent pulse si aucun pulse récent n'est actif. Toujours la branche par défaut.
 # Dépôt public : minutes Actions gratuites. Arrêt : variable de dépôt PULSE = off.
@@ -22,25 +22,33 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
       REF: ${{ github.event.repository.default_branch || github.ref_name }}
-      LIVE_EVERY: ${{ vars.LIVE_EVERY_MIN }}
       COTEUR_EVERY: ${{ vars.COTEUR_EVERY_MIN }}
     steps:
-      - name: Relayer (5 h, contrôle toutes les 5 min)
+      - name: Relayer (5 h, contrôle toutes les 2 min)
         run: |
-          case "$LIVE_EVERY" in ''|*[!0-9]*) LIVE_EVERY=15;; esac
           case "$COTEUR_EVERY" in ''|*[!0-9]*) COTEUR_EVERY=45;; esac
           age_min() {  # minutes depuis le dernier lancement du workflow $1 ; -1 si l'API ne répond pas (on ne relance pas)
             t=$(gh run list --workflow "$1" -L 1 --json createdAt -q '.[0].createdAt' 2>/dev/null) || { echo -1; return; }
             [ -z "$t" ] && { echo 99999; return; }
             echo $(( ( $(date -u +%s) - $(date -u -d "$t" +%s) ) / 60 ))
           }
+          live_actifs() {  # jobs live en cours ou en file ; -1 si l'API ne répond pas (on ne relance pas)
+            gh run list --workflow live.yml -L 10 --json status -q '[.[] | select(.status != "completed")] | length' \
+              2>/dev/null || echo -1
+          }
           END=$((SECONDS + 290 * 60))
           while [ "$SECONDS" -lt "$END" ]; do
-            a=$(age_min live.yml); c=$(age_min coteur.yml)
-            echo "$(date -u +%FT%TZ) live il y a ${a} min, coteur il y a ${c} min"
+            a=$(live_actifs); c=$(age_min coteur.yml)
+            echo "$(date -u +%FT%TZ) jobs live actifs : ${a}, coteur il y a ${c} min"
             if [ "$c" -ge "$COTEUR_EVERY" ]; then gh workflow run coteur.yml --ref "$REF" && echo "-> coteur relancé"; fi
-            if [ "$a" -ge "$LIVE_EVERY" ]; then gh workflow run live.yml --ref "$REF" && echo "-> live relancé"; fi
-            sleep 300
+            if [ "$a" = "0" ]; then
+              # dernier live terminé en moins de 5 min (tests rouges, panne) : on attend 15 min avant de relancer
+              ok=$(gh run list --workflow live.yml -L 1 --json createdAt,updatedAt -q \
+                '.[0] | ((.updatedAt|fromdateiso8601) - (.createdAt|fromdateiso8601) >= 300) or ((now - (.createdAt|fromdateiso8601)) >= 900)' \
+                2>/dev/null || echo true)
+              if [ "$ok" = "true" ]; then gh workflow run live.yml --ref "$REF" && echo "-> live relancé"; else echo "live en échec rapide : attente"; fi
+            fi
+            sleep 120
           done
       - name: Se relancer (5 essais)
         if: always()

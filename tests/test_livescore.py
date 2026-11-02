@@ -64,7 +64,7 @@ class Parse(unittest.TestCase):
         b = LS.parse(BASKET, "BASKETBALL")[0]
         self.assertEqual(LS.outcome(b, "ml"), "home")              # vainqueur : prolongation incluse
         self.assertEqual(LS.outcome(b, "1x2"), "draw")             # 1N2 basket : 65-65 à la fin du temps réglementaire
-        self.assertIsNone(LS.outcome({**b, "sport": "ICE_HOCKEY"}, "ml"))
+        self.assertIsNone(LS.outcome({**b, "sport": "RUGBY"}, "ml"))
 
     def test_bad_payload(self):
         with self.assertRaises(LS.SourceError):
@@ -112,7 +112,7 @@ class Settle(unittest.TestCase):
     def test_days_to_fetch(self):
         rows = [bet("REIMS", "SOCHAUX", "1x2", "home", "2026-11-02T23:50:00Z"),
                 bet("A", "B", "ml", "home", "2026-11-03T11:00:00Z", "TENNIS"),            # pas encore 3 h
-                bet("A", "B", "ml", "home", "2026-11-02T10:00:00Z", "ICE_HOCKEY")]        # sport non géré
+                bet("A", "B", "ml", "home", "2026-11-02T10:00:00Z", "RUGBY")]        # sport non géré
         self.assertEqual(CS.days_to_fetch(rows, NOW), {("FOOTBALL", "20261102"), ("FOOTBALL", "20261103")})
 
 
@@ -219,7 +219,7 @@ class PolymarketWide(unittest.TestCase):
             ref, errors = pm.fetch(tags=["ligue-1", "nba"])
         self.assertEqual(ref, [])
         self.assertTrue(any("tag_slug=ligue-1" in c for c in calls))   # repli sur la liste de championnats
-        self.assertEqual(len(errors), 2)
+        self.assertEqual(len(errors), len(pm.WINDOW_TAGS))
 
     def test_fetch_window_paginates_and_skips_soccer_tags(self):
         calls = []
@@ -238,3 +238,22 @@ class PolymarketWide(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Hockey(unittest.TestCase):
+    """Format LiveScore hockey vérifié le 2026-11-02 (valeurs synthétiques)."""
+
+    def test_regulation_and_overall_winner(self):
+        def h(eid, eps, tr, tr_or, ewt):
+            e = ev(eid, 20261101180000, eps, "Koelner Haie", "Iserlohn Roosters", tr, tr_or)
+            e["Epr"], e["Ewt"] = 2, ewt
+            return e
+        res = {r["id"]: r for r in LS.parse({"Stages": [{"Events": [
+            h("1", "AP", (3, 2), (2, 2), 1), h("2", "OT", (4, 3), (3, 3), 1), h("3", "FT", (1, 3), (1, 3), 2)]}]},
+            "ICE_HOCKEY")}
+        self.assertEqual((LS.outcome(res["1"], "1x2"), LS.outcome(res["1"], "ml")), ("draw", "home"))
+        self.assertEqual((LS.outcome(res["2"], "1x2"), LS.outcome(res["2"], "ml")), ("draw", "home"))
+        self.assertEqual((LS.outcome(res["3"], "1x2"), LS.outcome(res["3"], "ml")), ("away", "away"))
+        rows = [bet("KOLN HAIE", "ISERLOHN", "1x2", "draw", "2026-11-01T18:00:00Z", "ICE_HOCKEY")]
+        self.assertEqual(CS.settle(rows, [res["1"]], NOW), 1)
+        self.assertTrue(rows[0]["result"]["won"])

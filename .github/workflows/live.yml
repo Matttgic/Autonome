@@ -1,7 +1,9 @@
 name: live
-# Sans clé ni compte : référence Polymarket (API publique) vs cotes publiques NetBet (ANJ).
-# Chaque heure de 6 h à 22 h UTC : nouveaux paris -> issue « Paris du JJ/MM » (e-mail GitHub au propriétaire),
-# clôture (CLV) et règlement des paris ouverts, tableau de bord mis à jour (issue « Tableau de bord »).
+# Sans clé ni compte : référence Polymarket vs cotes ANJ (PMU, Betclic, coteur…). Quasi en continu : un job enchaîne les
+# passages pendant LIVE_LOOP_MIN minutes (défaut 50), un passage dès que le précédent est fini (au plus tôt
+# LIVE_INTERVAL_S secondes après son début, défaut 120), l'état est sauvegardé après chaque passage ; pulse relance un job
+# dès qu'aucun ne tourne (idée Grotonome : boucle longue plutôt qu'un job par passage). Nouveaux paris -> issue
+# « Paris du JJ/MM » (e-mail), clôture (CLV), règlement, tableau de bord (issue « Tableau de bord »).
 on:
   schedule:
     - cron: "11 6-22 * * *"
@@ -14,7 +16,7 @@ concurrency: {group: autonome-state, cancel-in-progress: false}
 jobs:
   live:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 85   # préparation + 55 min de boucle + dernier passage (15 min) + sauvegardes
     env:
       BANKROLL: ${{ vars.BANKROLL }}
       GITHUB_TOKEN: ${{ github.token }}
@@ -36,18 +38,52 @@ jobs:
             rc=$?; [ "$rc" -eq 2 ] || { echo "::error::ls-remote a échoué ($rc)"; exit 1; }
             mkdir state && git -C state init -q -b data && git -C state remote add origin "$URL"
           fi
-      - name: Exécuter
-        run: python -m autonome live --state state
-      - name: Sauvegarder l'état
-        if: always()
+      # État de travail de la mesure du retard des books (lag.py) : dans le cache Actions, pas dans git (réécrit à chaque
+      # passage). Absent (premier job, cache évincé) : la mesure repart de zéro, sans erreur.
+      - name: Restaurer le cache de travail
+        uses: actions/cache/restore@v4
+        with:
+          path: cache
+          key: autonome-cache-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: autonome-cache-
+      - name: Passages en boucle (sauvegarde après chacun)
+        env:
+          AUTONOME_CACHE: cache
+          LOOP_MIN: ${{ vars.LIVE_LOOP_MIN }}
+          INTERVAL: ${{ vars.LIVE_INTERVAL_S }}
         run: |
-          cd state && git config user.name autonome && git config user.email autonome@users.noreply.github.com
-          git add -A && (git diff --cached --quiet || git commit -qm "state $(date -u +%FT%TZ)")
-          for i in 1 2 3 4; do
-            git push -q origin data && exit 0
-            git pull -q --rebase origin data || true; sleep $((i * 5))
+          case "$LOOP_MIN" in ''|*[!0-9]*) LOOP_MIN=50;; esac
+          [ "$LOOP_MIN" -gt 55 ] && LOOP_MIN=55   # le job dure au plus 85 min : marge pour le dernier passage
+          case "$INTERVAL" in ''|*[!0-9]*) INTERVAL=120;; esac
+          git -C state config user.name autonome && git -C state config user.email autonome@users.noreply.github.com
+          save() {
+            git -C state add -A && (git -C state diff --cached --quiet || git -C state commit -qm "state $(date -u +%FT%TZ)")
+            for i in 1 2 3 4; do
+              git -C state push -q origin HEAD:data && return 0
+              # conflit : on annule le rebase (sinon HEAD = distant et le push « réussit » sans l'état local)
+              git -C state pull -q --rebase origin data || git -C state rebase --abort 2>/dev/null || true; sleep $((i * 5))
+            done
+            echo "::warning::sauvegarde de l'état impossible à ce passage"; return 1
+          }
+          END=$((SECONDS + LOOP_MIN * 60)); N=0
+          while [ "$SECONDS" -lt "$END" ]; do
+            T0=$SECONDS; N=$((N + 1))
+            git -C state pull -q --rebase origin data 2>/dev/null || git -C state rebase --abort 2>/dev/null || true
+            timeout 900 python -m autonome live --state state || echo "::warning::passage $N en échec"
+            save || true
+            echo "passage $N : $((SECONDS - T0)) s"
+            W=$((INTERVAL - (SECONDS - T0)))
+            if [ "$W" -gt 0 ] && [ $((SECONDS + W)) -lt "$END" ]; then sleep "$W"; fi
           done
-          echo "::error::sauvegarde de l'état impossible"; exit 1
+          # dernière sauvegarde : un état non poussé serait perdu avec le runner (alertes en double ensuite)
+          for k in 1 2 3; do save && exit 0; sleep 20; done
+          echo "::error::état non sauvegardé à la fin du job"; exit 1
+      - name: Enregistrer le cache de travail
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: cache
+          key: autonome-cache-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Filet du relais pulse
         if: always() && vars.PULSE != 'off'
         env:

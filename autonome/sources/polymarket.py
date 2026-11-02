@@ -23,17 +23,24 @@ UA = "autonome/0.3 (outil perso; requetes espacees)"
 TAGS = ["ligue-1", "epl", "la-liga", "bundesliga", "serie-a", "ucl", "uel", "mls", "brazil-serie-a", "primeira-liga",
         "efl-championship"]
 TAGS_2WAY = ["nba", "nhl", "tennis", "ufc", "ncaa-basketball", "boxing"]
+# volley, tennis de table, fléchettes : mesurés le 02/11/2026, 0 marché vainqueur sur 136 au-dessus de 2 000 $ de
+# liquidité et 3 points d'écart -> non lus (rien d'exploitable, requêtes inutiles). Le consensus ANJ couvre ces sports.
 TAG_SPORT = {"nba": "BASKETBALL", "ncaa-basketball": "BASKETBALL", "nhl": "ICE_HOCKEY", "tennis": "TENNIS",
-             "ufc": "MMA", "boxing": "BOXING", "basketball": "BASKETBALL"}
+             "ufc": "MMA", "boxing": "BOXING", "basketball": "BASKETBALL", "hockey": "ICE_HOCKEY",
+             "american_football": "AMERICAN_FOOTBALL", "volleyball": "VOLLEYBALL", "table-tennis": "TABLE_TENNIS",
+             "darts": "DARTS"}
 # Lecture large par étiquette (idée reprise de cotes-value) : TOUS les championnats d'un sport en une requête paginée,
 # bornée par la date de fin (= heure du match en foot/basket ; pas au tennis : début + 7 j, d'où les TAGS_2WAY).
 # Fenêtre 72 h : couvre le consensus (48 h, un match couvert par Polymarket n'y entre pas), la fiche 72 h et les boosts.
 # Mesure du 02/11 : foot dans les 30 h = 92 matchs contre 6 avec la liste TAGS (Ligue 2, Liga 2, Pologne, Danemark…).
 # Identifiants lus sur GET /sports : 100350 porté par les 185 ligues de football, 28 par les 61 ligues de basket.
-WINDOW_TAGS = {"soccer": 100350, "basketball": 28}
+WINDOW_TAGS = {"soccer": 100350, "basketball": 28, "hockey": 100088, "american_football": 450}
+# hockey 100088 (KHL, SHL, Liiga, DEL, AHL… : vainqueur prolongation et tirs au but inclus, vérifié le 02/11/2026 dans
+# les règles des marchés), NFL 450 (prolongation incluse). Handball et rugby écartés : le nul existe.
 # Féminines, jeunes, réserves : jamais confondues avec l'équipe première d'un bookmaker (leçon des revues adverses).
 _EXCLUDE = re.compile(r"\b(women|womens|woman|wsl|wsl2|nwsl|uwcl|feminin\w*|femenin\w*|frauen|u1[5-9]|u2[0-3]|youth|"
-                      r"reserves?|wwc\w*|fifaw|aseanw|tpew|cwbb|bkfibaw|wnba|ncaaw|jong|next gen|futuro)\b")
+                      r"reserves?|wwc\w*|fifaw|aseanw|tpew|cwbb|bkfibaw|wnba|ncaaw|jong|next gen|futuro|"
+                      r"vbligueaw|vbbundesligaw|vb2bundesligaw|weuq|uwec|weuc|wwoh|aflw)\b")
 MAX_SPREAD = 0.03
 MIN_LIQ = 2000.0
 
@@ -234,18 +241,28 @@ def fetch(tags=TAGS + TAGS_2WAY, window_tags=WINDOW_TAGS) -> tuple[list[dict], l
             errors.append(str(ex))  # repli : la liste de championnats ci-dessous
     if "soccer" in done_window:
         tags = [t for t in tags if t not in TAGS]  # déjà couverts par la lecture large
+    now = datetime.now(timezone.utc)
     for t in tags:
-        for off in (0, 300, 600):  # pagination : une page tronquée ferait perdre l'événement principal
+        # Gamma plafonne limit à 100 et garde « ouverts » de vieux matchs : tri par début décroissant, pages de 100,
+        # arrêt dès qu'une page ne contient plus que des matchs commencés depuis plus de 6 h.
+        for off in range(0, 1000, 100):
             try:
-                page = get(f"/events?tag_slug={t}&closed=false&limit=300&offset={off}")
+                page = get(f"/events?tag_slug={t}&closed=false&limit=100&offset={off}&order=startDate&ascending=false")
             except SourceError as ex:
                 errors.append(str(ex))
                 break
-            for e in page if isinstance(page, list) else []:
+            page = page if isinstance(page, list) else []
+            for e in page:
                 if isinstance(e, dict):
                     e.setdefault("_tag", t)
                     raw.append(e)
-            if not isinstance(page, list) or len(page) < 300:
+            starts = []
+            for e in page:
+                try:
+                    starts.append(datetime.fromisoformat(str(e.get("startTime") or e.get("startDate")).replace("Z", "+00:00")))
+                except (ValueError, TypeError):
+                    continue
+            if len(page) < 100 or (starts and max(starts) < now - timedelta(hours=6)):
                 break
     seen, uniq = set(), []
     for e in raw:
