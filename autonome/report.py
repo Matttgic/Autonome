@@ -16,7 +16,7 @@ def render(root, today_bets: list[dict]) -> str:
     clv = st["clv"]
     ci = clv.get("ci95")
     rows = "".join(
-        f"<div class=c><b>{html.escape(b['home'])} – {html.escape(b['away'])}</b><br>"
+        f"<div class=c><b>{html.escape(b['home'] or '?')} – {html.escape(b['away'] or '?')}</b><br>"
         f"{html.escape(b['group'])} · <b>{html.escape(b['selection'])}</b> @ <b>{b['odds']:.2f}</b> "
         f"({html.escape(b['book'])})<br>EV {b['ev']:+.1%} · mise {b['stake']:.1f} € · cote juste {b['fair_odds']:.2f}"
         f"<br><small>p={b['p_fair']:.2%} · réf {html.escape('+'.join(b['ref_books'][:2]))} "
@@ -24,7 +24,7 @@ def render(root, today_bets: list[dict]) -> str:
         for b in today_bets) or "<p>NO BET</p>"
     hist = store.read(root, BETS)[-30:][::-1]
     hrows = "".join(
-        f"<tr><td>{html.escape(r['home'][:14])}–{html.escape(r['away'][:14])}</td><td>{html.escape(r['selection'])}</td>"
+        f"<tr><td>{html.escape((r['home'] or '?')[:14])}–{html.escape((r['away'] or '?')[:14])}</td><td>{html.escape(r['selection'])}</td>"
         f"<td>{r['odds']:.2f}</td><td>{_pct(r['close']['clv_odds']) if r.get('close') else '—'}</td>"
         f"<td>{html.escape(str((r.get('result') or {}).get('won', '—')))}</td></tr>" for r in hist)
     return f"""<!doctype html><html lang=fr><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">

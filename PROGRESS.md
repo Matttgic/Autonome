@@ -8,7 +8,7 @@
 ## En cours / prochaine étape
 1. L'utilisateur crée les secrets (ci-dessous) → premier run réel via Actions > run > Run workflow (mode scan).
 2. Vérifier les clés de bookmakers réellement renvoyées par l'API (liste `fr_books` à ajuster selon `/v4/sports/{sport}/odds` réel).
-3. Après ~2 semaines : lire `python -m autonome stats` ; conclure sur la CLV.
+3. Conclure sur la CLV seulement à 200+ paris avec clôture ≤90 min (couverture affichée par `stats`).
 4. Sous-agent « briseur » indépendant avant livraison finale (non fait).
 5. Explorer endpoints directs des books / PulseScore si permission donnée.
 ## À configurer par l'utilisateur
@@ -26,3 +26,4 @@ Plan gratuit 500 crédits/mois ; CLV approximative ; settlement via scores = sco
 - L'utilisateur ne veut pas d'API/clé. Sondes cloud : Winamax 403, Betclic injoignable, endpoints internes refusés par le classifieur → pas de contournement.
 - Décision : collecte depuis le téléphone (Termux, IP résidentielle). Étape 1 : `tools/probe.py` (résumé à coller dans le chat) ; étape 2 (session suivante) : écrire les parseurs sur données RÉELLES, jamais sur des formats supposés.
 - Sous-agent briseur lancé (Sonnet) ; corriger ses défauts avant livraison.
+- Revue adverse (17 défauts) : corrigés (t de Student, clôture/CLV, couverture, ref sans horodatage/marge<0.5 %, lignes .25/entières, limite/jour, crash par événement, alerte avant rendu, workflow état/injection/deploy). Régressions : tests/test_regress.py. Non corrigé : IC du ROI pondéré par mises (renommé return_per_bet), correction de tests séquentiels.

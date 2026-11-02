@@ -7,7 +7,7 @@ import urllib.request
 
 
 def fmt_bet(b: dict) -> str:
-    return (f"{b['home']} - {b['away']}\n{b['group']} : {b['selection']} @ {b['odds']:.2f} ({b['book']})\n"
+    return (f"{b['home'] or '?'} - {b['away'] or '?'}\n{b['group']} : {b['selection']} @ {b['odds']:.2f} ({b['book']})\n"
             f"cote juste {b['fair_odds']:.2f} (p={b['p_fair']:.1%}, réf {'+'.join(b['ref_books'][:2])}, "
             f"marge réf {b['ref_overround']:.1%}, dé-vig {b['devig_method']})\n"
             f"EV {b['ev']:+.1%} · mise {b['stake']:.1f} € · avant {b['commence'][11:16]} UTC ({b['commence'][:10]})")

@@ -3,8 +3,8 @@ Aucune piste n'est encore validée sur données réelles : l'historique n'existe
 
 | # | Piste | Hypothèse | Test | État | Décision |
 |---|---|---|---|---|---|
-| 1 | Value vs Pinnacle dé-viguée | Les cotes FR dépassent parfois la cote juste Pinnacle | Mesure : CLV moyenne + IC95 % sur ≥200 paris recommandés (tracker intégré) | Implémentée, tests unitaires OK (formules vérifiées à la main) ; **0 donnée réelle** | Garder ; verdict statistique après collecte |
-| 2 | Dé-vig conservateur (min de 3 méthodes) | Évite de surestimer l'EV sur favoris/outsiders | Tests : Shin/puissance donnent moins à l'outsider que la méthode proportionnelle | Implémentée | Garder (réduit les faux positifs, au prix de quelques vrais manqués) |
+| 1 | Value vs Pinnacle dé-viguée | Les cotes FR dépassent parfois la cote juste Pinnacle | Mesure : CLV moyenne + IC95 % sur ≥200 paris recommandés (tracker intégré) | Dé-vig/EV/Kelly vérifiés à la main ; suivi CLV corrigé après revue adverse (clôture ≤90 min seulement, couverture affichée) mais non éprouvé ; **0 donnée réelle** | Garder ; verdict statistique après collecte |
+| 2 | Dé-vig conservateur (min de 3 méthodes) | Évite de surestimer l'EV sur favoris/outsiders | Tests : Shin/puissance donnent moins à l'outsider que la méthode proportionnelle | Implémentée | Garder à titre prudent (propriété algébrique testée ; taux de faux positifs NON mesuré) |
 | 3 | Référence exchange / consensus si Pinnacle absent | Compléter la couverture | Seuils d'EV plus hauts (3 %/5 %), ≥5 books | Implémentée | Garder, à évaluer par CLV séparée par type de référence |
 | 4 | Filtre de fraîcheur | Cotes périmées = faux positifs (ou vraies opportunités ?) | Âges max configurables | Implémentée | Mesurer l'impact sur la CLV |
 | 5 | Surebets entre books FR | Écarts inter-books > marge | Somme 1/meilleure cote < 1 | Non implémentée | À faire si les données montrent des cas |

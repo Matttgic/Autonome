@@ -8,7 +8,7 @@ from .devig import fair_probs
 from .engine import groups, parse_ts
 
 BETS = "bets.jsonl"          # un pari recommandé par ligne (mis à jour sur place)
-LINES = "ref_lines.jsonl"    # dernières lignes sharp vues pour les matchs suivis
+CLOSE_MAX_MIN = 90          # au-delà, la dernière observation n'est pas une clôture
 
 
 def record_bets(root, new_bets: list[dict]) -> None:
@@ -35,8 +35,13 @@ def update_closing(root, event: dict, cfg: dict, now: datetime | None = None) ->
             if g and r["selection"] in g:
                 names = sorted(g)
                 p = fair_probs([g[x] for x in names], "shin")[names.index(r["selection"])]
-                r["close"] = {"book": k, "p_fair": p, "seen_at": now.isoformat(),
-                              **V.clv(r["odds"], p)}
+                age = (now - parse_ts(event["books"][k].get("last_update"))).total_seconds() / 60 \
+                    if event["books"][k].get("last_update") else None
+                if age is None or age > cfg.get("close_max_ref_age_min", 60):
+                    continue  # ligne sans horodatage ou périmée : pas une clôture
+                mins = (parse_ts(event["commence"]) - now).total_seconds() / 60
+                r["close"] = {"book": k, "p_fair": p, "seen_at": now.isoformat(), "minutes_to_start": mins,
+                              "ref_age_min": age, **V.clv(r["odds"], p)}
                 n += 1
                 break
     store.write_all(root, BETS, rows)
@@ -70,14 +75,20 @@ def settle(root, event_id: str, res: dict) -> int:
 def stats(root) -> dict:
     rows = store.read(root, BETS)
     closed = [r for r in rows if r.get("close")]
-    clvs = [r["close"]["clv_odds"] for r in closed]
+    good = [r for r in closed if r["close"]["minutes_to_start"] <= CLOSE_MAX_MIN]  # clôture quasi réelle
+    clvs = [r["close"]["clv_odds"] for r in good]
+    by_kind = {k: V.mean_ci([r["close"]["clv_odds"] for r in good if r["ref_kind"] == k])
+               for k in sorted({r["ref_kind"] for r in good})}
     settled = [{"stake": r["stake"], "odds": r["odds"], "won": r["result"]["won"]}
                for r in rows if r["status"] == "settled" and r.get("result")]
     return {
         "bets_total": len(rows), "bets_open": sum(r["status"] == "open" for r in rows),
         "bets_settled": len(settled),
-        "clv": V.mean_ci(clvs), "ev_expected": V.mean_ci([r["ev"] for r in rows]),
+        "clv": V.mean_ci(clvs), "clv_by_ref_kind": by_kind,
+        "clv_coverage": f"{len(good)}/{len(rows)} paris ont une clôture sharp ≤{CLOSE_MAX_MIN} min avant le match "
+                        f"({len(closed)} ont une observation plus lointaine, exclue)", "ev_expected": V.mean_ci([r["ev"] for r in rows]),
         "roi": V.roi(settled),
-        "note": "CLV >0 de façon significative (IC95 % > 0) = avantage prouvé ; sinon indéterminé. "
-                "Il faut typiquement 200+ paris avec clôture pour conclure.",
+        "note": "CLV sur paris avec clôture ≤90 min seulement (couverture ci-dessus ; les autres sont exclus, donc biais "
+                "possible). IC95 % indicatif, non corrigé des consultations répétées ; CLV ≠ rentabilité (limites de mise, "
+                "fiscalité non modélisées). 200+ paris avec clôture nécessaires avant toute conclusion.",
     }

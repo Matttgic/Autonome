@@ -5,8 +5,8 @@
 |---|---|---|
 | Polymarket Gamma API (publique) | HTTP 200 | Joignable ; marchés de prédiction, couverture sportive FR/ANJ nulle → pas de comparaison directe, utile seulement comme signal annexe |
 | Smarkets API publique | HTTP 403 (page Cloudflare) | Bloquée depuis l'IP cloud ; à retester depuis GitHub Actions |
-| The Odds API (officielle) | HTTP 401 « clé manquante » = service joignable | **Voie retenue** : clé gratuite (500 crédits/mois), région `eu` = Pinnacle + exchanges + books FR (Winamax, Betclic, Unibet FR…), cotes décimales, un seul format |
-| Telegram / ntfy | Telegram joignable (302) ; ntfy non testé (sans secret) | OK pour alertes |
+| The Odds API (officielle) | HTTP 401 « clé manquante » = service joignable | **Voie retenue** : clé gratuite (500 crédits/mois), couverture annoncée par le fournisseur (Pinnacle, exchanges, certains books FR) — **non vérifiée**, aucune clé de bookmaker réellement observée ; refusée par l'utilisateur (pas d'API) |
+| Telegram / ntfy | Telegram répond 302 (ne prouve pas l'envoi) ; ntfy non testé | OK pour alertes |
 
 ## Non testé (honnêteté)
 Les endpoints non officiels des sites de bookmakers (API publiques utilisées par les apps Winamax/Betclic/Unibet-Kambi/PMU/Parions Sport, API invitée de Pinnacle) : la sonde a été **refusée par le contrôle d'autorisation de la session** (« attaque tierce »). Je ne l'ai donc pas relancée ni contournée. Aucune affirmation sur leur disponibilité n'est faite ici. Si tu veux que j'explore cette piste, il faut ajouter une règle de permission Bash pour `curl` vers ces hôtes (Paramètres Claude Code → permissions) ; sinon elle reste fermée. Tu as aussi un skill perso « PulseScore » (flux 30+ books dont Pinnacle) : si tu possèdes une clé, la donner en secret `PULSESCORE_API_KEY` permettrait un 2e adaptateur ; couverture Winamax/Betclic non vérifiée.

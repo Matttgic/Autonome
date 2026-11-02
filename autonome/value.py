@@ -49,14 +49,13 @@ _T975 = {1: 12.71, 2: 4.30, 3: 3.18, 4: 2.78, 5: 2.57, 6: 2.45, 7: 2.36, 8: 2.31
          10: 2.23, 15: 2.13, 20: 2.09, 25: 2.06, 30: 2.04}
 
 
+_T975.update({40: 2.021, 60: 2.000, 120: 1.980})
+
+
 def _t(df: int) -> float:
-    if df >= 30:
-        return 1.96 if df > 120 else 2.04 - (df - 30) * 0.0009
-    keys = sorted(_T975)
-    for k in keys:
-        if df <= k:
-            return _T975[k]
-    return 1.96
+    """t(0.975, df) : on prend la plus grande clé <= df (t plus grand = IC plus large, conservateur)."""
+    ks = [k for k in sorted(_T975) if k <= df]
+    return _T975[ks[-1]] if ks else _T975[1]
 
 
 def mean_ci(xs: list[float]) -> dict:
@@ -84,5 +83,5 @@ def roi(bets: list[dict]) -> dict:
         pnl += p
         per_unit.append(p / b["stake"])
     out = {"n": len(per_unit), "staked": st, "pnl": pnl, "roi": (pnl / st) if st else None}
-    out["roi_per_bet"] = mean_ci(per_unit)
+    out["return_per_bet"] = mean_ci(per_unit)  # moyenne par pari, pas le ROI pondéré par les mises
     return out

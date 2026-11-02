@@ -39,7 +39,7 @@ def cmd_scan(a, cfg):
     cl = oddsapi.Client()
     now = datetime.now(timezone.utc)
     cands, spent, errors = [], 0, []
-    ncost = len(cfg["markets"].split(","))
+    ncost = len(cfg["markets"].split(",")) * len(cfg["regions"].split(","))
     for sport in active_sports(cl, cfg["sports_priority"]):
         if not budget_ok(cl, cfg, spent, cfg["credits_per_scan"]):
             break
@@ -50,26 +50,33 @@ def cmd_scan(a, cfg):
             continue
         spent += ncost
         for ev in events:
-            cands += engine.find_value(ev, cfg["engine"], now)
-            tracker.update_closing(a.state, ev, cfg["engine"], now)
+            try:
+                cands += engine.find_value(ev, cfg["engine"], now)
+                tracker.update_closing(a.state, ev, cfg["engine"], now)
+            except Exception as e:  # noqa: BLE001 - un événement corrompu ne doit pas tuer le scan
+                errors.append(f"{sport}/{ev.get('id')}: {type(e).__name__}")
     already = {r["bet_id"] for r in store.read(a.state, tracker.BETS)}
     # un pari déjà recommandé sur (match, marché) n'est pas re-recommandé, même chez un autre book
     seen = {(r["event_id"], r["group"]) for r in store.read(a.state, tracker.BETS)}
     cands = [c for c in cands if (c["event_id"], c["group"]) not in seen]
-    picks = engine.select_daily(cands, cfg["engine"], already)
+    today = now.date().isoformat()
+    done_today = sum(1 for r in store.read(a.state, tracker.BETS) if r.get("found_at", "")[:10] == today)
+    picks = engine.select_daily(cands, cfg["engine"], already, done_today)
     tracker.record_bets(a.state, picks)
     meta = {"at": now.isoformat(), "credits_spent": spent, "credits_remaining": cl.remaining,
             "candidates": len(cands), "picked": len(picks), "errors": errors}
     store.append(a.state, "runs.jsonl", [meta])
-    Path(a.out).mkdir(exist_ok=True)
-    Path(a.out, "index.html").write_text(report.render(a.state, picks))
     print(json.dumps(meta, ensure_ascii=False))
-    if picks or a.notify_empty:
+    if picks or a.notify_empty:  # notifier AVANT le rendu : une panne de page ne doit pas perdre l'alerte
         print(notify.send(f"{len(picks)} value bet(s)" if picks else "NO BET", notify.message(picks), a.link))
-    if errors and not picks and spent == 0:
-        notify.send("Autonome : source de données en panne", "; ".join(errors)[:500])
-        return 2
-    return 0
+    try:
+        Path(a.out).mkdir(exist_ok=True)
+        Path(a.out, "index.html").write_text(report.render(a.state, picks))
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"rapport: {type(e).__name__}")
+    if errors:
+        notify.send("Autonome : erreurs partielles" if spent else "Autonome : source en panne", "; ".join(errors)[:500])
+    return 2 if (errors and spent == 0 and not picks) else 0
 
 
 def cmd_close(a, cfg):

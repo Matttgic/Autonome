@@ -45,7 +45,8 @@ def groups(book: dict) -> dict[str, dict[str, float]]:
     if book.get("h2h"):
         out["h2h"] = book["h2h"]
     for pt, sel in (book.get("totals") or {}).items():
-        if len(sel) == 2:
+        # seulement les lignes en .5 : pas de push ni de quart de ligne (règlement binaire exact)
+        if len(sel) == 2 and abs(float(pt) * 2 - round(float(pt) * 2)) < 1e-9 and abs(float(pt) % 1 - 0.5) < 1e-9:
             out[f"totals@{pt}"] = sel
     return out
 
@@ -60,11 +61,13 @@ def pick_reference(event: dict, group: str, cfg: dict, now: datetime):
                 continue
             g = groups(b).get(group)
             age = _age_min(b.get("last_update"), now)
-            if g and (age is None or age <= cfg["max_ref_age_min"]):
+            if g and age is not None and age <= cfg["max_ref_age_min"]:  # horodatage absent = refusé
                 return kind, [k], g
     # consensus : moyenne des probas justes des books non FR avec ce marché
     others = {k: groups(b)[group] for k, b in books.items()
-              if k not in cfg["fr_books"] and not k.endswith("_fr") and group in groups(b)}
+              if k not in cfg["fr_books"] and not k.endswith("_fr") and group in groups(b)
+              and (_age_min(b.get("last_update"), now) is not None)
+              and _age_min(b.get("last_update"), now) <= cfg["max_ref_age_min"]}
     if len(others) >= cfg["consensus_min_books"]:
         names = sorted(next(iter(others.values())))
         usable = {k: g for k, g in others.items() if sorted(g) == names}
@@ -98,7 +101,7 @@ def find_value(event: dict, cfg: dict, now: datetime | None = None) -> list[dict
         ref_odds = [ref_sel[n] for n in names]
         from .devig import overround
         ov = overround(ref_odds)
-        if kind != "consensus" and ov > cfg["max_ref_overround"]:
+        if kind != "consensus" and not (0.005 <= ov <= cfg["max_ref_overround"]):  # marge <0.5 % = ligne suspecte
             continue
         min_ev = {"sharp": cfg["min_ev"], "exchange": cfg["min_ev_exchange"], "consensus": cfg["min_ev_consensus"]}[kind]
         for bk in fr:
@@ -107,7 +110,7 @@ def find_value(event: dict, cfg: dict, now: datetime | None = None) -> list[dict
             if not g or sorted(g) != names:
                 continue
             age = _age_min(b.get("last_update"), now)
-            if age is not None and age > cfg["max_book_age_min"]:
+            if age is None or age > cfg["max_book_age_min"]:
                 continue
             for i, n in enumerate(names):
                 odds = g[n]
@@ -136,7 +139,7 @@ def find_value(event: dict, cfg: dict, now: datetime | None = None) -> list[dict
     return out
 
 
-def select_daily(cands: list[dict], cfg: dict, already: set[str]) -> list[dict]:
+def select_daily(cands: list[dict], cfg: dict, already: set[str], done_today: int = 0) -> list[dict]:
     """Garde au plus un pari par (match, marché), le meilleur EV ; limite quotidienne."""
     cfg = {**DEFAULT_CFG, **cfg}
     best: dict[tuple, dict] = {}
@@ -147,4 +150,4 @@ def select_daily(cands: list[dict], cfg: dict, already: set[str]) -> list[dict]:
         if key not in best or c["ev"] > best[key]["ev"]:
             best[key] = c
     ranked = sorted(best.values(), key=lambda c: (c["ref_kind"] != "sharp", -c["ev"]))
-    return ranked[: cfg["max_bets_per_day"]]
+    return ranked[: max(0, cfg["max_bets_per_day"] - done_today)]
