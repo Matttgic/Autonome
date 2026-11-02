@@ -20,10 +20,12 @@ def verdict(r: dict) -> str:
 
 
 def table(rows: list[dict]) -> str:
-    out = ["| URL | verdict | octets | type | JSON embarqué | mots « cote/odds » |", "|---|---|---|---|---|---|"]
+    out = ["| URL | verdict | octets | type | JSON embarqué | mots « cote/odds » | titre | URL finale |",
+           "|---|---|---|---|---|---|---|---|"]
     for r in rows:
         out.append(f"| {r['url']} | {verdict(r)} | {r.get('bytes', '—')} | {r.get('type', '—')} | "
-                   f"{r.get('json_state', '—')} | {r.get('has_odds_words', '—')} |")
+                   f"{r.get('json_state', '—')} | {r.get('has_odds_words', '—')} | "
+                   f"{(r.get('title') or '—').replace('|', '/')} | {r.get('final_url', '—')} |")
     return "\n".join(out)
 
 

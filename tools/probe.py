@@ -28,7 +28,10 @@ def probe(url):
         with urllib.request.urlopen(req, timeout=25) as r:
             body = r.read(400_000)
             txt = body.decode("utf-8", "replace")
-            return {"url": url, "status": r.status, "type": r.headers.get("content-type"), "bytes": len(body),
+            import re
+            m = re.search(r"<title[^>]*>(.*?)</title>", txt, re.S | re.I)
+            return {"url": url, "final_url": r.geturl(), "title": " ".join(m.group(1).split())[:80] if m else None,
+                    "status": r.status, "type": r.headers.get("content-type"), "bytes": len(body),
                     "ms": int((time.time() - t) * 1000), "json_state": "__PRELOADED_STATE__" in txt or "application/json" in txt,
                     "has_odds_words": sum(w in txt.lower() for w in ("cote", "odds", "1.", "pari")),
                     "head": " ".join(txt[:200].split())}
