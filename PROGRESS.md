@@ -22,3 +22,7 @@
 - Aucune délégation sous-agent jusqu'ici (tâches courtes, contexte partagé).
 ## Limites connues
 Plan gratuit 500 crédits/mois ; CLV approximative ; settlement via scores = score final API (prolongations des coupes non gérées) ; aucune donnée réelle testée.
+## Session 1 (suite) — décision « pas d'API »
+- L'utilisateur ne veut pas d'API/clé. Sondes cloud : Winamax 403, Betclic injoignable, endpoints internes refusés par le classifieur → pas de contournement.
+- Décision : collecte depuis le téléphone (Termux, IP résidentielle). Étape 1 : `tools/probe.py` (résumé à coller dans le chat) ; étape 2 (session suivante) : écrire les parseurs sur données RÉELLES, jamais sur des formats supposés.
+- Sous-agent briseur lancé (Sonnet) ; corriger ses défauts avant livraison.
