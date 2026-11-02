@@ -317,8 +317,12 @@ les championnats moins liquides (Ligue 1, Liga) ne sont pas validés — d'où l
 |---|---|---|---|---|---|
 | 12 | Unibet 1X2 | Unibet mieux pricé que NetBet | Lorient–Brest, page publique | Unibet 2,30/3,00/3,00 ; NetBet 2,37/3,05/2,85 ; juste 2,58/3,37/3,16 → marge ≈ 10 % chez les deux | Adaptateur gardé (page souvent en 503 depuis GitHub) |
 | 13 | « Mène de 2 buts ou gagne » (Unibet/NetBet) | Marché mal pricé | Modèle Poisson calé sur Polymarket : Lorient 2,43 juste vs NetBet 2,27 | EV −6,8 % | Pas d'avantage |
-| 14 | **Cotes boostées Winamax** (coteur.com) | Les boosts dépassent la cote juste | `tools/boost_backtest.py` : 45 boosts « un match » foot reconnus (août–oct. 2026), cote juste = Dixon-Coles calé sur les prix Polymarket à T-60 min | **EV moyenne −7,0 % [−9,0 ; −4,9]**, médiane −6,3 % ; 6/45 > 0 ; 2/45 > +5 %. Réglés 40 : 9 gagnés pour 11,8 attendus ; ROI −33 % (bruit) | Garder l'alerte : seuls ~4 % des boosts passent le filtre ; jamais de pari « parce que c'est boosté » |
+| 14 | **Cotes boostées Winamax** (coteur.com) | Les boosts dépassent la cote juste | `tools/boost_backtest.py` : 45 boosts « un match » foot reconnus (août–oct. 2026), cote juste = Dixon-Coles calé sur les prix Polymarket à T-60 min | **EV moyenne −6,9 % [−9,0 ; −4,8]**, médiane −6,3 % ; 6/44 > 0 ; 2/44 > +5 %. Réglés 39 : 9 gagnés pour 11,5 attendus ; ROI −31,5 % (bruit) — chiffres après la 3e revue (règles durcies) | Garder l'alerte : seuls ~4 % des boosts passent le filtre ; jamais de pari « parce que c'est boosté » |
 | 15 | Modèle de score (Dixon-Coles) | Calé sur 1X2/plus-moins/BTTS/buts équipe | Comparé au marché « score exact » Polymarket non utilisé (Lorient–Brest) | Écart moyen 0,37 pt ; erreur de calage ≤ 1,6 pt sur 45 matchs | Validé pour combinaisons de score final |
 
 Bug trouvé et corrigé pendant le backtest : le gabarit « X gagne » acceptait « Mbappé premier buteur et Real Madrid
 gagne » → 8 faux boosts à EV +25 à +160 %. Le sujet doit désormais être un simple nom d'équipe (test de régression).
+
+3e revue adverse (Sonnet, sans contexte) : 12 défauts sur les boosts (dont réserves/féminines assimilées à l'équipe
+première, match oublié dans un combiné, « respectivement » non standard, calage sous-contraint) — tous corrigés,
+tests de régression dans tests/test_boosts.py (85 tests au total).

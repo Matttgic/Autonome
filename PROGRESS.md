@@ -73,3 +73,5 @@ EV ≥ 3 % au milieu ET EV > 0,5 % sur la borne prudente ; alerte = issue GitHub
 - Backtest boosts : EV moyenne −7 % ; ~4 % des boosts > +5 % (docs/RECHERCHE.md #14).
 - 75 tests.
 Prochaine étape : laisser tourner ; règlement automatique des boosts (score exact Polymarket) non fait — CLV seulement.
+- 3e revue adverse sur les boosts : 12 défauts corrigés ; backtest refait : EV moyenne −6,9 % (44 boosts). 85 tests.
+- Règlement automatique des boosts via le score exact Polymarket résolu (`boosts.settle`).
