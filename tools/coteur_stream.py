@@ -12,9 +12,9 @@ import time
 
 from playwright.sync_api import sync_playwright
 
-SPORTS = ["foot", "tennis", "basket", "hockey", "rugby", "handball", "volley", "football-americain", "baseball",
-          "mma", "boxe", "snooker", "flechettes", "tennis-de-table", "esport", "cyclisme", "golf"]
-MAX_PAGES = 6
+SPORTS = ["foot", "tennis", "basket", "hockey", "volley", "rugby", "baseball", "mma", "boxe", "snooker",
+          "tennis-de-table", "cyclisme", "golf"]   # handball, football-americain, flechettes, esport : 404 chez coteur
+MAX_PAGES = {"foot": 40}
 MSG = re.compile(r'42(\["cotes",.*?\])(?=\d+:42\[|$)', re.S)
 
 
@@ -46,41 +46,37 @@ def main(out, sports):
         ctx.route(re.compile(r".*\.(png|jpe?g|gif|webp|svg|woff2?|ttf)(\?.*)?$|.*(googlesyndication|doubleclick|"
                              r"gambling-affiliation|google-analytics|googletagmanager).*"), lambda r: r.abort())
         for sp in sports:
-            for day in ("today", "tomorrow"):
-                seen_before = len(res["matches"])
-                for pg in range(1, MAX_PAGES + 1):
-                    url = f"https://www.coteur.com/cotes-{sp}?date={day}&page={pg}"
-                    odds = {}
-                    page = ctx.new_page()
-                    page.on("response", lambda r, odds=odds: parse_msgs(r.text(), odds)
-                            if "socket.io" in r.url and r.request.method == "GET" else None)
-                    page.on("websocket", lambda ws, odds=odds: ws.on("framereceived", lambda f: parse_msgs(
-                        f if isinstance(f, str) else "", odds)))
-                    try:
-                        st = page.goto(url, wait_until="domcontentloaded", timeout=40000)
-                        page.wait_for_timeout(7000)
-                        meta = page.evaluate(META)
-                    except Exception as e:  # noqa: BLE001
-                        res["pages"].append(f"{url} erreur {type(e).__name__}")
-                        page.close()
-                        break
+            for pg in range(1, MAX_PAGES.get(sp, 15) + 1):
+                url = f"https://www.coteur.com/cotes-{sp}?page={pg}"
+                odds = {}
+                page = ctx.new_page()
+                page.on("response", lambda r, odds=odds: parse_msgs(r.text(), odds)
+                        if "socket.io" in r.url and r.request.method == "GET" else None)
+                page.on("websocket", lambda ws, odds=odds: ws.on("framereceived", lambda f: parse_msgs(
+                    f if isinstance(f, str) else "", odds)))
+                try:
+                    st = page.goto(url, wait_until="domcontentloaded", timeout=40000)
+                    page.wait_for_timeout(6000)
+                    meta = page.evaluate(META)
+                except Exception as e:  # noqa: BLE001
+                    res["pages"].append(f"{url} erreur {type(e).__name__}")
                     page.close()
-                    n_new = 0
-                    for m in meta:
-                        rid = re.search(r"-(\d{5,9})$", m.get("href") or "")
-                        if not rid:
-                            continue
-                        rid = rid.group(1)
-                        if rid not in res["matches"]:
-                            n_new += 1
-                        res["matches"][rid] = {"sport": sp, **m, "odds": odds.get(rid, res["matches"].get(rid, {}).get("odds", {}))}
-                    res["pages"].append(f"{url} {st.status if st else '?'} matchs={len(meta)} nouveaux={n_new} cotes={len(odds)}")
-                    print(res["pages"][-1], flush=True)
-                    if not meta or n_new == 0:
-                        break
-                    time.sleep(3)
-                if len(res["matches"]) == seen_before and day == "today":
-                    break  # sport sans page / sans match : on ne teste pas demain
+                    break
+                page.close()
+                n_new = 0
+                for m in meta:
+                    rid = re.search(r"-(\d{5,9})$", m.get("href") or "")
+                    if not rid:
+                        continue
+                    rid = rid.group(1)
+                    if rid not in res["matches"]:
+                        n_new += 1
+                    res["matches"][rid] = {"sport": sp, **m, "odds": odds.get(rid, res["matches"].get(rid, {}).get("odds", {}))}
+                res["pages"].append(f"{url} {st.status if st else '?'} matchs={len(meta)} nouveaux={n_new} cotes={len(odds)}")
+                print(res["pages"][-1], flush=True)
+                if not meta or n_new == 0 or (st and st.status >= 400):
+                    break
+                time.sleep(2)
         b.close()
     json.dump(res, open(out, "w"), ensure_ascii=False)
 
