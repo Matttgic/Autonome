@@ -57,6 +57,16 @@ SINGLE = [  # (regex sur le texte normalisé, prédicat, extraction d'arguments)
 ]
 
 
+_NOT_TEAM = re.compile(r"\b(et|ou|buteur|buteurs|marque|marquent|but|buts|premier|1er|passe|decisive|tir|carton|"
+                       r"penalty|corner|mi-temps|joueur|ni|avec|sans|plus|moins)\b|\d")
+
+
+def _is_team_name(t: str) -> bool:
+    """Un sujet de gabarit doit être un nom d'équipe seul (≤ 5 mots, aucun mot de pari ou de joueur)."""
+    t = _n(t)
+    return bool(t) and len(t.split()) <= 5 and not _NOT_TEAM.search(t) and "." not in t
+
+
 def _split_teams(s: str) -> list[str]:
     return [re.sub(r"^(le|la|les|l') ", "", x.strip()) for x in re.split(r",| et ", s) if x.strip()]
 
@@ -123,6 +133,8 @@ def translate(boost: dict, games: list[dict], allow_team_legs: bool = True):
                 continue
             side = None
             if "t" in m.groupdict() and m["t"]:
+                if not _is_team_name(m["t"]):
+                    return None, f"sujet « {m['t']} » n'est pas un simple nom d'équipe (joueur, combinaison…)"
                 sh, sa = sim(m["t"], single["home"]), sim(m["t"], single["away"])
                 if max(sh, sa) < 0.8 or abs(sh - sa) < 0.2:
                     return None, f"équipe « {m['t']} » non reconnue dans {single['home']} – {single['away']}"
@@ -147,6 +159,8 @@ def translate(boost: dict, games: list[dict], allow_team_legs: bool = True):
                 return None, f"match « {who} » introuvable"
             legs.append((g, "over", None, args))
         else:
+            if not _is_team_name(who):
+                return None, f"« {who} » n'est pas un simple nom d'équipe"
             r = _game_for_team(who, games)
             if not r:
                 return None, f"équipe « {who} » introuvable ou ambiguë"

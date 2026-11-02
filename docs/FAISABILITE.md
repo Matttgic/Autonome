@@ -54,3 +54,14 @@ NetBet est lu par un analyseur de littéraux (`autonome/sources/jslit.py`) qui *
 du JS de la page a été refusée par le contrôle d'autorisation, à juste titre).
 Risque : les CGU de NetBet peuvent interdire la collecte automatisée ; usage personnel, débit très faible.
 Polymarket n'est pas agréé ANJ : il sert uniquement de référence, on n'y parie pas.
+
+## Session 3 (suite) — les « gros » bookmakers demandés (Winamax, Betclic, Unibet, PMU, Bet365)
+| Bookmaker | Accès depuis GitHub Actions | Solution retenue |
+|---|---|---|
+| **Winamax** | 403 (site) | **Cotes boostées lisibles via coteur.com/cotes-boostees** (comparateur public ; logo bookid 33 = Winamax, vérifié visuellement). Archive ≈ 3 750 boosts, mise max 20 €. |
+| Betclic | 403 | Aucune voie sans contournement |
+| Unibet | /paris-football : 200 à 02:05 puis 503 ; sous-pages 503 | Adaptateur prêt (1X2 des ~50 matchs mis en avant, `sources/unibet.py`) ; tenté à chaque passage, erreur journalisée |
+| PMU | 200 mais page vide (rendu JavaScript) | Rien de lisible |
+| Bet365 | — | **Non agréé ANJ** : exclu (contrainte du projet) |
+| coteur.com (comparateur) | 200 ; pages match/comparateur rendues en JS sauf la liste des boosts | Utilisé pour les boosts Winamax |
+| comparateur-de-cotes.fr, oddschecker, lequipe | 403 / Cloudflare | — |

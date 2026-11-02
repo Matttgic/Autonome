@@ -63,3 +63,13 @@ Prochaine étape :
 4. Possible : ntfy/Telegram déjà supportés si le propriétaire change d'avis (secrets).
 Décisions : Polymarket plutôt que Smarkets (marchés secondaires + historique pour valider) ; un seul pari par match ;
 EV ≥ 3 % au milieu ET EV > 0,5 % sur la borne prudente ; alerte = issue GitHub (zéro installation).
+
+## Session 3 (suite) — Unibet + cotes boostées Winamax
+- Demande du propriétaire : les gros books (Unibet, Betclic, Winamax, PMU, Bet365). Bet365 : non agréé ANJ → exclu.
+  Winamax/Betclic 403, PMU rendu JS : non lisibles. Unibet : `sources/unibet.py` (page publique, souvent 503).
+- **Winamax via coteur.com** : `sources/coteur.py` (boosts), `scoremodel.py` (Dixon-Coles), `boosts.py` (gabarits),
+  intégré au passage horaire (alerte si EV ≥ 5 % et EV prudente ≥ 0 ; mise ≤ mise max). Boosts « par équipes »
+  évalués seulement s'ils sont nouveaux depuis le relevé de référence (`boosts_seen.jsonl`).
+- Backtest boosts : EV moyenne −7 % ; ~4 % des boosts > +5 % (docs/RECHERCHE.md #14).
+- 75 tests.
+Prochaine étape : laisser tourner ; règlement automatique des boosts (score exact Polymarket) non fait — CLV seulement.

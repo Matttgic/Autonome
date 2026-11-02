@@ -103,3 +103,13 @@ class Stale(unittest.TestCase):
         r = boosts.evaluate({"id": "b", "book": "winamax", "event": "Lorient - Brest", "odds": 3.0, "max_stake": 20,
                              "text": "Lorient gagne"}, GAMES, {}, allow_team_legs=False)
         self.assertTrue(r["evaluable"])  # boost d'un match précis : appariement exact, toujours évaluable
+
+
+class PlayerTraps(unittest.TestCase):
+    def test_player_or_compound_subjects_refused(self):
+        for t in ["Kylian Mbappé premier buteur du match et Newcastle gagne", "K. Mbappe buteur et Newcastle gagne",
+                  "Newcastle marque le 1er but et gagne le match", "Newcastle ou Everton gagne et plus de 3,5 buts dans le match",
+                  "O. Blomberg ou J.P. Hauge buteur et Newcastle gagne"]:
+            r = boosts.evaluate({"id": "b", "book": "winamax", "event": "Newcastle - Everton", "text": t, "odds": 3.0,
+                                 "max_stake": 20}, GAMES, {})
+            self.assertFalse(r["evaluable"], t)
