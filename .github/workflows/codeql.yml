@@ -1,0 +1,33 @@
+name: codeql
+# Analyse de sécurité du code par CodeQL (action officielle de GitHub, gratuite pour un dépôt public, sans compte ni clé).
+# Résultats : onglet Security → Code scanning. N'interfère pas avec live/pulse/coteur (aucun accès à la branche data).
+on:
+  push:
+    branches: [ccr-0a28d713-rav38k, main]
+    paths: ["**.py", ".github/workflows/**"]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, actions]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
