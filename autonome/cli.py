@@ -249,14 +249,14 @@ def cmd_live(a, cfg):
     try:
         parsed = coteur.parse(coteur.fetch())
         seen_rows = store.read(a.state, "boosts_seen.jsonl")
-        seen_ids = {r["id"] for r in seen_rows}
+        seen = {(r.get("event"), r.get("text")) for r in seen_rows}  # clé stable (indépendante de la cote)
         first = not seen_rows  # premier relevé = référence : on ne sait pas dater ces boosts
         cache: dict = {}
-        boost_eval = [BO.evaluate(b, ref, cache, allow_team_legs=(not first and b["id"] not in seen_ids))
+        boost_eval = [BO.evaluate(b, ref, cache, allow_team_legs=(not first and (b["event"], b["text"]) not in seen))
                       for b in parsed]
         store.append(a.state, "boosts_seen.jsonl",
                      [{"id": b["id"], "first_seen": now.isoformat(), "event": b["event"], "text": b["text"],
-                       "odds": b["odds"]} for b in parsed if b["id"] not in seen_ids])
+                       "odds": b["odds"]} for b in parsed if (b["event"], b["text"]) not in seen])
     except Exception as e:  # noqa: BLE001
         errors.append(f"boosts: {type(e).__name__}: {e}"[:160])
     known = {r["bet_id"] for r in rows}
