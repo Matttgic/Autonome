@@ -12,13 +12,19 @@ from __future__ import annotations
 
 import http.client
 import json
+import re
 import time
+import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 
 BASE = "https://prod-public-api.livescore.com/v1/api/app/date"
 SLUG = {"FOOTBALL": "soccer", "BASKETBALL": "basketball", "TENNIS": "tennis"}
 FINAL = {"FOOTBALL": {"FT", "AET", "AP"}, "BASKETBALL": {"FT", "OT", "AOT"}, "TENNIS": {"FT"}}
+# Compétitions féminines / jeunes : LiveScore ne marque pas toujours les équipes (« Arsenal WFC », ligue « Naisten… »).
+_SPECIAL = re.compile(r"(women|womens|woman|feminin|femenin|frauen|damen|naisten|kvinn|kvinde|dames|vrouwen|"
+                      r"damallsvenskan|toppserien|\bwsl\b|nwsl|u-? ?\d{2}\b|youth|reserve|primavera|"
+                      r"\bwfc\b|\bw\b|\bwnba\b|\bncaaw\b)")
 
 
 class SourceError(RuntimeError):
@@ -53,26 +59,38 @@ def _names(e: dict, key: str) -> list[str]:
 
 
 def parse(payload, sport: str) -> list[dict]:
-    """Matchs terminés -> [{sport, id, commence, homes, aways, status, final, regular}] (scores entiers ou None)."""
+    """TOUS les matchs (finis ou non : un match reporté reste un candidat d'appariement, pour que son homonyme ne soit
+    jamais pris à sa place) -> [{sport, id, commence, homes, aways, status, is_final, final, regular, winner,
+    special, doubles}]."""
     out = []
     stages = payload.get("Stages") if isinstance(payload, dict) else None
     if not isinstance(stages, list):
         raise SourceError("livescore : Stages absent")
     for st in stages:
-        for e in (st.get("Events") or []) if isinstance(st, dict) else []:
-            if not isinstance(e, dict) or e.get("Eps") not in FINAL.get(sport, ()):
+        if not isinstance(st, dict):
+            continue
+        comp = f"{st.get('Cnm') or ''} {st.get('Snm') or ''}".strip()
+        for e in st.get("Events") or []:
+            if not isinstance(e, dict):
                 continue
             start, homes, aways = _start(e.get("Esd")), _names(e, "T1"), _names(e, "T2")
-            final = (_int(e.get("Tr1")), _int(e.get("Tr2")))
-            if not start or not homes or not aways or None in final:
+            if not start or not homes or not aways:
                 continue
+            final = (_int(e.get("Tr1")), _int(e.get("Tr2")))
             regular = (_int(e.get("Tr1OR")), _int(e.get("Tr2OR")))
             if e.get("Eps") == "FT" and sport == "FOOTBALL" and None in regular:
                 regular = final  # fin du temps réglementaire : score final = score à 90 min
+            epr = e.get("Epr")
+            is_final = (e.get("Eps") in FINAL.get(sport, ()) and (epr is None or str(epr) == "2")
+                        and None not in final)
+            names = " ".join(homes + aways + [comp]).lower()
             out.append({"sport": sport, "id": str(e.get("Eid") or ""), "commence": start, "homes": homes,
-                        "aways": aways, "status": e["Eps"], "final": final,
+                        "aways": aways, "status": e.get("Eps"), "is_final": is_final, "final": final,
                         "regular": None if None in regular else regular,
-                        "competition": f"{st.get('Cnm') or ''} {st.get('Snm') or ''}".strip()})
+                        "winner": _int(e.get("Ewt")),
+                        "special": bool(_SPECIAL.search(names)),
+                        "doubles": len(e.get("T1") or []) > 1 or len(e.get("T2") or []) > 1 or " / " in names,
+                        "competition": comp})
     return out
 
 
@@ -83,6 +101,8 @@ def fetch(sport: str, day: str, timeout: int = 30, pause: float = 1.0) -> list[d
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             data = json.load(r)
+    except urllib.error.HTTPError as e:
+        raise SourceError(f"livescore {SLUG[sport]} {day}: HTTP {e.code}") from None
     except (OSError, http.client.HTTPException, ValueError) as e:
         raise SourceError(f"livescore {SLUG[sport]} {day}: {type(e).__name__}") from None
     finally:
@@ -93,14 +113,23 @@ def fetch(sport: str, day: str, timeout: int = 30, pause: float = 1.0) -> list[d
 def outcome(res: dict, market: str) -> str | None:
     """Issue gagnante (home/draw/away) selon le règlement des bookmakers, ou None si non réglable."""
     sport = res["sport"]
+    if not res.get("is_final"):
+        return None
     if market == "1x2":
         if sport not in ("FOOTBALL", "BASKETBALL") or not res.get("regular"):
             return None  # 1N2 = temps réglementaire seulement
         h, a = res["regular"]
-        return "home" if h > a else "away" if a > h else "draw"
+        win = "home" if h > a else "away" if a > h else "draw"
+        if res.get("status") == "FT" and res.get("winner") in (1, 2) and res["final"] == res["regular"] \
+                and win != {1: "home", 2: "away"}[res["winner"]]:
+            return None  # vainqueur déclaré et score en désaccord : à la main
+        return win
     if market == "ml":
         if sport not in ("BASKETBALL", "TENNIS"):
             return None  # hockey, rugby… : prolongation/tirs au but selon le book -> à la main
         h, a = res["final"]
-        return None if h == a else "home" if h > a else "away"
+        win = None if h == a else "home" if h > a else "away"
+        if res.get("winner") is not None and res["winner"] != {"home": 1, "away": 2}.get(win):
+            return None  # vainqueur déclaré (Ewt) absent ou contraire au score (abandon ?) : à la main
+        return win
     return None

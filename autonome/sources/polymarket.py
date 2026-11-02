@@ -27,12 +27,13 @@ TAG_SPORT = {"nba": "BASKETBALL", "ncaa-basketball": "BASKETBALL", "nhl": "ICE_H
              "ufc": "MMA", "boxing": "BOXING", "basketball": "BASKETBALL"}
 # Lecture large par étiquette (idée reprise de cotes-value) : TOUS les championnats d'un sport en une requête paginée,
 # bornée par la date de fin (= heure du match en foot/basket ; pas au tennis : début + 7 j, d'où les TAGS_2WAY).
+# Fenêtre 72 h : couvre le consensus (48 h, un match couvert par Polymarket n'y entre pas), la fiche 72 h et les boosts.
 # Mesure du 02/11 : foot dans les 30 h = 92 matchs contre 6 avec la liste TAGS (Ligue 2, Liga 2, Pologne, Danemark…).
 # Identifiants lus sur GET /sports : 100350 porté par les 185 ligues de football, 28 par les 61 ligues de basket.
 WINDOW_TAGS = {"soccer": 100350, "basketball": 28}
 # Féminines, jeunes, réserves : jamais confondues avec l'équipe première d'un bookmaker (leçon des revues adverses).
 _EXCLUDE = re.compile(r"\b(women|womens|woman|wsl|wsl2|nwsl|uwcl|feminin\w*|femenin\w*|frauen|u1[5-9]|u2[0-3]|youth|"
-                      r"reserves?|wwc\w*|fifaw|aseanw|tpew)\b")
+                      r"reserves?|wwc\w*|fifaw|aseanw|tpew|cwbb|bkfibaw|wnba|ncaaw|jong|next gen|futuro)\b")
 MAX_SPREAD = 0.03
 MIN_LIQ = 2000.0
 
@@ -203,7 +204,7 @@ def _add_more(mk: dict, m: dict, home: str, away: str, max_spread: float, min_li
             mk[f"ah@{fav}@{_line(m['line'])}"] = {"fav": _leg(q, 0), "dog": _leg(q, 1)}
 
 
-def fetch_window(tag_id: int, label: str, now: datetime | None = None, hours: float = 36,
+def fetch_window(tag_id: int, label: str, now: datetime | None = None, hours: float = 72,
                  max_pages: int = 20) -> list[dict]:
     """Événements non clos d'une étiquette dont la date de fin tombe dans [maintenant − 1 h ; + hours]."""
     now = now or datetime.now(timezone.utc)

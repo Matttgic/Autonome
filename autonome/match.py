@@ -29,7 +29,7 @@ _TOK = {"corogne": "coruna", "majorque": "mallorca", "cadix": "cadiz", "seville"
 
 
 _MARK = re.compile(r"^(ii|iii|u\d{2}|women|womens|femmes?|feminines?|fem|reserves?|castilla|youth|academy|esports?|"
-                   r"juniors?|amateurs?|b-team)$")
+                   r"juniors?|amateurs?|b-team|wfc|jong|nextgen|futuro)$")
 
 
 def _raw(name: str) -> str:
@@ -40,7 +40,11 @@ def _raw(name: str) -> str:
 def markers(name: str) -> set[str]:
     """Marqueurs d'équipe différente de l'équipe première : réserve, jeunes, féminines, e-sport, (pseudo)…"""
     s = _raw(name)
-    m = {t for t in re.sub(r"[^a-z0-9 ]+", " ", s).split() if _MARK.match(t)}
+    flat = re.sub(r"[^a-z0-9 ]+", " ", s)
+    flat = re.sub(r"\bnext gen\b", "nextgen", re.sub(r"\bu (\d{2})\b", r"u\1", flat))  # « U-20 », « Next Gen »
+    m = {t for t in flat.split() if _MARK.match(t)}
+    if re.search(r"\s(b|ii)$", flat.strip()):
+        m.add("b-team")  # « Girona FC B », « Real Madrid B »
     m |= {"(" + x.strip() + ")" for x in re.findall(r"\(([^)]*)\)", s) if x.strip() not in ("", "f", "w")}
     if re.search(r"\((f|w)\)|\b(w|f)$", s.strip()):
         m.add("women")

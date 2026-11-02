@@ -95,3 +95,8 @@ Prochaine étape : laisser tourner ; règlement automatique des boosts (score ex
   appariement ambigu => reste ouvert. Hockey, rugby, handball, volley : non réglés automatiquement.
 Prochaine étape : laisser tourner ; si toujours 0 EV>0 après une semaine, regarder les marchés « vainqueur »
 tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jour des books (PMU via Kambi le plus frais).
+- 5e revue adverse (règlement LiveScore + Polymarket large) : 11 défauts, tous corrigés ; 119 tests. Principaux :
+  match féminin pris pour le masculin (marqueur seulement dans NmEn, ligues « Naisten » sans marqueur), homonyme
+  choisi quand le vrai match est reporté (désormais tous les matchs sont candidats, seul un candidat FINI règle),
+  simple apparié à un double au tennis, Epr/Ewt non contrôlés, pas de pause 403/429, fenêtre 36 h qui laissait des
+  matchs Polymarket au consensus (passée à 72 h). Paris ouverts > 24 h listés « À régler à la main » au tableau de bord.

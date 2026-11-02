@@ -47,7 +47,9 @@ def bet(home, away, group, sel, commence="2026-11-02T19:45:00Z", sport="FOOTBALL
 class Parse(unittest.TestCase):
     def test_statuses_and_regular_time(self):
         res = {r["id"]: r for r in LS.parse(SOCCER, "FOOTBALL")}
-        self.assertEqual(set(res), {"1", "2", "3", "5", "6"})
+        self.assertEqual(set(res), {"1", "2", "3", "4", "5", "6"})    # le reporté reste candidat d'appariement
+        self.assertFalse(res["4"]["is_final"])
+        self.assertIsNone(LS.outcome(res["4"], "1x2"))
         self.assertEqual(res["1"]["commence"], "2026-11-02T19:45:00Z")
         self.assertEqual(res["2"]["regular"], (1, 1))
         self.assertEqual(LS.outcome(res["2"], "1x2"), "draw")      # 1N2 = 90 min, pas le score après prolongation
@@ -56,7 +58,9 @@ class Parse(unittest.TestCase):
         self.assertEqual(res["5"]["aways"], ["Mainz", "Mainz 05"])
 
     def test_tennis_retirement_and_basket_overtime(self):
-        self.assertEqual([r["id"] for r in LS.parse(TENNIS, "TENNIS")], ["10"])
+        t = {r["id"]: r for r in LS.parse(TENNIS, "TENNIS")}
+        self.assertEqual([k for k, r in t.items() if r["is_final"]], ["10"])
+        self.assertIsNone(LS.outcome(t["11"], "ml"))
         b = LS.parse(BASKET, "BASKETBALL")[0]
         self.assertEqual(LS.outcome(b, "ml"), "home")              # vainqueur : prolongation incluse
         self.assertEqual(LS.outcome(b, "1x2"), "draw")             # 1N2 basket : 65-65 à la fin du temps réglementaire
@@ -112,6 +116,74 @@ class Settle(unittest.TestCase):
         self.assertEqual(CS.days_to_fetch(rows, NOW), {("FOOTBALL", "20261102"), ("FOOTBALL", "20261103")})
 
 
+class ReviewRegressions(unittest.TestCase):
+    """Défauts trouvés par la revue adverse du 2026-11-02 (scénarios reproduits sur des formats réels)."""
+
+    def test_women_match_never_settles_men_bet(self):
+        # LiveScore : marqueur seulement dans NmEn, Nm sans marqueur ; match masculin reporté à la même heure
+        d = {"Stages": [{"Snm": "Super League", "Cnm": "Angleterre", "Events": [
+            ev("30", 20261101120000, "FT", "Arsenal WFC", "Aston Villa WFC", (1, 1), (1, 1),
+               en=("Arsenal W", "Aston Villa W")),
+            ev("31", 20261101120000, "Postp.", "Arsenal", "Aston Villa", (0, 0))]}]}
+        rows = [bet("ARSENAL", "ASTON VILLA", "1x2", "home", "2026-11-01T12:00:00Z")]
+        self.assertEqual(CS.settle(rows, LS.parse(d, "FOOTBALL"), NOW), 0)
+        d["Stages"][0]["Events"].pop()                       # même sans le match masculin : jamais le match féminin
+        self.assertEqual(CS.settle(rows, LS.parse(d, "FOOTBALL"), NOW), 0)
+
+    def test_women_league_without_marker(self):
+        d = {"Stages": [{"Snm": "Naisten Liiga", "Cnm": "Finlande", "Events": [
+            ev("32", 20261101120000, "FT", "HJK", "KuPS", (2, 0), (2, 0))]}]}
+        rows = [bet("HJK", "KUPS", "1x2", "home", "2026-11-01T12:00:00Z")]
+        self.assertEqual(CS.settle(rows, LS.parse(d, "FOOTBALL"), NOW), 0)
+
+    def test_postponed_namesake_blocks(self):
+        d = {"Stages": [{"Snm": "L2", "Events": [
+            ev("33", 20261101150000, "FT", "Paris FC", "Monaco", (3, 1), (3, 1)),
+            ev("34", 20261101150000, "Postp.", "Paris FC B", "Monaco B", (0, 0))]}]}
+        rows = [bet("PARIS FC", "MONACO", "1x2", "home", "2026-11-01T15:00:00Z")]
+        self.assertEqual(CS.settle(rows, LS.parse(d, "FOOTBALL"), NOW), 1)   # réserve B : autre équipe
+        d["Stages"][0]["Events"][1] = ev("34", 20261101150000, "Postp.", "Paris FC", "AS Monaco", (0, 0))
+        rows = [bet("PARIS FC", "MONACO", "1x2", "home", "2026-11-01T15:00:00Z")]
+        self.assertEqual(CS.settle(rows, LS.parse(d, "FOOTBALL"), NOW), 0)   # deux candidats : à la main
+
+    def test_singles_bet_never_settled_on_doubles(self):
+        e = ev("35", 20261101100000, "FT", "Lucas Miedler", "Learner Tien", (2, 0))
+        e["T1"].append({"Nm": "Neil Oberleitner"})
+        e["T2"].append({"Nm": "Ryan Seggerman"})
+        rows = [bet("Miedler L.", "Tien L.", "ml", "home", "2026-11-01T10:00:00Z", "TENNIS")]
+        self.assertEqual(CS.settle(rows, LS.parse({"Stages": [{"Events": [e]}]}, "TENNIS"), NOW), 0)
+
+    def test_provisional_and_contradicted_scores(self):
+        e = ev("36", 20261101150000, "OT", "LePy", "Helsingin NMKY", (80, 78), (70, 70))
+        e["Epr"] = 1                                          # prolongation en cours
+        self.assertIsNone(LS.outcome(LS.parse({"Stages": [{"Events": [e]}]}, "BASKETBALL")[0], "ml"))
+        t = ev("37", 20261101100000, "FT", "A Un", "B Deux", (1, 0))
+        t["Ewt"] = 2                                          # vainqueur déclaré contraire au score
+        self.assertIsNone(LS.outcome(LS.parse({"Stages": [{"Events": [t]}]}, "TENNIS")[0], "ml"))
+        t["Ewt"] = 1
+        self.assertEqual(LS.outcome(LS.parse({"Stages": [{"Events": [t]}]}, "TENNIS")[0], "ml"), "home")
+
+    def test_http_code_in_error(self):
+        import urllib.error
+
+        def boom(*a, **k):
+            raise urllib.error.HTTPError("u", 403, "Forbidden", {}, None)
+        with mock.patch("urllib.request.urlopen", boom), mock.patch.object(LS.time, "sleep", lambda s: None):
+            with self.assertRaises(LS.SourceError) as cm:
+                LS.fetch("FOOTBALL", "20261101")
+        self.assertIn("HTTP 403", str(cm.exception))
+
+    def test_markers_extended(self):
+        from autonome.match import markers, sim
+        self.assertTrue(markers("Jong Ajax Amsterdam"))
+        self.assertTrue(markers("Juventus Next Gen"))
+        self.assertTrue(markers("Girona FC B"))
+        self.assertTrue(markers("France U-20"))
+        self.assertTrue(markers("Arsenal WFC"))
+        self.assertEqual(sim("JUVENTUS", "Juventus Next Gen"), 0.0)
+        self.assertFalse(markers("Boca Juniors") - {"juniors"})  # « Juniors » : déjà marqué avant, inchangé
+
+
 class PolymarketWide(unittest.TestCase):
     def test_women_youth_excluded(self):
         women = [{**e, "title": e["title"].replace("Beta SC", "Beta SC Women"),
@@ -120,6 +192,10 @@ class PolymarketWide(unittest.TestCase):
         self.assertEqual(len(pm.build_reference(GAMMA)), 1)
         self.assertEqual(pm.build_reference(women), [])
         self.assertEqual(pm.build_reference(wsl), [])
+        for slug in ("cwbb-2026", "bkfibaw-2026", "wnba-2026"):
+            self.assertEqual(pm.build_reference([{**e, "seriesSlug": slug} for e in GAMMA]), [])
+        self.assertEqual(len(pm.build_reference([{**e, "title": e["title"].replace("FC Alpha", "Wolves")}
+                                                  for e in GAMMA])), 1)   # « Wolves » n'est pas « W »
 
     def test_non_soccer_tag_never_read_as_3way(self):
         basket = [{**e, "_tag": "basketball"} for e in GAMMA]

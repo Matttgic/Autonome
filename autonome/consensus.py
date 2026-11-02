@@ -116,7 +116,7 @@ def settle(rows: list[dict], results: list[dict], now: datetime, after_h: float 
     """Règle les paris « consensus » (1N2 foot/basket, vainqueur basket/tennis) sur un résultat LiveScore apparié
     sans ambiguïté : même sport, même heure (±max_dt_min), les deux noms ressemblants. Deux candidats possibles,
     un sens douteux ou un statut non final => le pari reste ouvert (jamais deviné)."""
-    from .match import sim
+    from .match import markers, sim
     from .sources.livescore import outcome
     n = 0
     for r in rows:
@@ -129,10 +129,15 @@ def settle(rows: list[dict], results: list[dict], now: datetime, after_h: float 
         if (now - start).total_seconds() < after_h * 3600:
             continue
         two_way = r.get("group") == "ml"
+        bet_marks = markers(r["home"]) | markers(r["away"])
+        bet_doubles = "/" in r["home"] + r["away"]
         found = []
         for res in results:
             if res.get("sport") != r.get("sport") or abs((_when(res["commence"]) - start).total_seconds()) > max_dt_min * 60:
                 continue
+            res_marks = {x for n in res["homes"] + res["aways"] for x in markers(n)}
+            if res_marks != bet_marks or (res.get("special") and not bet_marks) or res.get("doubles", False) != bet_doubles:
+                continue  # féminines/jeunes/réserves ou double au tennis : jamais pris pour le pari
             sh = max(sim(r["home"], x) for x in res["homes"])
             sa = max(sim(r["away"], x) for x in res["aways"])
             xh = max(sim(r["home"], x) for x in res["aways"])
@@ -145,7 +150,7 @@ def settle(rows: list[dict], results: list[dict], now: datetime, after_h: float 
             if min(sh, sa) >= min_sim or (max(sh, sa) >= 0.95 and min(sh, sa) >= 0.35):
                 found.append((res, swap))
         if len({f[0]["id"] or id(f[0]) for f in found}) != 1:
-            continue  # aucun ou plusieurs matchs possibles : à régler à la main
+            continue  # aucun ou plusieurs matchs possibles (même reporté) : à régler à la main
         res, swap = found[0]
         win = outcome(res, r.get("group"))
         if win is None:
@@ -159,6 +164,7 @@ def settle(rows: list[dict], results: list[dict], now: datetime, after_h: float 
         r["result"] = {"won": r["selection"] == win, "payout": 1.0 if r["selection"] == win else 0.0,
                        "source": f"LiveScore {res['id']} ({res['status']})",
                        "score": f"{score[0]}-{score[1]}", "match": f"{res['homes'][0]} - {res['aways'][0]}",
-                       "note": "score du temps réglementaire" if r.get("group") == "1x2" else "prolongation incluse"}
+                       "note": ("score du temps réglementaire" if r.get("group") == "1x2" else
+                                "sets gagnés" if r.get("sport") == "TENNIS" else "prolongation incluse")}
         n += 1
     return n
