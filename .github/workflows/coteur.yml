@@ -8,6 +8,7 @@ on:
     inputs:
       sports: {description: "sports (vide = tous)", default: ""}
 permissions:
+  actions: write
   contents: write
 concurrency: {group: autonome-coteur, cancel-in-progress: false}
 jobs:
@@ -34,3 +35,14 @@ jobs:
             cd .. && sleep $((i * 7))
           done
           exit 1
+      - name: Filet du relais pulse
+        if: always() && vars.PULSE != 'off'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          REF: ${{ github.event.repository.default_branch || github.ref_name }}
+        run: |
+          # pulse actif et lancé depuis moins de 4 h 50 (avant sa propre relance) ? sinon on le relance
+          n=$(gh run list --workflow pulse.yml -L 10 --json status,createdAt \
+              -q '[.[] | select(.status != "completed" and (now - (.createdAt | fromdateiso8601)) < 17400)] | length') || exit 0
+          if [ "$n" = "0" ]; then gh workflow run pulse.yml --ref "$REF" && echo "pulse relancé"; fi
