@@ -264,6 +264,16 @@ def cmd_live(a, cfg):
         errors.append(f"pmu: {type(e).__name__}: {e}"[:160])
     _maybe_block(a.state, "unibet", ub0, errors, now)
     books = {"netbet_fr": book_events, "unibet_fr": ub_events, "pmu_fr": pmu_events}
+    # coteur.com (instantané du workflow coteur) : Betclic, Unibet, Betsson, Olybet, Vbet, DAZN Bet, etc.
+    from . import consensus as CS
+    from .sources import coteur_odds
+    ct_books, ct_matches, why = coteur_odds.load(Path(a.state, "coteur_odds.json"), now)
+    if why:
+        errors.append(f"coteur : {why}")
+    for bk, evs in ct_books.items():
+        if books.get(bk):  # source directe plus fraîche (PMU via Kambi, NetBet) : prioritaire
+            continue
+        books[bk] = evs
     pairs, cands, allc = [], [], []
     diag = {**lcfg, "min_ev": -9, "min_ev_cons": -9, "diagnostic": True, "min_odds": 1.01, "max_odds": 100}
     for bk, evs in books.items():
@@ -271,7 +281,14 @@ def cmd_live(a, cfg):
         pairs += p_
         cands += c_
         allc += live.scan(ref, evs, bk, now, diag)[1]  # mesure : TOUTES les cotes comparables, même négatives
+    cons_diag = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"],
+                                                                {"min_ev": -9, "max_ev": 9, "max_dispersion": 9, "diagnostic": True})]
+    cons_picks = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"])]
     obs = live.summarize(allc, now)
+    obs["consensus"] = {bk: live.summarize([c for c in cons_diag if c["book"] == bk], now)["by_family"]
+                        for bk in sorted({c["book"] for c in cons_diag})}
+    obs["consensus_top"] = [{k: c[k] for k in ("book", "sport", "home", "away", "label", "odds", "fair_odds", "ev")}
+                            for c in sorted(cons_diag, key=lambda c: -c["ev"])[:8]]
     obs["by_book"] = {bk: live.summarize([c for c in allc if c["book"] == bk], now)["by_family"] for bk in books}
     obs["pairs_by_book"] = {bk: sum(1 for c in {(x["book"], x["event_id"]) for x in allc} if c[0] == bk) for bk in books}
     store.append(a.state, "observations.jsonl", [obs])
@@ -310,7 +327,15 @@ def cmd_live(a, cfg):
         if b and b["bet_id"] not in known and b["event_id"] not in open_ev:  # un boost par match (corrélés)
             boost_picks.append(b)
     picks += boost_picks
+    open_ev = {r["event_id"] for r in rows if r["status"] == "open"}
+    for c in sorted(cons_picks, key=lambda c: -c["ev_cons"]):
+        if c["bet_id"] not in known and c["event_id"] not in open_ev:
+            picks.append(c)
+            open_ev.add(c["event_id"])
     tracker.record_bets(a.state, picks)
+    rows2 = store.read(a.state, tracker.BETS)
+    if CS.closing(rows2, ct_matches, now):
+        store.write_all(a.state, tracker.BETS, rows2)
     obs["boosts"] = {"lus": len(boost_eval), "evaluables": sum(e["evaluable"] for e in boost_eval),
                      "value": len(boost_picks),
                      "top": [{k: e.get(k) for k in ("event", "text", "odds", "fair_odds", "ev", "ev_cons", "commence")}
@@ -318,7 +343,8 @@ def cmd_live(a, cfg):
     store.write_all(a.state, "observations.jsonl", store.read(a.state, "observations.jsonl")[:-1] + [obs])
     meta = {"at": now.isoformat(), "mode": "live", "ref_games": len(ref), "ref_soon": len(soon),
             "netbet_pages": len(book_events), "unibet_events": len(ub_events), "pmu_events": len(pmu_events),
-            "pmu_par_sport": pmu_cov, "pairs": len(pairs), "candidates": len(cands), "picked": len(picks),
+            "pmu_par_sport": pmu_cov, "coteur_matchs": len(ct_matches),
+            "coteur_books": {k: len(v) for k, v in ct_books.items()}, "pairs": len(pairs), "candidates": len(cands), "picked": len(picks),
             "closing_updates": closed, "settled": settled, "boosts_lus": len(boost_eval),
             "boosts_evaluables": sum(e["evaluable"] for e in boost_eval), "boosts_value": len(boost_picks),
             "errors": errors}
@@ -386,6 +412,13 @@ def dashboard_md(root, meta, obs=None) -> str:
         lines.append(f"\nMeilleure cote vue : {notify.md(t['home'])}–{notify.md(t['away'])}, {notify.md(t['label'])} @ {t['odds']} "
                      f"({t.get('book', '?')}) "
                      f"(juste {t['fair_odds']:.2f}, EV {t['ev']:+.1%}). Seuil d'alerte : EV ≥ +3 % et EV prudente > 0.")
+    cs = (obs or {}).get("consensus")
+    if cs:
+        lines += ["", "## Bookmakers face au consensus ANJ (matchs sans Polymarket, via coteur.com)",
+                  "| Book · marché | n | EV médiane | meilleure EV |", "|---|---|---|---|"]
+        for bk, fams in cs.items():
+            for k, v in fams.items():
+                lines.append(f"| {bk} · {k} | {v['n']} | {v['median_ev']:+.1%} | {v['max_ev']:+.1%} |")
     bo = (obs or {}).get("boosts")
     if bo:
         lines += ["", f"## Cotes boostées Winamax (via coteur.com) : {bo['lus']} lues, {bo['evaluables']} évaluables "

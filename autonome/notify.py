@@ -127,6 +127,14 @@ def md_bet(b: dict) -> str:
                 f"- Cote juste {b['fair_odds']:.2f} (p = {b['p_fair']:.2%}) : modèle de score Dixon-Coles calé sur les marchés "
                 f"Polymarket (1X2, plus/moins, 2 marquent, buts par équipe), jambes indépendantes multipliées :\n{legs}\n"
                 f"- Heure limite : premier coup d'envoi {when} UTC\n")
+    if b.get("ref_kind") == "consensus-anj":
+        return (f"### {md(b['home'])} – {md(b['away'])}  ·  {when} UTC ({md(b.get('sport'))})\n"
+                f"**{md(b['label'])}** @ **{b['odds']:.2f}** chez **{b['book']}** — {url}\n"
+                f"- Mise conseillée : **{b['stake']:.1f} €** (¼ Kelly sur la proba prudente, plafond 2 %)\n"
+                f"- EV : **{b['ev']:+.1%}** contre le consensus, {b['ev_cons']:+.1%} en prudent\n"
+                f"- Cote juste {b['fair_odds']:.2f} (p = {b['p_fair']:.2%}) = {md(b['devig_method'])} ; "
+                f"écart entre bookmakers {b['spread']:.1%}. Référence plus faible que Polymarket (pas de marché sharp)\n"
+                f"- Heure limite : coup d'envoi {when} UTC (vérifie que la cote est toujours ≥ {b['odds']:.2f})\n")
     return (f"### {md(b['home'])} – {md(b['away'])}  ·  {when} UTC\n"
             f"**{md(b['label'])}** @ **{b['odds']:.2f}** chez **{b['book']}** {('— ' + url) if url else ''}\n"
             f"- Mise conseillée : **{b['stake']:.1f} €** (¼ Kelly sur la proba prudente, plafond 2 %)\n"

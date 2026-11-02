@@ -33,7 +33,7 @@ def norm(name: str) -> set[str]:
     s = re.sub(r"[^a-z0-9 ]+", " ", s).strip()
     s = _ALIAS.get(s, s)
     s = " ".join(_TOK.get(t, t) for t in s.split())
-    toks = {t for t in s.split() if t not in _STOP}
+    toks = {t for t in s.split() if t not in _STOP and len(t) > 1}  # initiales (« Golubic V. ») ignorées
     return toks or set(s.split())
 
 
