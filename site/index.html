@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1417">
+<title>Autonome</title>
+<style>
+:root{--bg:#0f1417;--card:#171e22;--line:#243036;--txt:#e7ecef;--mut:#8a9aa3;--ok:#4cc38a;--bad:#e5735d;--warn:#e0b84c;--acc:#6cb6ff}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);font:15px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+header{padding:12px 16px 8px;display:flex;align-items:baseline;justify-content:space-between}
+h1{font-size:18px;font-weight:700;letter-spacing:.2px}
+#maj{font-size:13px;color:var(--mut)}
+main{flex:1;overflow-y:auto;padding:4px 16px 12px}
+section{display:none}section.on{display:block}
+.big{font-size:22px;font-weight:700;margin:6px 0 2px}
+.sub{color:var(--mut);font-size:13px;margin-bottom:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.m{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p{color:var(--mut);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pos{color:var(--ok)}.neg{color:var(--bad)}.mut{color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th{color:var(--mut);font-weight:500;text-align:right;padding:4px 0}th:first-child,td:first-child{text-align:left}
+td{text-align:right;padding:6px 0;border-top:1px solid var(--line)}
+h2{font-size:13px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin:12px 0 6px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.kpi b{display:block;font-size:20px}.kpi span{color:var(--mut);font-size:12px}
+.pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);margin:0 4px 4px 0}
+a{color:var(--acc);text-decoration:none}
+nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--card);padding-bottom:env(safe-area-inset-bottom)}
+nav button{background:none;border:0;color:var(--mut);font:600 13px/1 inherit;padding:14px 0 12px;min-height:48px}
+nav button.on{color:var(--txt);box-shadow:inset 0 2px 0 var(--acc)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--mut)}
+</style>
+</head>
+<body>
+<header><h1><span class="dot" id="dot"></span>Autonome</h1><div id="maj">chargement…</div></header>
+<main>
+  <section id="t-alertes" class="on"></section>
+  <section id="t-marche"></section>
+  <section id="t-bilan"></section>
+  <section id="t-sante"></section>
+</main>
+<nav>
+  <button data-t="alertes" class="on">Alertes</button>
+  <button data-t="marche">Marché</button>
+  <button data-t="bilan">Bilan</button>
+  <button data-t="sante">Santé</button>
+</nav>
+<script>
+const SRC = "https://raw.githubusercontent.com/Matttgic/Autonome/data/site.json";
+const BOOKS = {pmu_fr:"PMU",betclic_fr:"Betclic",winamax_fr:"Winamax",unibet_fr:"Unibet",netbet_fr:"NetBet",betsson_fr:"Betsson",
+  olybet_fr:"Olybet",vbet_fr:"Vbet",daznbet_fr:"DAZN Bet",genybet_fr:"Genybet",feelingbet_fr:"Feelingbet",parionssport_fr:"Parions Sport",
+  zebet_fr:"ZEbet",pokerstars_fr:"PokerStars",barrierebet_fr:"Barrière"};
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const bk = b => esc(BOOKS[b] || b || "—");
+const pct = (x, d=1) => x == null ? "—" : (x > 0 ? "+" : "") + (x*100).toFixed(d) + " %";
+const cls = x => x == null ? "mut" : x > 0 ? "pos" : "neg";
+const heure = iso => { if(!iso) return ""; const d = new Date(iso);
+  return d.toLocaleString("fr-FR",{timeZone:"Europe/Paris",weekday:"short",hour:"2-digit",minute:"2-digit"}); };
+const ago = iso => { const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 1 ? "à l'instant" : m < 60 ? `il y a ${m} min` : `il y a ${Math.round(m/60)} h`; };
+
+function alertes(d){
+  if (d.alertes.length) return `<div class="big pos">${d.alertes.length} value${d.alertes.length>1?"s":""}</div>
+    <div class="sub">Cote du bookmaker au-dessus de la cote juste. Vérifie la cote dans l'appli avant de jouer.</div>` +
+    d.alertes.slice(0,5).map(a => `<div class="card"><div class="row"><div class="m">${esc(a.match)}</div>
+      <div class="ev pos">${pct(a.ev)}</div></div><div class="row"><div class="p">${esc(a.pari)} · ${bk(a.book)} ${esc(a.cote)}
+      (juste ${esc(a.juste)})</div><div class="p">${heure(a.debut)}</div></div>
+      ${a.url?`<div class="p"><a href="${esc(a.url)}" target="_blank" rel="noopener">ouvrir le match</a>${a.mise?` · mise ${esc(a.mise)} €`:""}</div>`:""}</div>`).join("");
+  return `<div class="big">Aucune value</div><div class="sub">Alerte dès +3 % au-dessus de la cote juste (Polymarket). Les plus proches maintenant :</div>
+    <table><tr><th>Pari</th><th>Book</th><th>Cote</th><th>Écart</th></tr>` +
+    d.proches.slice(0,6).map(p => `<tr><td><div class="m" style="max-width:52vw">${esc(p.match)}</div><div class="p" style="max-width:52vw">${esc(p.pari)}</div></td>
+      <td>${bk(p.book)}</td><td>${esc(p.cote)}<div class="p">${esc(p.juste)}</div></td><td class="ev ${cls(p.ev)}">${pct(p.ev)}</td></tr>`).join("") + `</table>`;
+}
+function marche(d){
+  let h = `<h2>Bookmakers face à la cote juste</h2><table><tr><th>Book</th><th>Cotes</th><th>Médiane</th><th>Meilleure</th></tr>` +
+    d.books.map(b => `<tr><td>${bk(b.book)}</td><td>${b.cotes}</td><td class="${cls(b.ev_mediane)}">${pct(b.ev_mediane)}</td>
+      <td class="ev ${cls(b.meilleure)}">${pct(b.meilleure)}</td></tr>`).join("") + `</table>`;
+  h += `<h2>Retard sur le marché (7 j)</h2>` + (d.retard.length ? `<table><tr><th>Book</th><th>Suivis</th><th>Délai médian</th><th>≤ 15 min</th></tr>` +
+    d.retard.map(r => `<tr><td>${bk(r.book)}</td><td>${r.suivis}</td><td>${r.mediane_min==null?"—":r.mediane_min+" min"}</td>
+      <td>${r.en_15min==null?"—":Math.round(r.en_15min*100)+" %"}</td></tr>`).join("") + `</table>`
+    : `<div class="sub">Pas encore de mouvement mesuré.</div>`);
+  return h;
+}
+function bilan(d){
+  const b = d.bilan;
+  const short = n => n.startsWith("Valeur") ? "Valeur 4 %" : n.startsWith("Témoin apparié") ? "Témoin apparié" : "Témoin";
+  return `<h2>Vrais paris (alertes)</h2><div class="kpis">
+    <div class="kpi"><b>${b.paris}</b><span>paris (${b.regles} réglés)</span></div>
+    <div class="kpi"><b class="${cls(b.roi)}">${pct(b.roi)}</b><span>ROI</span></div>
+    <div class="kpi"><b class="${cls(b.clv)}">${pct(b.clv)}</b><span>CLV moyenne (n=${b.n_clv})</span></div>
+    <div class="kpi"><b>${b.regles >= 300 ? "mesurable" : (300 - b.regles) + " paris"}</b><span>avant de conclure</span></div></div>
+    <h2>Stratégies en fictif (1 000 €)</h2><table><tr><th>Stratégie</th><th>Paris</th><th>ROI</th><th>Bankroll</th></tr>` +
+    d.fictif.map(f => `<tr><td>${esc(short(f.nom))}</td><td>${f.paris}</td><td class="${cls(f.roi)}">${pct(f.roi)}</td>
+      <td>${f.bankroll.toFixed(0)} €</td></tr>`).join("") + `</table>
+    <div class="sub" style="margin-top:8px">Une stratégie ne vaut quelque chose que si elle bat son Témoin apparié sur plusieurs centaines de paris.</div>`;
+}
+function sante(d){
+  const s = d.sante;
+  return `<div class="kpis"><div class="kpi"><b>${s.cotes ?? "—"}</b><span>cotes comparées</span></div>
+    <div class="kpi"><b>${s.apparies ?? "—"}</b><span>matchs appariés</span></div></div>
+    <h2>Sources (dernier passage)</h2><div>` +
+    Object.entries(s.sources).map(([k,v]) => `<span class="pill ${v ? "" : "mut"}">${esc(k)} ${v ?? "—"}</span>`).join("") + `</div>` +
+    (s.en_pause.length ? `<h2>En pause (refus du site)</h2><div>` + s.en_pause.map(x => `<span class="pill neg">${esc(x)}</span>`).join("") + `</div>` : "") +
+    (s.erreurs.length ? `<h2>Erreurs</h2>` + s.erreurs.map(e => `<div class="p">${esc(e)}</div>`).join("") : `<h2>Erreurs</h2><div class="p pos">aucune</div>`) +
+    `<div class="sub" style="margin-top:12px">Référence : Polymarket. Détection seulement, jamais de pari automatique.</div>`;
+}
+let data = null;
+function render(){
+  if (!data) return;
+  document.getElementById("maj").textContent = "mis à jour " + ago(data.maj);
+  const age = (Date.now() - new Date(data.maj)) / 60000;
+  document.getElementById("dot").style.background = age < 20 ? "var(--ok)" : age < 60 ? "var(--warn)" : "var(--bad)";
+  document.getElementById("t-alertes").innerHTML = alertes(data);
+  document.getElementById("t-marche").innerHTML = marche(data);
+  document.getElementById("t-bilan").innerHTML = bilan(data);
+  document.getElementById("t-sante").innerHTML = sante(data);
+}
+async function load(){
+  try {
+    const r = await fetch(SRC + "?t=" + Date.now(), {cache: "no-store"});
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    data = await r.json(); render();
+  } catch (e) { document.getElementById("maj").textContent = "données indisponibles (" + e.message + ")"; }
+}
+function tab(t){
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === "t-" + t));
+  try { localStorage.setItem("tab", t); } catch (e) {}
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => tab(b.dataset.t));
+try { const t = localStorage.getItem("tab"); if (t) tab(t); } catch (e) {}
+load(); setInterval(load, 120000); setInterval(render, 30000);
+</script>
+</body>
+</html>

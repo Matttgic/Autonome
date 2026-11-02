@@ -67,6 +67,12 @@ def cmd_scan(a, cfg):
             "candidates": len(cands), "picked": len(picks), "errors": errors}
     store.append(a.state, "runs.jsonl", [meta])
     print(json.dumps(meta, ensure_ascii=False))
+    try:  # page mobile (site/index.html) : résumé compact lu sur la branche data
+        from . import site as SITE
+        _atomic_write(Path(a.state) / "site.json", json.dumps(SITE.build(a.state, meta, obs, now), ensure_ascii=False,
+                                                              separators=(",", ":")))
+    except Exception as e:  # noqa: BLE001
+        print(f"site.json non écrit : {type(e).__name__}: {e}"[:160])
     if picks or a.notify_empty:  # notifier AVANT le rendu : une panne de page ne doit pas perdre l'alerte
         print(notify.send(f"{len(picks)} value bet(s)" if picks else "NO BET", notify.message(picks), a.link))
     try:
@@ -568,6 +574,12 @@ def cmd_live(a, cfg):
             "errors": errors}
     store.append(a.state, "runs.jsonl", [meta])
     print(json.dumps(meta, ensure_ascii=False))
+    try:  # page mobile (site/index.html) : résumé compact lu sur la branche data
+        from . import site as SITE
+        _atomic_write(Path(a.state) / "site.json", json.dumps(SITE.build(a.state, meta, obs, now), ensure_ascii=False,
+                                                              separators=(",", ":")))
+    except Exception as e:  # noqa: BLE001
+        print(f"site.json non écrit : {type(e).__name__}: {e}"[:160])
     if picks:
         body = "@" + os.environ.get("GITHUB_REPOSITORY_OWNER", "") + " nouveaux paris :\n\n" + \
             "\n".join(notify.md_bet(b) for b in picks)
