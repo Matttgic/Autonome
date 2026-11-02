@@ -64,10 +64,14 @@ def map_offers(event: dict, offers: list[dict]) -> dict[str, dict[str, float]]:
     home, away, sport = event.get("homeName"), event.get("awayName"), event.get("sport")
     out: dict = {}
     for bo in offers:
+        if not isinstance(bo, dict) or bo.get("suspended") or bo.get("closed"):
+            continue
         crit = (bo.get("criterion") or {}).get("englishLabel") or ""
+        if not isinstance(crit, str):
+            continue
         typ = (bo.get("betOfferType") or {}).get("englishName") or ""
         outs = [o for o in bo.get("outcomes") or [] if isinstance(o, dict)]
-        by = {o.get("type"): o for o in outs}
+        by = {o.get("type"): o for o in outs if isinstance(o.get("type"), str)}
         if typ == "Match" and crit == "Full Time" and set(by) == {"OT_ONE", "OT_CROSS", "OT_TWO"}:
             for t, s in (("OT_ONE", "home"), ("OT_CROSS", "draw"), ("OT_TWO", "away")):
                 _put(out, "1x2", s, _odds(by[t]))
@@ -76,10 +80,18 @@ def map_offers(event: dict, offers: list[dict]) -> dict[str, dict[str, float]]:
                 _put(out, "ht1x2", s, _odds(by[t]))
         elif typ == "Match" and set(by) == {"OT_ONE", "OT_TWO"} and (
                 crit == "Match Odds" and sport in ("TENNIS", "UFC_MMA", "BOXING", "TABLE_TENNIS", "DARTS", "SNOOKER", "ESPORTS")
-                or (crit.startswith("Match Odds") and "Overtime" in crit and sport in ("BASKETBALL", "ICE_HOCKEY", "AMERICAN_FOOTBALL"))
+                or (crit.startswith("Match Odds") and "Including Overtime" in crit
+                    and sport in ("BASKETBALL", "ICE_HOCKEY", "AMERICAN_FOOTBALL"))
                 or (crit == "Match Odds" and sport == "BASKETBALL")):
-            _put(out, "ml", "home", _odds(by["OT_ONE"]))
-            _put(out, "ml", "away", _odds(by["OT_TWO"]))
+            one, two = by["OT_ONE"], by["OT_TWO"]
+            n1 = one.get("participant") or one.get("label") or ""
+            from ..match import sim
+            if n1 and home and away and sim(n1, away) > sim(n1, home):
+                one, two = two, one  # issue 1 libellée au nom du visiteur : on réaligne sur les noms
+            if n1 and home and away and max(sim(n1, home), sim(n1, away)) < 0.6:
+                continue  # issue non identifiable : ignorée
+            _put(out, "ml", "home", _odds(one))
+            _put(out, "ml", "away", _odds(two))
         elif typ == "Double Chance" and crit == "Double Chance":
             for t, s in (("OT_ONE_OR_CROSS", "1X"), ("OT_CROSS_OR_TWO", "X2"), ("OT_ONE_OR_TWO", "12")):
                 if t in by:
@@ -105,24 +117,33 @@ def map_offers(event: dict, offers: list[dict]) -> dict[str, dict[str, float]]:
 
 
 def to_events(data: dict, offering: str) -> list[dict]:
-    evs = {e["id"]: e for e in data.get("events") or [] if isinstance(e, dict) and e.get("id")}
+    evs = {e["id"]: e for e in data.get("events") or [] if isinstance(e, dict) and isinstance(e.get("id"), int)}
     offers: dict = {}
     for bo in data.get("betOffers") or []:
-        if isinstance(bo, dict) and bo.get("eventId") in evs:
+        if isinstance(bo, dict) and isinstance(bo.get("eventId"), int) and bo["eventId"] in evs:
             offers.setdefault(bo["eventId"], []).append(bo)
     out = []
     for eid, e in evs.items():
-        if e.get("state") not in (None, "NOT_STARTED") or not e.get("homeName") or not e.get("awayName"):
-            continue
         try:
-            start = datetime.fromisoformat(e["start"].replace("Z", "+00:00")).astimezone(timezone.utc)
-        except (KeyError, ValueError, AttributeError):
+            out.append(_event(e, eid, offers, offering))
+        except (KeyError, ValueError, AttributeError, TypeError):
             continue
-        out.append({"id": f"kb|{offering}|{eid}", "kambi_id": eid, "sport": e.get("sport"),
-                    "competition": " / ".join(p.get("name", "") for p in e.get("path") or [])[:80],
+    return [x for x in out if x]
+
+
+def _event(e, eid, offers, offering):
+    if True:  # noqa: SIM102
+        if e.get("state") not in (None, "NOT_STARTED") or not e.get("homeName") or not e.get("awayName"):
+            return None
+        start = datetime.fromisoformat(e["start"].replace("Z", "+00:00"))
+        if start.tzinfo is None:
+            return None
+        start = start.astimezone(timezone.utc)
+        return ({"id": f"kb|{offering}|{eid}", "kambi_id": eid, "sport": str(e.get("sport") or "INCONNU"),
+                    "competition": " / ".join(str(p.get("name", "")) for p in e.get("path") or []
+                                              if isinstance(p, dict))[:80],
                     "commence": start.isoformat().replace("+00:00", "Z"), "home": e["homeName"], "away": e["awayName"],
                     "url": "https://www.pmu.fr/sport/", "odds": map_offers(e, offers.get(eid, []))})
-    return out
 
 
 def fetch_main(offering: str = "pmusportsfr", min_bo: int = 1) -> tuple[list[dict], list[str]]:
@@ -138,7 +159,7 @@ def fetch_main(offering: str = "pmusportsfr", min_bo: int = 1) -> tuple[list[dic
         try:
             d = get(offering, f"betoffer/group/{s['id']}.json", excludeLive="true", excludeOngoing="true",
                     excludePrePacks="true", includeParticipants="true", onlyMain="true")
-            out += to_events(d, offering)
+            out += to_events(d, offering) if isinstance(d, dict) else []
         except SourceError as e:
             errors.append(str(e))
     return out, errors

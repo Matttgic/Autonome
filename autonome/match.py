@@ -28,8 +28,47 @@ _TOK = {"corogne": "coruna", "majorque": "mallorca", "cadix": "cadiz", "seville"
         "betis": "betis", "atletico": "atletico", "copenhague": "kobenhavn", "varsovie": "warszawa"}
 
 
-def norm(name: str) -> set[str]:
+_MARK = re.compile(r"^(ii|iii|u\d{2}|women|womens|femmes?|feminines?|fem|reserves?|castilla|youth|academy|esports?|"
+                   r"juniors?|amateurs?|b-team)$")
+
+
+def _raw(name: str) -> str:
     s = unicodedata.normalize("NFKD", name or "").encode("ascii", "ignore").decode().lower()
+    return s
+
+
+def markers(name: str) -> set[str]:
+    """Marqueurs d'équipe différente de l'équipe première : réserve, jeunes, féminines, e-sport, (pseudo)…"""
+    s = _raw(name)
+    m = {t for t in re.sub(r"[^a-z0-9 ]+", " ", s).split() if _MARK.match(t)}
+    m |= {"(" + x.strip() + ")" for x in re.findall(r"\(([^)]*)\)", s) if x.strip() not in ("", "f", "w")}
+    if re.search(r"\((f|w)\)|\b(w|f)$", s.strip()):
+        m.add("women")
+    return m
+
+
+def initials(name: str) -> set[str]:
+    s = re.sub(r"\([^)]*\)", " ", _raw(name))
+    return {t for t in re.sub(r"[^a-z0-9 ]+", " ", s).split() if len(t) == 1}
+
+
+def _initials_ok(a: str, b: str) -> bool:
+    """« Golubic V. » ~ « Viktorija Golubic » ; « Williams V. » ≠ « Serena Williams »."""
+    for x, y in ((a, b), (b, a)):
+        ix = initials(x) - {"w", "f"}
+        if not ix:
+            continue
+        ty = {t for t in re.sub(r"[^a-z0-9 ]+", " ", _raw(y)).split() if len(t) > 1}
+        iy = initials(y) - {"w", "f"}
+        if iy and not (ix & iy):
+            return False
+        if not iy and not all(any(t.startswith(i) for t in ty) for i in ix):
+            return False
+    return True
+
+
+def norm(name: str) -> set[str]:
+    s = unicodedata.normalize("NFKD", re.sub(r"\([^)]*\)", " ", name or "")).encode("ascii", "ignore").decode().lower()
     s = re.sub(r"[^a-z0-9 ]+", " ", s).strip()
     s = _ALIAS.get(s, s)
     s = " ".join(_TOK.get(t, t) for t in s.split())
@@ -38,6 +77,8 @@ def norm(name: str) -> set[str]:
 
 
 def sim(a: str, b: str) -> float:
+    if markers(a) != markers(b) or not _initials_ok(a, b):
+        return 0.0  # équipe réserve/féminine/e-sport ou joueur différent : jamais assimilés
     ta, tb = norm(a), norm(b)
     if not ta or not tb:
         return 0.0
@@ -50,6 +91,16 @@ def sim(a: str, b: str) -> float:
     pref = max((SequenceMatcher(None, x, y).ratio() for x in ta - _WEAK for y in tb - _WEAK), default=0)
     pref = 0.85 * pref if pref >= 0.8 and len(ta) == 1 and len(tb) == 1 else 0.0
     return max(jac, cont, seq if seq >= 0.75 else 0.0, pref)
+
+
+_SPORT = {"UFC_MMA": "MMA", "MARTIAL_ARTS": "MMA", "SOCCER": "FOOTBALL", "BASKET": "BASKETBALL",
+          "HOCKEY": "ICE_HOCKEY", "FOOT": "FOOTBALL"}
+
+
+def sport_of(x: dict) -> str | None:
+    s = (x.get("sport") or "")
+    s = s.upper() if isinstance(s, str) else ""
+    return _SPORT.get(s, s) or None
 
 
 def _ts(iso: str) -> float:
@@ -66,6 +117,8 @@ def pair(ref_games: list[dict], book_events: list[dict], max_dt_min: float = 20,
         for j, b in enumerate(book_events):
             if abs(_ts(r["commence"]) - _ts(b["commence"])) > max_dt_min * 60:
                 continue
+            if sport_of(r) and sport_of(b) and sport_of(r) != sport_of(b):
+                continue  # jamais de foot comparé à du handball
             sh, sa = sim(r["home"], b["home"]), sim(r["away"], b["away"])
             xh, xa = sim(r["home"], b["away"]), sim(r["away"], b["home"])
             swap = False

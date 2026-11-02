@@ -76,7 +76,7 @@ def stats(root) -> dict:
     rows = store.read(root, BETS)
     closed = [r for r in rows if r.get("close")]
     good = [r for r in closed if r["close"]["minutes_to_start"] <= CLOSE_MAX_MIN]  # clôture quasi réelle
-    clvs = [r["close"]["clv_odds"] for r in good]
+    clvs = [r["close"]["clv_odds"] for r in good if r.get("ref_kind") != "consensus-anj"]  # sharp seulement
     by_kind = {k: V.mean_ci([r["close"]["clv_odds"] for r in good if r["ref_kind"] == k])
                for k in sorted({r["ref_kind"] for r in good})}
     settled = [{"stake": r["stake"], "odds": r["odds"], "won": r["result"]["won"]}

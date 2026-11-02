@@ -11,7 +11,7 @@ from datetime import datetime
 from . import value as V
 from .devig import shin
 
-CFG = {"min_books": 6, "min_ev": 0.07, "max_ev": 0.4, "min_odds": 1.3, "max_odds": 6.0,
+CFG = {"min_books": 6, "min_groups": 5, "min_ev": 0.07, "max_ev": 0.4, "min_odds": 1.3, "max_odds": 6.0,
        "min_minutes_to_start": 20, "max_hours_to_start": 48, "max_dispersion": 0.04}
 
 
@@ -29,7 +29,14 @@ def evaluate(match: dict, now: datetime, bankroll: float, cfg=None) -> list[dict
             continue
         fair = {bk: dict(zip(names, shin([o[n] for n in names]))) for bk, o in full.items()}
         for bk, o in full.items():
-            others = [fair[b] for b in fair if b != bk]
+            # books aux cotes identiques (même fournisseur) = une seule voix
+            groups: dict = {}
+            for b in fair:
+                if b != bk:
+                    groups.setdefault(tuple(round(full[b][n], 2) for n in names), fair[b])
+            others = list(groups.values())
+            if len(others) < c["min_groups"]:
+                continue
             for n in names:
                 ps = [f[n] for f in others]
                 p = sum(ps) / len(ps)
@@ -76,6 +83,7 @@ def closing(rows: list[dict], matches: list[dict], now: datetime) -> int:
             continue
         p = sum(f[r["selection"]] for f in fair) / len(fair)
         r["close"] = {"book": "consensus-anj", "p_fair": p, "seen_at": now.isoformat(), "minutes_to_start": mins,
-                      "ref_age_min": 0.0, **V.clv(r["odds"], p)}
+                      "ref_age_min": m.get("snapshot_age_min"), **V.clv(r["odds"], p),
+                      "note": "clôture = même méthode de consensus : CLV indicative seulement"}
         n += 1
     return n

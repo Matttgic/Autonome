@@ -10,6 +10,7 @@ est normalisé par la somme des milieux. Une jambe sans prix, trop large ou peu 
 from __future__ import annotations
 
 import http.client
+from datetime import datetime, timezone
 import json
 import re
 import time
@@ -21,6 +22,8 @@ UA = "autonome/0.3 (outil perso; requetes espacees)"
 TAGS = ["ligue-1", "epl", "la-liga", "bundesliga", "serie-a", "ucl", "uel", "mls", "brazil-serie-a", "primeira-liga",
         "efl-championship"]
 TAGS_2WAY = ["nba", "nhl", "tennis", "ufc", "ncaa-basketball", "boxing"]
+TAG_SPORT = {"nba": "BASKETBALL", "ncaa-basketball": "BASKETBALL", "nhl": "ICE_HOCKEY", "tennis": "TENNIS",
+             "ufc": "MMA", "boxing": "BOXING"}
 MAX_SPREAD = 0.03
 MIN_LIQ = 2000.0
 
@@ -79,6 +82,9 @@ def build_reference(raw_events: list[dict], max_spread: float = MAX_SPREAD, min_
     games: dict[str, dict] = {}
     for e in raw_events:
         try:
+            datetime.fromisoformat(str(e.get("startTime")).replace("Z", "+00:00")).astimezone(timezone.utc)
+            if not str(e.get("startTime", "")).endswith(("Z", "+00:00")):
+                continue  # heure sans fuseau : ignorée
             _add_event(games, e, max_spread, min_liq)
         except (TypeError, ValueError, KeyError, AttributeError):
             continue  # événement malformé ignoré, jamais bloquant
@@ -100,6 +106,7 @@ def _two_way(games: dict, e: dict, max_spread: float, min_liq: float) -> bool:
         return True  # c'est bien un match à 2 issues, mais pas assez liquide : ignoré
     a, b = outs
     games[f"2w|{e['slug']}"] = {"key": f"pm|{e['slug']}", "commence": e["startTime"], "home": a, "away": b,
+                                "sport": TAG_SPORT.get(e.get("_tag"), None),
                                 "two_way": True, "main": True, "updated": e.get("updatedAt") or "",
                                 "markets": {"ml": {"home": _leg(q, 0), "away": _leg(q, 1)}}}
     return True
@@ -116,7 +123,7 @@ def _add_event(games: dict, e: dict, max_spread: float, min_liq: float) -> None:
     start = e.get("startTime")
     if not start:
         return
-    g = games.setdefault(f"{base}|{start[:16]}", {"key": f"pm|{e.get('slug', base)}", "commence": start,
+    g = games.setdefault(f"{base}|{start[:16]}", {"key": f"pm|{e.get('slug', base)}", "commence": start, "sport": "FOOTBALL",
                                                    "home": home, "away": away, "markets": {}, "updated": "",
                                                    "main": False})
     if not suffix:  # clé stable = slug de l'événement principal (sans lui, le match est ignoré)
@@ -186,7 +193,10 @@ def fetch(tags=TAGS + TAGS_2WAY) -> tuple[list[dict], list[str]]:
             except SourceError as ex:
                 errors.append(str(ex))
                 break
-            raw += page if isinstance(page, list) else []
+            for e in page if isinstance(page, list) else []:
+                if isinstance(e, dict):
+                    e.setdefault("_tag", t)
+                    raw.append(e)
             if not isinstance(page, list) or len(page) < 300:
                 break
     seen, uniq = set(), []

@@ -186,6 +186,7 @@ def cmd_live(a, cfg):
     errors = []
     try:
         ref, err = pm.fetch(cfg.get("polymarket_tags", pm.TAGS + pm.TAGS_2WAY))
+        ref = [g for g in ref if isinstance(g.get("commence"), str) and g["commence"].endswith("Z")]
     except Exception as e:  # noqa: BLE001
         ref, err = [], [f"polymarket: {type(e).__name__}"]
     errors += err
@@ -267,7 +268,10 @@ def cmd_live(a, cfg):
     # coteur.com (instantané du workflow coteur) : Betclic, Unibet, Betsson, Olybet, Vbet, DAZN Bet, etc.
     from . import consensus as CS
     from .sources import coteur_odds
-    ct_books, ct_matches, why = coteur_odds.load(Path(a.state, "coteur_odds.json"), now)
+    try:
+        ct_books, ct_matches, why = coteur_odds.load(Path(a.state, "coteur_odds.json"), now)
+    except Exception as e:  # noqa: BLE001
+        ct_books, ct_matches, why = {}, [], f"illisible ({type(e).__name__})"
     if why:
         errors.append(f"coteur : {why}")
     for bk, evs in ct_books.items():
@@ -281,6 +285,10 @@ def cmd_live(a, cfg):
         pairs += p_
         cands += c_
         allc += live.scan(ref, evs, bk, now, diag)[1]  # mesure : TOUTES les cotes comparables, même négatives
+    # consensus : uniquement les matchs SANS référence Polymarket (sinon deux références pour un même match)
+    from .match import pair as _pair2
+    covered = {id(b) for _, b in _pair2(ref, ct_matches)}
+    ct_matches = [m for m in ct_matches if id(m) not in covered]
     cons_diag = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"],
                                                                 {"min_ev": -9, "max_ev": 9, "max_dispersion": 9, "diagnostic": True})]
     cons_picks = [x for m in ct_matches for x in CS.evaluate(m, now, lcfg["bankroll"])]
@@ -295,7 +303,8 @@ def cmd_live(a, cfg):
     rows = store.read(a.state, tracker.BETS)
     seen = {r["event_id"] for r in rows if r.get("ref_kind") == "polymarket"}
     today = now.date().isoformat()
-    done_today = sum(1 for r in rows if r.get("found_at", "")[:10] == today)
+    done_today = sum(1 for r in rows if r.get("found_at", "")[:10] == today and r.get("ref_kind") != "consensus-anj")
+    cons_today = sum(1 for r in rows if r.get("found_at", "")[:10] == today and r.get("ref_kind") == "consensus-anj")
     best: dict = {}
     for c in cands:  # un seul pari par match : les marchés d'un même match sont corrélés
         if c["event_id"] not in seen and (c["event_id"] not in best or c["ev_cons"] > best[c["event_id"]]["ev_cons"]):
@@ -328,10 +337,13 @@ def cmd_live(a, cfg):
             boost_picks.append(b)
     picks += boost_picks
     open_ev = {r["event_id"] for r in rows if r["status"] == "open"}
-    for c in sorted(cons_picks, key=lambda c: -c["ev_cons"]):
+    for c in sorted(cons_picks, key=lambda c: -c["ev_cons"]):  # quota séparé, après les paris Polymarket
+        if cons_today >= lcfg.get("max_consensus_per_day", 3):
+            break
         if c["bet_id"] not in known and c["event_id"] not in open_ev:
             picks.append(c)
             open_ev.add(c["event_id"])
+            cons_today += 1
     tracker.record_bets(a.state, picks)
     rows2 = store.read(a.state, tracker.BETS)
     if CS.closing(rows2, ct_matches, now):

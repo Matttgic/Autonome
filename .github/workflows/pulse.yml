@@ -1,0 +1,37 @@
+name: pulse
+# Relais de secours : les tâches programmées GitHub (cron) ne se sont pas déclenchées sur ce dépôt récent.
+# Ce job vérifie toutes les 55 min que `live` a tourné il y a < 50 min et `coteur` il y a < 110 min, sinon les relance ;
+# au bout de ~5 h il se relance lui-même. Si le cron GitHub fonctionne, il ne fait rien de plus.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 */6 * * *"
+permissions:
+  actions: write
+  contents: read
+concurrency: {group: autonome-pulse, cancel-in-progress: false}
+jobs:
+  pulse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Relayer
+        run: |
+          age_min() {  # minutes depuis le dernier lancement du workflow $1
+            t=$(gh run list --workflow "$1" -L 1 --json createdAt -q '.[0].createdAt' 2>/dev/null)
+            [ -z "$t" ] && { echo 99999; return; }
+            echo $(( ( $(date -u +%s) - $(date -u -d "$t" +%s) ) / 60 ))
+          }
+          for i in 1 2 3 4 5; do
+            a=$(age_min live.yml); c=$(age_min coteur.yml)
+            echo "$(date -u +%FT%TZ) live il y a ${a} min, coteur il y a ${c} min"
+            [ "$c" -ge 110 ] && gh workflow run coteur.yml --ref main && echo "-> coteur relancé"
+            [ "$a" -ge 50 ] && gh workflow run live.yml --ref main && echo "-> live relancé"
+            [ "$i" -lt 5 ] && sleep 3300
+          done
+      - name: Se relancer
+        if: always()
+        run: gh workflow run pulse.yml --ref main

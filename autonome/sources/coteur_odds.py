@@ -20,17 +20,23 @@ SPORT = {"foot": "FOOTBALL", "tennis": "TENNIS", "basket": "BASKETBALL", "hockey
 
 def _ts(s):
     try:
-        return datetime.fromisoformat(s.replace("Z", "+00:00"))
-    except (AttributeError, ValueError):
+        t = datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except (AttributeError, ValueError, TypeError):
         return None
+    return t.replace(tzinfo=timezone.utc) if t.tzinfo is None else t
 
 
-def load(path, now: datetime, max_snapshot_h: float = 3.0, max_age_h: float = 48.0):
+def load(path, now: datetime, max_snapshot_h: float = 3.0, max_age_h: float = 6.0):
     """-> (événements par book {book: [event]}, matchs bruts avec cotes fraîches, raison si inutilisable)."""
     p = Path(path)
     if not p.exists():
         return {}, [], "pas d'instantané coteur"
-    d = json.loads(p.read_text())
+    try:
+        d = json.loads(p.read_text())
+    except (ValueError, OSError) as e:
+        return {}, [], f"instantané coteur illisible ({type(e).__name__})"
+    if not isinstance(d, dict) or not isinstance(d.get("matches"), dict):
+        return {}, [], "instantané coteur de forme inattendue"
     snap = _ts(d.get("collected_at"))
     if not snap or (now - snap).total_seconds() > max_snapshot_h * 3600:
         return {}, [], f"instantané coteur trop vieux ({d.get('collected_at')})"
@@ -43,11 +49,13 @@ def load(path, now: datetime, max_snapshot_h: float = 3.0, max_age_h: float = 48
                 continue
             home, away = [x.strip() for x in name.split(" - ", 1)]
             start = datetime.fromtimestamp(int(m["ts"]), timezone.utc).isoformat().replace("+00:00", "Z")
-            fresh = {}
+            fresh, fresh_upd = {}, {}
             for key, vals in (m.get("odds") or {}).items():
-                typ = key.split("|")[0]
-                if typ not in ("1n2", "12") or key.split("|")[1]:
+                typ, _, special = str(key).partition("|")
+                if typ not in ("1n2", "12") or special:
                     continue
+                if typ == "12" and m.get("sport") == "foot":
+                    continue  # « 12 » en football = double chance, pas un vainqueur
                 for v in vals:
                     u = _ts(v.get("upd"))
                     if v.get("off") or not u or (snap - u).total_seconds() > max_age_h * 3600 or v.get("book") not in BOOKS:
@@ -59,17 +67,20 @@ def load(path, now: datetime, max_snapshot_h: float = 3.0, max_age_h: float = 48
                     else:
                         sel = {"home": o.get("1"), "away": o.get("2")}
                         mk = "ml"
-                    sel = {k: float(x) for k, x in sel.items() if isinstance(x, (int, float)) and x > 1.0}
-                    if sel:
-                        fresh.setdefault(BOOKS[v["book"]], {})[mk] = sel
+                    sel = {k: float(x) for k, x in sel.items() if isinstance(x, (int, float)) and 1.0 < x < 1000}
+                    bk = BOOKS[v["book"]]
+                    if sel and u > fresh_upd.get((bk, mk), u.min.replace(tzinfo=timezone.utc)):
+                        fresh.setdefault(bk, {})[mk] = sel  # doublon : on garde la plus récente
+                        fresh_upd[(bk, mk)] = u
             if not fresh:
                 continue
-            base = {"commence": start, "home": home, "away": away, "competition": m.get("compet") or "",
+            base = {"commence": start, "home": home, "away": away, "competition": str(m.get("compet") or ""),
+                    "snapshot_age_min": (now - snap).total_seconds() / 60,
                     "sport": SPORT.get(m.get("sport"), (m.get("sport") or "").upper()),
                     "url": "https://www.coteur.com" + (m.get("href") or ""), "renc": rid}
             matches.append({**base, "books": fresh})
             for bk, odds in fresh.items():
                 by_book.setdefault(bk, []).append({**base, "id": f"ct|{rid}|{bk}", "odds": odds})
-        except (TypeError, ValueError, KeyError):
+        except Exception:  # noqa: BLE001 - un match malformé n'invalide pas l'instantané
             continue
     return by_book, matches, None
