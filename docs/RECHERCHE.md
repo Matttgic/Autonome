@@ -326,3 +326,12 @@ gagne » → 8 faux boosts à EV +25 à +160 %. Le sujet doit désormais être u
 3e revue adverse (Sonnet, sans contexte) : 12 défauts sur les boosts (dont réserves/féminines assimilées à l'équipe
 première, match oublié dans un combiné, « respectivement » non standard, calage sous-contraint) — tous corrigés,
 tests de régression dans tests/test_boosts.py (85 tests au total).
+
+## Session 3 (fin) — tous sports, PMU, Betclic, consensus ANJ
+| # | Piste | Hypothèse | Test | Résultat chiffré | Décision |
+|---|---|---|---|---|---|
+| 16 | PMU vs Polymarket (foot, tous marchés) | PMU parfois au-dessus du juste | 162 cotes, 6 matchs (run 03:51) | 0 à EV > 0 ; médianes 1X2 −9,7 %, DC −10,7 %, BTTS −10,9 %, plus/moins −13,3 %, mi-temps −16 % ; meilleure −4,8 % | Surveillance horaire |
+| 17 | **Sports de niche / petits championnats moins bien pricés** (hypothèse du propriétaire) | Les books font plus d'erreurs hors grands championnats | Consensus ANJ leave-one-out (Shin), 2 326 cotes de 10 books, 163 matchs foot (Liga MX, Géorgie, Pologne…), tennis ITF/WTA, basket | **0 cote au-dessus du consensus** ; meilleure 0,0 % ; EV médiane par book : PMU −10,1 %, Olybet −10,4 %, Betclic −11,0 %, Betsson −11,4 %, NetBet −11,6 %, Unibet −13,0 %, DAZN −16,0 %, Vbet −18,3 % | Hypothèse non confirmée sur cet échantillon (une nuit) ; mesure continue dans observations.jsonl |
+| 18 | Polymarket comme référence hors foot | NBA/NHL/tennis/UFC liquides | Tags testés : NBA 28, NHL 59, tennis 46, NCAAB 35 matchs liquides ; e-sport, tennis de table, volley, fléchettes : 0 liquide | Référence sharp utilisable pour 4 sports US + tennis ; pas pour les sports de niche | Niche → consensus seulement |
+Constat structurel : les bookmakers français sont très alignés (mêmes fournisseurs de cotes), marges 10–18 %. Les
+« erreurs » exploitables sont rares et brèves ; l'outil les cherche chaque heure sur ~600 matchs et ~20 bookmakers.

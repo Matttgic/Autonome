@@ -65,3 +65,16 @@ Polymarket n'est pas agréé ANJ : il sert uniquement de référence, on n'y par
 | Bet365 | — | **Non agréé ANJ** : exclu (contrainte du projet) |
 | coteur.com (comparateur) | 200 ; pages match/comparateur rendues en JS sauf la liste des boosts | Utilisé pour les boosts Winamax |
 | comparateur-de-cotes.fr, oddschecker, lequipe | 403 / Cloudflare | — |
+
+## Session 3 (fin) — « toutes les cotes de Winamax, Betclic, PMU » : ce qui est réellement possible
+| Bookmaker | Voie | Couverture mesurée (2026-11-02) |
+|---|---|---|
+| **PMU** | Flux public Kambi (`eu.offering-api.kambicdn.com/…/pmusportsfr`) que la page pmu.fr/sport charge pour tout visiteur (observé en rendant la page dans un navigateur) | 19 sports, ~590 matchs, tous les marchés par match (1N2, DC, plus/moins, BTTS, buts par équipe, mi-temps, score exact…) |
+| **Betclic** | coteur.com (comparateur) : flux temps réel de ses pages publiques, rendues dans un navigateur (`tools/coteur_stream.py`, workflow `coteur` toutes les 2 h) | Marché principal (1N2 / vainqueur) sur ~160 matchs foot/tennis/basket (+ autres sports selon la collecte) |
+| Unibet, Betsson, Olybet, Vbet, DAZN Bet, NetBet, Genybet, Feelingbet | coteur.com (idem) | idem |
+| **Winamax** | Site 403 ; **chez coteur, toutes les cotes Winamax sont « désactivées » depuis le 29/10** (dernières mises à jour 23–29/10) | Uniquement les **cotes boostées** (coteur /cotes-boostees) |
+| Parions Sport | Redirige vers unibet.fr ; absent du flux coteur | — |
+| Bet365 | Non agréé ANJ | Exclu |
+Le dépôt est public : minutes GitHub Actions illimitées (navigateur sans coût).
+Règle respectée : aucune protection contournée ; une source qui répond 403/429 est mise en pause 6 h (NetBet a commencé à
+répondre 403 après une journée de tests intensifs → pause automatique).

@@ -75,3 +75,7 @@ EV ≥ 3 % au milieu ET EV > 0,5 % sur la borne prudente ; alerte = issue GitHub
 Prochaine étape : laisser tourner ; règlement automatique des boosts (score exact Polymarket) non fait — CLV seulement.
 - 3e revue adverse sur les boosts : 12 défauts corrigés ; backtest refait : EV moyenne −6,9 % (44 boosts). 85 tests.
 - Règlement automatique des boosts via le score exact Polymarket résolu (`boosts.settle`).
+- Session 3 (fin) : PMU via flux Kambi public (19 sports), Betclic + 8 books via coteur.com (navigateur, workflow `coteur`
+  /2 h), Polymarket NBA/NHL/tennis/UFC/NCAAB/boxe + 4 championnats foot, consensus ANJ pour les matchs sans Polymarket,
+  pause auto 6 h sur 403/429 (NetBet bloque depuis 03:51). Winamax : boosts seulement (désactivé chez coteur). 91 tests.
+  Prochaine étape : laisser tourner une semaine, lire observations.jsonl (fréquence réelle d'EV>0 par book/sport).
