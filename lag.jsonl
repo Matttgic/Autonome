@@ -404,3 +404,4 @@
 {"at": "2026-11-03T15:28:40.775730+00:00", "book": "pmu_fr", "book_move": 0.0176, "family": "ht_ou", "followed": true, "lag_min": 50.1, "lag_min_lo": 47.9, "outcome": "followed", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-03T15:28:40.775730+00:00", "book": "pmu_fr", "book_move": 0.0157, "family": "ht_ou", "followed": true, "lag_min": 39.2, "lag_min_lo": 37.0, "outcome": "followed", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-03T15:28:40.775730+00:00", "book": "pmu_fr", "book_move": 0.0134, "family": "btts", "followed": true, "lag_min": 52.7, "lag_min_lo": 50.5, "outcome": "followed", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-03T15:36:02.143702+00:00", "book": "pmu_fr", "family": "ou", "followed": false, "outcome": "reverted", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
