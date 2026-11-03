@@ -439,3 +439,4 @@
 {"at": "2026-11-03T16:49:21.609012+00:00", "book": "unibet_fr", "book_move": -0.0154, "family": "1x2", "followed": true, "lag_min": 73.3, "lag_min_lo": 61.8, "outcome": "followed", "ref_move": -0.0201, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-03T16:49:21.609012+00:00", "book": "pmu_fr", "book_move": 0.0184, "family": "team_ou", "followed": true, "lag_min": 144.4, "lag_min_lo": 142.4, "outcome": "followed", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-03T16:49:21.609012+00:00", "book": "pmu_fr", "book_move": 0.011, "family": "ou", "followed": true, "lag_min": 146.5, "lag_min_lo": 144.6, "outcome": "followed", "ref_move": 0.025, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-03T16:58:29.761557+00:00", "book": "pmu_fr", "book_move": 0.014, "family": "ou", "followed": true, "lag_min": 131.1, "lag_min_lo": 129.1, "outcome": "followed", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
