@@ -1179,3 +1179,4 @@
 {"at": "2026-11-04T23:27:47.522050+00:00", "book": "betclic_fr", "family": "ah", "followed": false, "outcome": "unobserved", "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-04T23:27:47.522050+00:00", "book": "pmu_fr", "family": "ht_ou", "followed": false, "outcome": "unobserved", "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-04T23:38:05.530881+00:00", "book": "pmu_fr", "family": "ou", "followed": false, "outcome": "reverted", "ref_move": -0.02, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-04T23:43:24.958091+00:00", "book": "betclic_fr", "book_move": -0.0132, "family": "1x2", "followed": false, "outcome": "opposite", "ref_move": 0.0262, "sport": "FOOTBALL", "src": "direct"}
