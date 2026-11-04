@@ -737,3 +737,4 @@
 {"at": "2026-11-04T00:30:46.099771+00:00", "book": "pmu_fr", "family": "ht1x2", "followed": false, "outcome": "not_followed", "ref_move": 0.0221, "sport": "FOOTBALL", "src": "direct", "waited_min": 537.5}
 {"at": "2026-11-04T00:52:12.997412+00:00", "book": "netbet_fr", "book_move": 0.0175, "family": "ah", "followed": true, "lag_min": 255.6, "lag_min_lo": 240.5, "outcome": "followed", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-04T01:03:22.162447+00:00", "book": "betclic_fr", "book_move": -0.0154, "family": "ml", "followed": false, "outcome": "opposite", "ref_move": 0.02, "sport": "BASKETBALL", "src": "direct"}
+{"at": "2026-11-04T01:58:50.874190+00:00", "book": "betclic_fr", "book_move": 0.0113, "family": "ah", "followed": true, "lag_min": 151.1, "lag_min_lo": 142.7, "outcome": "followed", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
