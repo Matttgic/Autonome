@@ -885,3 +885,4 @@
 {"at": "2026-11-04T14:28:35.076412+00:00", "book": "pmu_fr", "book_move": 0.0146, "family": "1x2", "followed": true, "lag_min": 3.2, "lag_min_lo": 0.0, "outcome": "followed", "ref_move": 0.0245, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-04T14:28:35.076412+00:00", "book": "pmu_fr", "book_move": 0.0147, "family": "team_ou", "followed": true, "lag_min": 8.7, "lag_min_lo": 5.5, "outcome": "followed", "ref_move": 0.025, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-04T14:28:35.076412+00:00", "book": "pmu_fr", "book_move": 0.0111, "family": "ht1x2", "followed": true, "lag_min": 3.2, "lag_min_lo": 0.0, "outcome": "followed", "ref_move": 0.0232, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-04T14:30:41.685163+00:00", "book": "pmu_fr", "book_move": 0.0166, "family": "team_ou", "followed": true, "lag_min": 10.8, "lag_min_lo": 0.0, "outcome": "followed", "ref_move": 0.025, "same_pass": true, "sport": "FOOTBALL", "src": "direct"}
