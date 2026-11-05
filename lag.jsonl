@@ -1369,3 +1369,5 @@
 {"at": "2026-11-05T15:34:51.584925+00:00", "book": "pmu_fr", "book_move": 0.0157, "family": "dc", "followed": true, "lag_min": 31.9, "lag_min_lo": 28.1, "outcome": "followed", "ref_move": 0.0217, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-05T15:34:51.584925+00:00", "book": "pmu_fr", "book_move": 0.0112, "family": "1x2", "followed": true, "lag_min": 31.9, "lag_min_lo": 28.1, "outcome": "followed", "ref_move": 0.0242, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-05T15:37:27.489708+00:00", "book": "pmu_fr", "family": "team_ou", "followed": false, "outcome": "unobserved", "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-05T15:46:21.201507+00:00", "book": "pmu_fr", "book_move": -0.0196, "family": "1x2", "followed": true, "lag_min": 129.5, "lag_min_lo": 124.2, "outcome": "followed", "ref_move": -0.0223, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-05T15:46:21.201507+00:00", "book": "pmu_fr", "book_move": -0.0105, "family": "ht1x2", "followed": true, "lag_min": 54.8, "lag_min_lo": 49.4, "outcome": "followed", "ref_move": -0.0201, "sport": "FOOTBALL", "src": "direct"}
