@@ -1791,3 +1791,5 @@
 {"at": "2026-11-06T18:14:36.749625+00:00", "book": "netbet_fr", "book_move": 0.024, "family": "btts", "followed": true, "lag_min": 179.6, "lag_min_lo": 164.3, "outcome": "followed", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-06T18:14:36.749625+00:00", "book": "netbet_fr", "book_move": -0.0144, "family": "ah", "followed": true, "lag_min": 79.9, "lag_min_lo": 64.6, "outcome": "followed", "ref_move": -0.02, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-06T18:14:36.749625+00:00", "book": "netbet_fr", "family": "team_ou", "followed": false, "outcome": "unobserved", "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-06T18:29:59.411839+00:00", "book": "netbet_fr", "book_move": 0.0186, "family": "ou", "followed": true, "lag_min": 15.4, "lag_min_lo": 0.0, "outcome": "followed", "ref_move": 0.02, "same_pass": true, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-06T18:29:59.411839+00:00", "book": "netbet_fr", "book_move": 0.0113, "family": "ou", "followed": true, "lag_min": 210.9, "lag_min_lo": 195.5, "outcome": "followed", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
