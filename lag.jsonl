@@ -1966,3 +1966,10 @@
 {"at": "2026-11-07T08:37:23.622703+00:00", "book": "pmu_fr", "book_move": -0.0188, "family": "ou", "followed": true, "lag_min": 6.7, "lag_min_lo": 3.9, "outcome": "followed", "ref_move": -0.02, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-07T08:37:23.622703+00:00", "book": "pmu_fr", "book_move": -0.0125, "family": "ou", "followed": true, "lag_min": 6.7, "lag_min_lo": 3.9, "outcome": "followed", "ref_move": -0.02, "sport": "FOOTBALL", "src": "direct"}
 {"at": "2026-11-07T08:37:23.622703+00:00", "book": "pmu_fr", "family": "team_ou", "followed": false, "outcome": "reverted", "ref_move": -0.02, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-07T08:51:50.053093+00:00", "book": "pmu_fr", "book_move": -0.0149, "family": "ou", "followed": true, "lag_min": 5.5, "lag_min_lo": 0.0, "outcome": "followed", "ref_move": -0.02, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-07T08:51:50.053093+00:00", "book": "pmu_fr", "book_move": -0.0108, "family": "ou", "followed": true, "lag_min": 5.5, "lag_min_lo": 0.0, "outcome": "followed", "ref_move": -0.03, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-07T08:51:50.053093+00:00", "book": "pmu_fr", "book_move": -0.0119, "family": "btts", "followed": true, "lag_min": 5.5, "lag_min_lo": 0.0, "outcome": "followed", "ref_move": -0.025, "same_pass": true, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-07T08:51:50.053093+00:00", "book": "pmu_fr", "book_move": -0.0215, "family": "team_ou", "followed": true, "lag_min": 5.5, "lag_min_lo": 0.0, "outcome": "followed", "ref_move": -0.025, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-07T08:51:50.053093+00:00", "book": "pmu_fr", "family": "ht1x2", "followed": false, "outcome": "reverted", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-07T08:51:50.053093+00:00", "book": "pmu_fr", "family": "team_ou", "followed": false, "outcome": "reverted", "ref_move": 0.02, "sport": "FOOTBALL", "src": "direct"}
+{"at": "2026-11-07T08:51:50.053093+00:00", "book": "pmu_fr", "family": "team_ou", "followed": false, "outcome": "reverted", "ref_move": -0.02, "sport": "FOOTBALL", "src": "direct"}
