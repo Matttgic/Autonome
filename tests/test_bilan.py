@@ -71,6 +71,24 @@ class Page(unittest.TestCase):
         void = site.history([bet(status="settled", result={"won": None})], 100.0)[0]
         self.assertEqual((void["etat"], void["gain"]), ("remboursé", 0.0))
 
+    def test_pourquoi_plain_french(self):
+        # Atlanta : p 0,72, Betclic 1,48 (EV +6,56 %), gagné +0,96 €, clôture p 0,795 -> cote juste 1,26
+        r = bet(home="Atlanta", away="Indiana", label="Vainqueur : Atlanta", book="betclic_fr", odds=1.48, p_fair=0.72,
+                ev=0.0656, ev_cons=0.051, status="settled", result={"won": True},
+                close={"minutes_to_start": 2, "clv_odds": 0.1766, "p_fair": 0.795})
+        self.assertEqual(site.pourquoi(r),
+                         "Sur Polymarket, les parieurs donnent 72,0 % de chances qu'Atlanta gagne : la cote juste est donc 1,39. "
+                         "Betclic paie 1,48, plus que ce que ça vaut : sur le long terme, ce genre de pari rapporte +6,6 % "
+                         "de la mise en moyenne. Gagné, +0,96 €. Au coup d'envoi, la cote juste était de 1,26 : les 1,48 pris "
+                         "valaient mieux que le marché final, bon signe.")
+        nul = site.pourquoi(bet(group="1x2", label="1X2 : Nul", odds=3.4, p_fair=0.31, ev=0.054, ev_cons=0.03))
+        self.assertIn("31,0 % de chances que le match se termine sur un nul", nul)
+        self.assertIn("Mise conseillée 2,00 €", nul)
+        fige = site.pourquoi(bet(odds=5.0, p_fair=0.495, ev=1.475))
+        self.assertIn("figé à 50/50", fige)
+        self.assertEqual(fige.count(". "), 1)  # 2 phrases, sans « rapporte +147 % »
+        self.assertIsNone(site.pourquoi(bet(p_fair=None)))
+
     def test_daily_gaps(self):
         runs = [{"at": "2026-11-04T06:00:00+00:00"}, {"at": "2026-11-04T06:10:00+00:00"},
                 {"at": "2026-11-04T10:30:00+00:00"}, {"at": "2026-11-05T00:05:00+00:00"}, {"at": "bad"}]

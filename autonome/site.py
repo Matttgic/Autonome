@@ -10,6 +10,7 @@ import os
 from datetime import datetime, timedelta, timezone
 
 from . import lag as LG, paper as PP, store, tracker
+from .tracker import suspect
 
 
 def _r(x, n=4):
@@ -35,6 +36,70 @@ def _etat(r):
     return "remboursé" if won is None else "gagné" if won else "perdu"
 
 
+BOOK_FR = {"pmu_fr": "PMU", "betclic_fr": "Betclic", "winamax_fr": "Winamax", "unibet_fr": "Unibet", "netbet_fr": "NetBet",
+           "betsson_fr": "Betsson", "olybet_fr": "Olybet", "vbet_fr": "Vbet", "daznbet_fr": "DAZN Bet", "genybet_fr": "Genybet",
+           "feelingbet_fr": "Feelingbet", "parionssport_fr": "Parions Sport", "zebet_fr": "ZEbet", "pokerstars_fr": "PokerStars",
+           "barrierebet_fr": "Barrière"}
+WHY_SUSPECT = {"marche_fige_50_50": "Écarté après coup : le marché Polymarket était figé à 50/50, ce qui annonce en général "
+                                    "un forfait ou une annulation, pas une vraie chance sur deux.",
+               "ev_trop_grande": "Écarté après coup : un écart de plus de 30 % est presque toujours une erreur de la "
+                                 "référence, pas une vraie value."}
+
+
+def _n(x, d=2):
+    return f"{x:.{d}f}".replace(".", ",").replace("-", "−")
+
+
+def _pc(x, sign=False, d=1):
+    return ("+" if sign and x > 0 else "") + _n(x * 100, d) + " %"
+
+
+def pourquoi(r: dict) -> str | None:
+    """Résumé en 2-3 phrases simples : pourquoi ce pari, et ce qu'il a donné. Uniquement les chiffres enregistrés."""
+    p, o, ev = r.get("p_fair"), r.get("odds"), r.get("ev")
+    if p is None or not o or ev is None:
+        return None
+    kind = str(r.get("group", "")).split("@")[0]
+    lab = r.get("label") or str(r.get("selection") or "")
+    pick = lab.split(" : ", 1)[1] if " : " in lab else lab
+    if kind in ("1x2", "ml") and pick.lower() in ("nul", "draw"):
+        evt = "le match se termine sur un nul"
+    elif kind in ("1x2", "ml") and pick:
+        evt = f"{pick} gagne"
+    else:
+        evt = f"« {lab} » passe"
+    src = ("Les autres bookmakers français, une fois leur marge retirée," if r.get("ref_kind") == "consensus-anj"
+           else "Sur Polymarket, les parieurs")
+    que = "qu'" if evt[:1].lower() in "aeiouyhàâéèêîôû" and not evt.startswith("«") else "que "
+    out = [f"{src} donnent {_pc(p)} de chances {que}{evt} : la cote juste est donc {_n(1 / p)}."]
+    sus = suspect(r)
+    if sus:
+        out.append(WHY_SUSPECT.get(sus, "Écarté après coup : référence douteuse."))
+        return " ".join(out)
+    book = BOOK_FR.get(r.get("book"), r.get("book") or "Le bookmaker")
+    s2 = f"{book} paie {_n(o)}, plus que ce que ça vaut : sur le long terme, ce genre de pari rapporte {_pc(ev, True)} de la mise"
+    s2 += " en moyenne." if (r.get("ev_cons") or 0) > 0 else " en moyenne, mais l'avantage est fragile."
+    out.append(s2)
+    res, cl = r.get("result") or {}, r.get("close") or {}
+    clv_ok = cl.get("clv_odds") is not None and (cl.get("minutes_to_start") or 1e9) <= tracker.CLOSE_MAX_MIN
+    if r.get("status") == "settled" and "won" in res:
+        g = _pnl(r)
+        s3 = ("Mise rendue." if res["won"] is None else f"Gagné, {'+' if g > 0 else ''}{_n(g)} €." if res["won"]
+              else f"Perdu, {_n(g)} €.")
+        if clv_ok and cl.get("p_fair"):
+            fin = _n(1 / cl["p_fair"])
+            s3 += (f" Au coup d'envoi, la cote juste était de {fin} : les {_n(o)} pris valaient mieux que le marché final, "
+                   f"bon signe." if cl["clv_odds"] > 0 else
+                   f" Au coup d'envoi, la cote juste était de {fin}, au-dessus des {_n(o)} pris : ce n'était finalement "
+                   f"pas une value, le gain tient de la chance.")
+        out.append(s3)
+    elif ev >= 0.10:
+        out.append("L'écart est grand : vérifie qu'aucune info (blessure, composition) ne l'explique avant de jouer.")
+    elif r.get("stake"):
+        out.append(f"Mise conseillée {_n(r['stake'])} €, volontairement petite : même un bon pari perd souvent.")
+    return " ".join(out)
+
+
 def history(rows: list[dict], bankroll: float, limit: int = 60) -> list[dict]:
     """Tous les paris (alertes), du plus récent au plus ancien, avec ce qu'il faut pour refaire le calcul à la main :
     p (probabilité juste), p_prudente (borne défavorable du bid/ask), EV = p × cote − 1. La mise (live.compare,
@@ -53,7 +118,8 @@ def history(rows: list[dict], bankroll: float, limit: int = 60) -> list[dict]:
             "ev": _r(r.get("ev")), "ev_prudente": _r(r.get("ev_cons")), "kelly": kelly, "mise": r.get("stake"),
             "bankroll": bankroll, "etat": _etat(r), "gain": _pnl(r),
             "p_cloture": _r(cl.get("p_fair")) if clv_ok else None, "clv": _r(cl.get("clv_odds")) if clv_ok else None,
-            "cloture_min": round(cl["minutes_to_start"]) if clv_ok else None, "suspect": tracker.suspect(r)})
+            "cloture_min": round(cl["minutes_to_start"]) if clv_ok else None, "suspect": tracker.suspect(r),
+            "pourquoi": pourquoi(r)})
     return out
 
 

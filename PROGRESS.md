@@ -135,4 +135,5 @@ tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jo
   résultat) ; onglet Santé = passages et plus long arrêt par jour. Revue adverse (8 points) corrigée. 172 tests.
 - Ménage : voie The Odds API (oddsapi, scan/close/settle/report, run.yml, config) et fiche football-data (fair, fairsheet,
   fair.yml) supprimées ; backtest football-data conservé (tools/backtest_fd.py). Page refaite plus sobre : chaque pari
-  affiche cote, cote juste, proba, EV, mise, Kelly, CLV, résultat, avec le détail du calcul. 151 tests.
+  affiche cote, cote juste, proba, EV, mise, Kelly, CLV, résultat, un résumé « pourquoi » en 2-3 phrases
+  (site.pourquoi, généré depuis les chiffres enregistrés) et le détail du calcul. 152 tests.

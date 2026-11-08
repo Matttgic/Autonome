@@ -36,6 +36,7 @@ h2:first-child{margin-top:4px}
 .grid dt{font-size:11.5px;color:var(--mute);letter-spacing:.2px}
 .grid dd{font-size:15px;font-weight:600;white-space:nowrap}
 .note{font-size:13px;margin-top:8px}
+.why{font-size:14.5px;line-height:1.5;margin:-2px 0 10px}
 details{margin-top:6px}
 summary{font-size:13px;color:var(--soft);cursor:pointer;padding:4px 0;list-style:none;text-decoration:underline;text-decoration-color:var(--rule2);text-underline-offset:3px}
 summary::-webkit-details-marker{display:none}
@@ -108,11 +109,12 @@ function bet(h){
     <div class="meta"><span>${quand(h.debut)}</span><span>${bk(h.book)}${h.sport ? " · " + sport(h.sport) : ""}</span></div>
     <div class="match">${esc(h.match)}</div>
     <div class="pick">${esc(h.pari)}</div>
+    ${h.pourquoi ? `<p class="why">${esc(h.pourquoi)}</p>` : ""}
     <dl class="grid">
       ${cell("Cote", fr(h.cote))}${cell("Cote juste", fr(h.juste))}${cell("Proba", pct(h.p,1,false))}${cell("EV", pct(h.ev), tone(h.ev))}
       ${cell("Mise", eur(h.mise,false))}${cell("Kelly", pct(h.kelly,1,false))}${cell("CLV", pct(h.clv), tone(h.clv))}${cell("Résultat", res)}
     </dl>
-    ${h.suspect ? `<div class="note flag">${esc(SUS[h.suspect] || h.suspect)}</div>` : ""}
+    ${h.suspect && !h.pourquoi ? `<div class="note flag">${esc(SUS[h.suspect] || h.suspect)}</div>` : ""}
     <details><summary>Détail du calcul</summary><div class="calc">${calcul(h)}</div></details>
   </article>`;
 }
