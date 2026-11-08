@@ -1,16 +1,13 @@
-"""Tests sans réseau : adaptateur football-data, fiche de cotes justes, backtest.
+"""Tests sans réseau : adaptateur football-data, backtest.
 
 Les lignes CSV ci-dessous reprennent le FORMAT des fichiers football-data (en-têtes réels) avec des valeurs
 fictives choisies pour un calcul à la main ; ce ne sont pas des cotes réelles.
 """
-import json
-import tempfile
 import unittest
 from datetime import datetime, timezone
 from math import log
-from pathlib import Path
 
-from autonome import backtest as B, cli, devig, fairsheet
+from autonome import backtest as B, devig
 from autonome.sources import footballdata as FD
 
 HEADER = ("Div,Date,Time,HomeTeam,AwayTeam,PSH,PSD,PSA,BFEH,BFED,BFEA,AvgH,AvgD,AvgA,P>2.5,P<2.5,BFE>2.5,BFE<2.5,"
@@ -55,43 +52,6 @@ class FootballData(unittest.TestCase):
         self.assertEqual(e["books"]["pinnacle"]["totals"], {"2.5": {"Over": 1.9, "Under": 1.9}})
         self.assertIn("betfair_ex_eu", e["books"])
         self.assertIn("market_avg", e["books"])
-
-
-class FairSheet(unittest.TestCase):
-    def test_build_hand(self):
-        events = FD.load_fixtures(CSV)
-        sheet = fairsheet.build(events, NOW)
-        by = {(r["home"], r["group"]): r for r in sheet["rows"]}
-        # Lyon-Nantes +/-2,5 : Pinnacle 1.90/1.90 -> p = 0.5 (toutes méthodes) -> juste 2.00, mini 2.00*1.03 = 2.06
-        ou = by[("Lyon", "totals@2.5")]
-        self.assertEqual(ou["ref"], "pinnacle")
-        self.assertEqual([(s["fair"], s["min_odds"]) for s in ou["selections"]], [(2.0, 2.06), (2.0, 2.06)])
-        # 1N2 Pinnacle 2.0/3.5/4.0 : la cote juste retenue est >= la cote juste multiplicative 1/0.4827586 = 2.0714
-        h2h = by[("Lyon", "h2h")]
-        self.assertGreaterEqual(h2h["selections"][0]["fair"], 2.071)
-        self.assertEqual(h2h["selections"][0]["market_avg"], 1.95)
-        # Arsenal-Chelsea : pas de Pinnacle ; BFE 1N2 marge 1/1.5+1/4+1/6-1 = 8.3 % > 1.5 % -> ignoré ;
-        # BFE +/-2,5 : 1/1.6+1/2.2-1 = 7.95 % > 1.5 % -> ignoré aussi
-        self.assertNotIn(("Arsenal", "h2h"), by)
-        self.assertEqual(sheet["markets_without_ref"], 2)
-
-    def test_past_matches_skipped_and_render(self):
-        late = datetime(2026, 12, 1, tzinfo=timezone.utc)
-        self.assertEqual(fairsheet.build(FD.load_fixtures(CSV), late)["rows"], [])
-        page = fairsheet.render(fairsheet.build(FD.load_fixtures(CSV), NOW), None)
-        self.assertIn("inconnue", page)  # date de relevé absente = signalée
-        self.assertIn("Lyon", page)
-
-    def test_cli_fair_local_file(self):
-        d = tempfile.mkdtemp()
-        p = Path(d, "fixtures.csv")
-        p.write_text(CSV.replace("2026", "2099").replace("/26,", "/99,"))
-        cfgp = Path(d, "c.json")
-        cfgp.write_text(json.dumps({"engine": {}}))
-        self.assertEqual(cli.main(["fair", "--csv", str(p), "--out", d + "/site", "--config", str(cfgp)]), 0)
-        data = json.loads(Path(d, "site/fair.json").read_text())
-        self.assertIsNone(data["snapshot"])
-        self.assertEqual(len(data["rows"]), 2)
 
 
 class Backtest(unittest.TestCase):

@@ -120,7 +120,7 @@ def result_index(row: dict) -> int | None:
 
 
 def to_event(row: dict, header, snapshot: datetime | None = None, closing: bool = False) -> dict | None:
-    """Ligne CSV -> format interne du moteur (mêmes clés que oddsapi.normalize). None si heure absente."""
+    """Ligne CSV -> format interne du moteur (books -> h2h/totals). None si heure absente."""
     ko = kickoff_utc(row.get("Date", ""), row.get("Time"))
     if ko is None:
         return None

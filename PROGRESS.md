@@ -133,3 +133,6 @@ tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jo
   7,50 €), CLV +4,9 % (n=7, IC95 −7 % à +17 %) : trop peu pour conclure.
 - Page : onglet Bilan = historique de tous les paris avec le calcul détaillé (p, EV, EV prudente, Kelly, mise, clôture,
   résultat) ; onglet Santé = passages et plus long arrêt par jour. Revue adverse (8 points) corrigée. 172 tests.
+- Ménage : voie The Odds API (oddsapi, scan/close/settle/report, run.yml, config) et fiche football-data (fair, fairsheet,
+  fair.yml) supprimées ; backtest football-data conservé (tools/backtest_fd.py). Page refaite plus sobre : chaque pari
+  affiche cote, cote juste, proba, EV, mise, Kelly, CLV, résultat, avec le détail du calcul. 151 tests.

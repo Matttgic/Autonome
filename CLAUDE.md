@@ -18,8 +18,7 @@ Le propriétaire refuse toute clé d'API/compte et toute installation sur son t�
   (= main ; garder `main` alignée par avance rapide après chaque fusion).
 - Diagnostic réseau depuis GitHub : workflows `probe.yml` (tableau des accès) et `capture.yml` (pages publiques
   enregistrées sur la branche `captures`, à analyser localement). Lancement : MCP `actions_run_trigger`.
-- Voies secondaires : `python -m autonome fair` (CSV football-data.co.uk) ; backtest `python tools/backtest_fd.py`.
-- The Odds API (refusée, désactivée) : `ODDS_API_KEY=... python -m autonome scan|close|settle`.
+- Recherche : backtest `python tools/backtest_fd.py` (football-data.co.uk, reproductibilité). Voies The Odds API et fiche « fair » supprimées (clé refusée ; plus de Pinnacle en 2026/27).
 - Stdlib Python uniquement. Secrets en variables d'env, jamais dans le code/logs/URLs.
 - Jamais d'invention de cotes/résultats : donnée absente = signalée absente. Fixtures de test = format seulement.
 - État (paris, CLV, observations) sur la branche git `data`, pas sur main.
