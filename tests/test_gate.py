@@ -21,7 +21,7 @@ class Gate(unittest.TestCase):
         measured = matches("pmu_fr", "1x2", (-0.12, -0.10, -0.08, -0.06, 0.05))
         kept, why, detail = live.gate([c("pmu_fr", "1x2", 0.05, "m4")], measured)
         self.assertEqual(len(kept), 1)
-        self.assertEqual((why, detail), ({"cote_trop_vieille": 0, "groupe_non_conforme": 0}, []))
+        self.assertEqual((why, detail), ({"cote_trop_vieille": 0, "groupe_non_conforme": 0, "ev_trop_grande": 0, "marche_fige_50_50": 0}, []))
 
     def test_aberrant_group_blocked_and_reported(self):
         measured = matches("pmu_fr", "btts", (0.02, 0.04, 0.06, 0.08, 0.10))  # médiane +6 % : mal traduit

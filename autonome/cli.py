@@ -69,7 +69,7 @@ def cmd_scan(a, cfg):
     print(json.dumps(meta, ensure_ascii=False))
     try:  # page mobile (site/index.html) : résumé compact lu sur la branche data
         from . import site as SITE
-        _atomic_write(Path(a.state) / "site.json", json.dumps(SITE.build(a.state, meta, obs, now), ensure_ascii=False,
+        _atomic_write(Path(a.state) / "site.json", json.dumps(SITE.build(a.state, meta, None, now), ensure_ascii=False,
                                                               separators=(",", ":")))
     except Exception as e:  # noqa: BLE001
         print(f"site.json non écrit : {type(e).__name__}: {e}"[:160])

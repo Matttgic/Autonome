@@ -121,3 +121,15 @@ tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jo
 - 10e revue + skill code-review : mesure du retard réécrite (sources directes, une issue par marché, trous
   d'observation, suivis dans le passage, retournements, abandons), intervalles minimaux par source, erreurs LiveScore
   sans blocage des vrais paris, écritures atomiques, « Bodø/Glimt » n'est pas un double, sauvegarde git sûre. 163 tests.
+
+## Session 5 (2026-11-08) — bilan des 6 premiers jours (02/11 → 08/11)
+- Fonctionnement : 2 637 passages (~400/jour). Deux arrêts de ~4,4 h (02/11 03:51–08:16 avant le relais, 04/11
+  06:42–11:03) ; depuis le 04/11, jamais plus de 10 min sans passage. PMU et coteur à chaque passage ; Betclic, NetBet,
+  Unibet à leur intervalle ; Winamax direct toujours 403 (12 pauses de 6 h) mais **cotes Winamax de retour chez coteur
+  depuis le 07/11** (~280 matchs). Erreurs « kambi 404 » (sports vides) et « liste tronquée » Polymarket : bénignes.
+- Paris : 15 alertes. **6 étaient fausses** (5 tennis : marché Polymarket figé à 0,49/0,50 = forfait/annulation, réglé
+  50/50 ; 1 « nul » Riga à 96 %). Corrigé : `tracker.suspect` (vainqueur figé à 0,485–0,515 alors que le book donne < 45 %,
+  ou EV > 30 %), appliqué par `live.gate` et exclu des stats. Bilan corrigé : 9 paris, 5 réglés (5 gagnés, +4,11 € sur
+  7,50 €), CLV +4,9 % (n=7, IC95 −7 % à +17 %) : trop peu pour conclure.
+- Page : onglet Bilan = historique de tous les paris avec le calcul détaillé (p, EV, EV prudente, Kelly, mise, clôture,
+  résultat) ; onglet Santé = passages et plus long arrêt par jour. Revue adverse (8 points) corrigée. 172 tests.

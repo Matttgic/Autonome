@@ -35,6 +35,10 @@ a{color:var(--acc);text-decoration:none}
 nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--card);padding-bottom:env(safe-area-inset-bottom)}
 nav button{background:none;border:0;color:var(--mut);font:600 13px/1 inherit;padding:14px 0 12px;min-height:48px}
 nav button.on{color:var(--txt);box-shadow:inset 0 2px 0 var(--acc)}
+details{margin-top:6px}summary{color:var(--acc);font-size:13px;cursor:pointer;list-style:none;min-height:24px}
+summary::-webkit-details-marker{display:none}
+.calc{font-size:13px;color:var(--txt);margin-top:4px;line-height:1.5}.calc div{margin:2px 0}.calc i{color:var(--mut);font-style:normal}
+.tag{font-size:12px;padding:1px 6px;border-radius:6px;border:1px solid var(--line);white-space:nowrap}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--mut)}
 </style>
 </head>
@@ -65,6 +69,36 @@ const heure = iso => { if(!iso) return ""; const d = new Date(iso);
   return d.toLocaleString("fr-FR",{timeZone:"Europe/Paris",weekday:"short",hour:"2-digit",minute:"2-digit"}); };
 const ago = iso => { const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 1 ? "à l'instant" : m < 60 ? `il y a ${m} min` : `il y a ${Math.round(m/60)} h`; };
 
+const num = (x, d=2) => x == null ? "—" : Number(x).toFixed(d).replace(".", ",");
+const pc = (x, d=1) => x == null ? "—" : (x*100).toFixed(d).replace(".", ",") + " %";
+const jour = iso => iso ? new Date(iso).toLocaleDateString("fr-FR",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit"}) : "";
+const SUS = {ev_trop_grande:"écart trop grand pour être vrai (> 30 %) : erreur de référence probable",
+  marche_fige_50_50:"marché Polymarket figé à 50/50 (forfait ou annulation probable)"};
+function calcul(h){
+  const src = h.ref === "consensus-anj" ? "consensus des bookmakers ANJ, marge retirée" : "Polymarket, milieu achat/vente";
+  let c = `<div><i>Probabilité juste (${src}) :</i> p = ${pc(h.p)} → cote juste = 1 / p = ${num(h.juste)}</div>
+    <div><i>Espérance :</i> EV = p × cote − 1 = ${num(h.p,4)} × ${num(h.cote)} − 1 = <b class="${cls(h.ev)}">${pct(h.ev)}</b></div>`;
+  if (h.p_prudente != null) c += `<div><i>Prudente (pire prix achat/vente) :</i> ${num(h.p_prudente,4)} × ${num(h.cote)} − 1 = ${pct(h.ev_prudente)}</div>`;
+  const pk = h.p_prudente != null ? "p prudente" : "p";
+  if (h.kelly != null) c += `<div><i>Mise :</i> Kelly = (${pk} × cote − 1) / (cote − 1) = ${pc(h.kelly)} ; ¼ Kelly plafonné à 2 % de ${num(h.bankroll,0)} €,
+    arrondi à 0,50 € près, minimum 1 € → <b>${num(h.mise)} €</b></div>`;
+  if (h.clv != null) c += `<div><i>Clôture (${h.cloture_min} min avant) :</i> p = ${pc(h.p_cloture)} ; CLV = cote × p clôture − 1 = <b class="${cls(h.clv)}">${pct(h.clv)}</b></div>`;
+  else if (h.etat === "en cours") c += `<div><i>Clôture :</i> pas encore mesurée</div>`;
+  else c += `<div><i>Clôture :</i> non mesurée à moins de 90 min du début</div>`;
+  if (h.gain != null) c += `<div><i>Résultat :</i> ${h.etat}${h.etat === "gagné" ? ` : ${num(h.mise)} × (${num(h.cote)} − 1) = +${num(h.gain)} €` : h.etat === "perdu" ? ` : −${num(h.mise)} €` : " : mise rendue"}</div>`;
+  if (h.suspect) c += `<div class="neg">Écarté du bilan : ${esc(SUS[h.suspect] || h.suspect)}</div>`;
+  return c;
+}
+function historique(d){
+  const H = d.historique || [];
+  if (!H.length) return `<div class="sub">Aucun pari enregistré.</div>`;
+  return H.map(h => `<div class="card"${h.suspect ? ' style="opacity:.6"' : ""}><div class="row"><div class="m">${esc(h.match)}</div>
+    <div class="ev ${!h.gain?"mut":cls(h.gain)}">${!h.gain ? esc(h.etat) : (h.gain>0?"+":"") + num(h.gain) + " €"}</div></div>
+    <div class="row"><div class="p">${esc(h.pari)} · ${bk(h.book)} ${esc(h.cote)}</div><div class="ev ${cls(h.ev)}">${pct(h.ev)}</div></div>
+    <div class="row"><div class="p">${jour(h.debut)} ${heure(h.debut)} · juste ${num(h.juste)}${h.clv!=null?` · CLV ${pct(h.clv)}`:""}</div>
+    ${h.suspect ? '<span class="tag neg">écarté</span>' : ""}</div>
+    <details><summary>voir le calcul</summary><div class="calc">${calcul(h)}</div></details></div>`).join("");
+}
 function alertes(d){
   if (d.alertes.length) return `<div class="big pos">${d.alertes.length} value${d.alertes.length>1?"s":""}</div>
     <div class="sub">Cote du bookmaker au-dessus de la cote juste. Vérifie la cote dans l'appli avant de jouer.</div>` +
@@ -92,13 +126,21 @@ function bilan(d){
   const short = n => n.startsWith("Valeur") ? "Valeur 4 %" : n.startsWith("Témoin apparié") ? "Témoin apparié" : "Témoin";
   return `<h2>Vrais paris (alertes)</h2><div class="kpis">
     <div class="kpi"><b>${b.paris}</b><span>paris (${b.regles} réglés)</span></div>
-    <div class="kpi"><b class="${cls(b.roi)}">${pct(b.roi)}</b><span>ROI</span></div>
-    <div class="kpi"><b class="${cls(b.clv)}">${pct(b.clv)}</b><span>CLV moyenne (n=${b.n_clv})</span></div>
+    <div class="kpi"><b class="${cls(b.roi)}">${pct(b.roi)}</b><span>ROI (${b.gain==null?"—":(b.gain>0?"+":"")+num(b.gain)+" €"} sur ${num(b.mises)} €)</span></div>
+    <div class="kpi"><b class="${cls(b.clv)}">${pct(b.clv)}</b><span>CLV moyenne (n=${b.n_clv}${b.clv_ic?`, IC95 ${pct(b.clv_ic[0],0)} à ${pct(b.clv_ic[1],0)}`:""})</span></div>
     <div class="kpi"><b>${b.regles >= 300 ? "mesurable" : (300 - b.regles) + " paris"}</b><span>avant de conclure</span></div></div>
     <h2>Stratégies en fictif (1 000 €)</h2><table><tr><th>Stratégie</th><th>Paris</th><th>ROI</th><th>Bankroll</th></tr>` +
     d.fictif.map(f => `<tr><td>${esc(short(f.nom))}</td><td>${f.paris}</td><td class="${cls(f.roi)}">${pct(f.roi)}</td>
       <td>${f.bankroll.toFixed(0)} €</td></tr>`).join("") + `</table>
-    <div class="sub" style="margin-top:8px">Une stratégie ne vaut quelque chose que si elle bat son Témoin apparié sur plusieurs centaines de paris.</div>`;
+    <div class="sub" style="margin-top:8px">Une stratégie ne vaut quelque chose que si elle bat son Témoin apparié sur plusieurs centaines de paris.</div>
+    <h2>Historique des paris</h2>${b.ecartes ? `<div class="sub">${b.ecartes} alerte${b.ecartes>1?"s":""} écartée${b.ecartes>1?"s":""} du bilan (référence douteuse), affichée${b.ecartes>1?"s":""} en grisé.</div>` : ""}
+    ${historique(d)}
+    <h2>Comment c'est calculé</h2><div class="calc sub">
+    <div>1. Probabilité juste p : prix Polymarket (milieu entre achat et vente) ; sur un 1N2 les trois prix sont ramenés à 100 %.</div>
+    <div>2. EV = p × cote − 1. Alerte si EV ≥ 3 % et EV prudente (pire prix) > 0,5 %, cote 1,30 à 5,00, 20 min à 30 h avant le match.</div>
+    <div>3. Mise = ¼ Kelly calculé avec la probabilité prudente, plafonnée à 2 % de la bankroll.</div>
+    <div>4. CLV = cote prise × probabilité juste à la clôture − 1 : positive en moyenne = l'outil bat le marché. ROI = gains / mises.</div>
+    <div>Moins de 300 paris réglés : chance et talent ne se distinguent pas encore.</div></div>`;
 }
 function sante(d){
   const s = d.sante;
@@ -108,6 +150,9 @@ function sante(d){
     Object.entries(s.sources).map(([k,v]) => `<span class="pill ${v ? "" : "mut"}">${esc(k)} ${v ?? "—"}</span>`).join("") + `</div>` +
     (s.en_pause.length ? `<h2>En pause (refus du site)</h2><div>` + s.en_pause.map(x => `<span class="pill neg">${esc(x)}</span>`).join("") + `</div>` : "") +
     (s.erreurs.length ? `<h2>Erreurs</h2>` + s.erreurs.map(e => `<div class="p">${esc(e)}</div>`).join("") : `<h2>Erreurs</h2><div class="p pos">aucune</div>`) +
+    (d.jours && d.jours.length ? `<h2>Historique (passages par jour, heure UTC)</h2><table><tr><th>Jour</th><th>Passages</th><th>Plus long arrêt</th><th>Alertes</th></tr>` +
+      d.jours.slice().reverse().map(j => `<tr><td>${esc(j.jour.slice(8,10) + "/" + j.jour.slice(5,7))}</td><td>${j.passages}</td>
+        <td class="${j.trou_max_min > 30 ? "neg" : "pos"}">${!j.passages ? "journée entière" : j.trou_max_min > 90 ? num(j.trou_max_min/60,1) + " h" : j.trou_max_min + " min"}</td><td>${j.alertes}</td></tr>`).join("") + `</table>` : "") +
     `<div class="sub" style="margin-top:12px">Référence : Polymarket. Détection seulement, jamais de pari automatique.</div>`;
 }
 let data = null;

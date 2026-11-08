@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 
 from . import store, value as V
 from .match import pair
-from .tracker import BETS
+from .tracker import BETS, suspect
 
 CFG = {
     "min_ev": 0.03,          # EV au milieu
@@ -24,6 +24,9 @@ CFG = {
     "max_book_age_min": 60,      # cote de book plus vieille (instantané coteur) : mesurée, jamais proposée ; plus strict
                                  # près du coup d'envoi (voir book_age_limit)
     "conf_min_events": 3, "conf_median_lo": -0.25, "conf_median_hi": -0.01,
+    # Bilan du 08/11 : les 6 alertes à EV > 30 % étaient des erreurs de référence (5 matchs de tennis dont le marché
+    # Polymarket était figé à 0,50/0,50 = forfait ou annulation probable, remboursé 50/50 ; 1 marché « nul » à 96 %).
+    # Seuils : tracker.SUSPECT (EV > 30 % ; vainqueur figé à 0,49-0,51 alors que le book donne < 40 %).
 }
 
 SEL_FR = {"home": "{home}", "draw": "Nul", "away": "{away}", "1X": "{home} ou nul", "X2": "Nul ou {away}",
@@ -213,11 +216,15 @@ def gate(cands: list[dict], measured: list[dict], cfg: dict | None = None) -> tu
         return (v[n // 2] + v[(n - 1) // 2]) / 2
 
     stats = {k: (len(evs), med([med(v) for v in evs.values()])) for k, evs in per_event.items()}
-    kept, why, detail = [], {"cote_trop_vieille": 0, "groupe_non_conforme": 0}, []
+    kept, why, detail = [], {"cote_trop_vieille": 0, "groupe_non_conforme": 0, "ev_trop_grande": 0,
+                             "marche_fige_50_50": 0}, []
     for x in cands:
         age, n_med = x.get("book_age_min"), stats.get(_key(x), (0, None))
         reason = None
-        if age is not None and age > book_age_limit(x.get("minutes_to_start", 1e9), c["max_book_age_min"]):
+        sus = suspect(x, c)
+        if sus:
+            reason = sus
+        elif age is not None and age > book_age_limit(x.get("minutes_to_start", 1e9), c["max_book_age_min"]):
             reason = "cote_trop_vieille"
         elif not (n_med[0] >= c["conf_min_events"] and c["conf_median_lo"] <= n_med[1] <= c["conf_median_hi"]):
             reason = "groupe_non_conforme"

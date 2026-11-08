@@ -72,8 +72,29 @@ def settle(root, event_id: str, res: dict) -> int:
     return n
 
 
+# Référence suspecte (bilan du 08/11/2026) : les 6 alertes à EV > 30 % étaient des erreurs de référence — 5 matchs de
+# tennis dont le marché Polymarket était figé à 0,49/0,50 (forfait ou annulation probable : remboursé 50/50) et un
+# marché « nul » à 96 %. Ces paris ne sont plus proposés (live.gate) et sont exclus de la CLV et de l'EV attendue.
+SUSPECT = {"max_ev_alert": 0.30, "fige_band": 0.016, "fige_book_p": 0.45}
+
+
+def suspect(x: dict, cfg: dict | None = None) -> str | None:
+    """Raison pour laquelle la référence d'un pari/candidat est douteuse, sinon None."""
+    c = {**SUSPECT, **(cfg or {})}
+    if x.get("ref_kind", "polymarket") != "polymarket":  # consensus et boosts : leurs propres plafonds (40 %, 50 %)
+        return None
+    p, odds = x.get("p_fair"), x.get("odds") or 0
+    if (str(x.get("group", "")).split("@")[0] == "ml" and p is not None and odds > 1
+            and abs(p - 0.5) <= c["fige_band"] and 1 / odds < c["fige_book_p"]):
+        return "marche_fige_50_50"
+    if (x.get("ev") or 0) > c["max_ev_alert"]:
+        return "ev_trop_grande"
+    return None
+
+
 def stats(root) -> dict:
-    rows = store.read(root, BETS)
+    allrows = store.read(root, BETS)
+    rows = [r for r in allrows if not suspect(r)]
     closed = [r for r in rows if r.get("close")]
     good = [r for r in closed if r["close"]["minutes_to_start"] <= CLOSE_MAX_MIN]  # clôture quasi réelle
     clvs = [r["close"]["clv_odds"] for r in good if r.get("ref_kind") != "consensus-anj"]  # sharp seulement
@@ -82,7 +103,7 @@ def stats(root) -> dict:
     settled = [{"stake": r["stake"], "odds": r["odds"], "won": r["result"]["won"]}
                for r in rows if r["status"] == "settled" and r.get("result")]
     return {
-        "bets_total": len(rows), "bets_open": sum(r["status"] == "open" for r in rows),
+        "bets_total": len(rows), "bets_suspect": len(allrows) - len(rows), "bets_open": sum(r["status"] == "open" for r in rows),
         "bets_settled": len(settled),
         "clv": V.mean_ci(clvs), "clv_by_ref_kind": by_kind,
         "clv_coverage": f"{len(good)}/{len(rows)} paris ont une clôture sharp ≤{CLOSE_MAX_MIN} min avant le match "

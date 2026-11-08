@@ -43,5 +43,7 @@ Le propriétaire refuse toute clé d'API/compte et toute installation sur son t�
 - Winamax : cotes « désactivées » chez coteur depuis le 29/10 → seulement les boosts. Bet365 : non ANJ, exclu.
 - Toujours une revue adverse indépendante (sous-agent sans contexte) sur tout nouveau code de cotes : 4 revues ont
   trouvé 57 défauts dont plusieurs faux positifs (joueur+équipe, réserves/féminines, Venus/Serena, foot vs handball).
+- Polymarket tennis : un match non joué (forfait) est réglé 50/50 et le marché reste figé à 0,49/0,50 → ce n'est
+  pas une value (`tracker.suspect`, 6 fausses alertes sur 15 avant le 08/11). EV > 30 % = erreur de référence.
 - Résultats LiveScore : le marqueur féminin n'est parfois que dans NmEn (« Arsenal W ») ou dans le nom de ligue
   (« Naisten… ») ; un match reporté doit rester candidat (sinon son homonyme est pris) ; doubles ≠ simples au tennis.
