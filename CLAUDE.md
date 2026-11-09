@@ -9,7 +9,10 @@ Le propriétaire refuse toute clé d'API/compte et toute installation sur son t�
   Olybet/Vbet/DAZN… via l'instantané coteur.com (`coteur_odds.json`, workflow `coteur` = navigateur Playwright).
   Matchs sans Polymarket : référence « consensus ANJ » (leave-one-out, clones fusionnés). Boosts Winamax via coteur.
   Règlement : résolution Polymarket ; paris « consensus » via LiveScore (API publique, `sources/livescore.py`).
-  Alertes : page https://matttgic.github.io/Autonome/ (site/index.html lit site.json sur data). PAS d'e-mail (demande du
+  Alertes : page https://matttgic.github.io/Autonome/ (site/index.html lit site.json sur data). Onglet d'entrée
+  « Aujourd'hui » (approuvé le 09/11) : paris à jouer et voyants des 3 outils, schéma commun `aujourdhui.json` (bloc
+  `aujourdhui` de site.json ici ; cotes-value/aujourdhui.json sur Pages, cotes-boostees sur `donnees`), 8 s max par
+  source, source absente = « pas encore publié », jamais bloquant. PAS d'e-mail (demande du
   propriétaire) : issues « Paris du… »/« Panne… » coupées (variable ALERT_ISSUES=1 pour réactiver) ; issue « Tableau de bord » réécrite.
 - Ordonnancement : le cron GitHub se déclenche trop peu pour compter dessus (21 départs programmés de live en 7 jours, au
   lieu de 119, mesuré au 09/11) → `live.yml` boucle ~50 min (un passage dès que le précédent finit, état sauvegardé après chacun)

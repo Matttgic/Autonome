@@ -166,6 +166,54 @@ def repeated(runs: list[dict], last: int = 50, min_n: int = 3) -> dict:
     return {"sur": len(tail), "n": len(top), "top": top[:5]}
 
 
+# Page d'entrée « Aujourd'hui » (vague 2, approuvée le 09/11/2026) : schéma commun aux 3 dépôts (aujourdhui.json chez
+# cotes-value et cotes-boostees ; ici un bloc de site.json). Verdict = gabarit rempli avec les chiffres calculés.
+SITE_URL = "https://matttgic.github.io/Autonome/"
+N_REQUIS = 460  # docs/PROTOCOLE.md P3 : paris avec clôture pour juger une CLV à 1 % près (borne basse, une stratégie)
+
+
+def _sante(meta: dict, paused: list[str], now: datetime) -> dict:
+    """ok / degrade / panne d'après le dernier passage (l'âge du passage est jugé par la page, à la lecture)."""
+    pmu, ct = meta.get("pmu_events") or 0, sum(1 for v in (meta.get("coteur_books") or {}).values() if v)
+    if not meta.get("ref_games"):
+        etat, msg = "panne", "référence Polymarket non lue au dernier passage : aucune détection possible"
+    elif not pmu or not ct:
+        etat = "degrade"
+        msg = " et ".join(x for x, ok in (("PMU", pmu), ("coteur.com", ct)) if not ok) + " non lu(s) au dernier passage"
+    else:
+        etat, msg = "ok", f"PMU : {pmu} matchs lus ; coteur.com : {ct} bookmakers lus"
+    if paused:
+        msg += f" ; en pause : {', '.join(paused)}"
+    return {"etat": etat, "message": msg[:200], "derniere_collecte": meta.get("at") or now.isoformat()}
+
+
+def verdict(st: dict) -> str:
+    """Une ligne, chiffres calculés seulement (CLV par pari = par match : un seul pari par match)."""
+    clv, n = st["clv"], st["clv"]["n"]
+    roi = st["roi"]
+    if not n:
+        return f"Autonome : aucun pari avec clôture mesurée pour l'instant (0 / {N_REQUIS} nécessaires)."
+    ci = clv.get("ci95")
+    ic = f" (IC 95 % {_pc(ci[0], True)} à {_pc(ci[1], True)})" if ci else ""
+    out = f"Autonome : CLV moyenne {_pc(clv['mean'], True)}{ic} sur {n} paris"
+    if roi.get("n"):
+        out += f", ROI {_pc(roi['roi'], True)} sur {roi['n']} réglés"
+    if n < N_REQUIS:
+        return out + f" ; {n} / {N_REQUIS} nécessaires : trop tôt pour conclure."
+    return out + (" : avantage démontré (borne basse de l'IC > 0)." if ci and ci[0] > 0
+                  else " : pas d'avantage démontré.")
+
+
+def aujourdhui(meta: dict, alerts: list[dict], st: dict, paused: list[str], now: datetime) -> dict:
+    return {"depot": "Autonome", "url": SITE_URL, "genere_le": now.astimezone(timezone.utc).isoformat(),
+            "sante": _sante(meta, paused, now),
+            "a_jouer": [{"match": a["match"], "debut": a["debut"], "bookmaker": BOOK_FR.get(a["book"], a["book"]),
+                         "pari": a["pari"], "cote": a["cote"], "cote_juste": a["juste"], "ev": a["ev"],
+                         "lien": a["url"] if str(a.get("url") or "").startswith("https://") else None}
+                        for a in alerts[:5]],
+            "verdict": verdict(st)}
+
+
 def _bankroll() -> float:
     try:
         return float(os.environ.get("BANKROLL") or 100)
@@ -211,10 +259,12 @@ def build(root, meta: dict, obs: dict | None, now: datetime) -> dict:
     runs = store.read(root, "runs.jsonl")
     return {
         "maj": now.astimezone(timezone.utc).isoformat(),
+        "aujourdhui": aujourdhui(meta, alerts, st, paused, now),
         "alertes": alerts[:8],
         "proches": near,
         "books": books[:8],
         "bilan": {"paris": st["bets_total"], "regles": st["bets_settled"], "a_regler": st["bets_a_regler"],
+                  "n_requis": N_REQUIS,
                   "roi": _r(st["roi"]["roi"]),
                   "gain": _r(st["roi"]["pnl"], 2), "mises": _r(st["roi"]["staked"], 2), "ecartes": st["bets_suspect"],
                   "clv": _r(st["clv"].get("mean")), "n_clv": st["clv"]["n"],

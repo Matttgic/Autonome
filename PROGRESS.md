@@ -155,3 +155,8 @@ tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jo
 Prochaine étape : laisser tourner ; vérifier la première rotation réelle de runs.jsonl (~17/11 : `archives/` sur data,
 aucune erreur « rotation » dans runs) ; à N du protocole seulement, conclure. Plus tard (non fait) : Matchbook 2ᵉ
 référence en observation, calibration du consensus.
+- AU-L5 Page « Aujourd'hui » (vague 2, approuvée par le propriétaire le 09/11) : onglet d'entrée avec les paris à jouer
+  des 3 outils (5 au plus, non commencés, par heure), 3 voyants (état annoncé, aggravé par l'âge de la collecte :
+  Autonome 20/60 min, autres 3 h/24 h) et le verdict-gabarit de chaque outil ; Autonome publie le bloc `aujourdhui`
+  dans site.json (N requis = 460 paris avec clôture, docs/PROTOCOLE.md P3). Au 09/11, les fichiers de cotes-value et
+  cotes-boostees ne sont pas encore publiés : la page affiche « pas encore publié ». Vérifié avec Playwright (6 cas).

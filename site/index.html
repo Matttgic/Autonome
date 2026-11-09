@@ -17,7 +17,7 @@ body{color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,s
 header{display:flex;justify-content:space-between;align-items:baseline;padding:18px 0 10px}
 .brand{font:700 19px/1 Georgia,"Times New Roman",serif;letter-spacing:-.2px}
 #maj{font-size:13px;color:var(--mute);text-align:right}#maj.warn{color:var(--flag)}#maj.late{color:var(--down)}
-nav{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;gap:22px;border-bottom:1px solid var(--rule2);margin-bottom:14px}
+nav{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;gap:18px;border-bottom:1px solid var(--rule2);margin-bottom:14px}
 nav button{background:none;border:0;color:var(--mute);font:600 15px/1 inherit;padding:12px 0 11px;min-height:44px;cursor:pointer;
   border-bottom:2px solid transparent;margin-bottom:-1px}
 nav button.on{color:var(--ink);border-color:var(--sel)}
@@ -55,18 +55,27 @@ td small{display:block;color:var(--mute);font-size:12px;font-weight:400}
 ol{padding-left:18px;color:var(--soft);font-size:14px}ol li{margin:5px 0}
 .foot{color:var(--mute);font-size:12.5px;margin-top:22px}
 a{color:inherit}
+ul.src{list-style:none;border-top:1px solid var(--rule2)}
+ul.src li{padding:10px 0;border-bottom:1px solid var(--rule)}
+ul.src .row{display:flex;justify-content:space-between;gap:12px;font-weight:600}
+ul.src small{display:block;color:var(--mute);font-size:12.5px;margin-top:2px}
+ul.src .verdict{margin:8px 0 2px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--rule2);margin-right:8px}
+.dot.ok{background:var(--up)}.dot.degrade{background:var(--flag)}.dot.panne{background:var(--down)}
 </style>
 </head>
 <body>
 <header><div class="brand">Autonome</div><div id="maj">chargement…</div></header>
 <nav>
-  <button data-t="paris" class="on">Paris</button>
+  <button data-t="jour" class="on">Aujourd'hui</button>
+  <button data-t="paris">Paris</button>
   <button data-t="bilan">Bilan</button>
   <button data-t="marche">Marché</button>
   <button data-t="sante">Santé</button>
 </nav>
 <main>
-  <section id="t-paris" class="on"></section>
+  <section id="t-jour" class="on"></section>
+  <section id="t-paris"></section>
   <section id="t-bilan"></section>
   <section id="t-marche"></section>
   <section id="t-sante"></section>
@@ -157,7 +166,8 @@ function bilan(d){
   const b = d.bilan || {}, H = (Array.isArray(d.historique) ? d.historique : []).filter(h => h && !h.suspect);
   const won = H.filter(h => h.etat === "gagné").length, lost = H.filter(h => h.etat === "perdu").length;
   const ic = Array.isArray(b.clv_ic) ? `${pct(b.clv_ic[0])} à ${pct(b.clv_ic[1])}` : "—";
-  const reste = Math.max(0, 300 - (num(b.regles) ?? 0));
+  const reste = num(b.n_requis) ? Math.max(0, num(b.n_requis) - (num(b.n_clv) ?? 0)) : Math.max(0, 300 - (num(b.regles) ?? 0));
+  const unite = num(b.n_requis) ? "paris avec clôture mesurée" : "paris réglés";
   let s = `<h2>Les vrais paris</h2><dl class="sum">
     <div><dt>Paris proposés</dt><dd>${int(b.paris)}${num(b.ecartes) ? ` <span class="mute">(+ ${int(b.ecartes)} écartés)</span>` : ""}</dd></div>
     <div><dt>Réglés</dt><dd>${int(b.regles)} · ${won} gagné${won>1?"s":""}, ${lost} perdu${lost>1?"s":""}</dd></div>` +
@@ -166,7 +176,7 @@ function bilan(d){
     <div><dt>ROI</dt><dd class="${tone(b.roi)}">${pct(b.roi)}</dd></div>
     <div><dt>CLV moyenne (n = ${int(b.n_clv)})</dt><dd class="${tone(b.clv)}">${pct(b.clv)}</dd></div>
     <div><dt>Intervalle de confiance 95 %</dt><dd>${ic}</dd></div></dl>
-    <div class="verdict">${reste ? `Trop tôt pour conclure : il manque environ ${reste} paris réglés pour distinguer un vrai avantage de la chance.`
+    <div class="verdict">${reste ? `Trop tôt pour conclure : il manque environ ${reste} ${unite} pour distinguer un vrai avantage de la chance.`
       : (Array.isArray(b.clv_ic) && b.clv_ic[0] > 0 ? "La CLV est positive avec confiance : l'avantage semble réel." : "Assez de paris, mais la CLV n'est pas positive avec confiance : pas d'avantage démontré.")}</div>`;
   if (Array.isArray(d.fictif) && d.fictif.length) {
     const nom = n => { n = String(n || ""); return n.startsWith("Valeur") ? "Valeur 4 %" : n.startsWith("Témoin apparié") ? "Témoin apparié" : n.startsWith("Témoin") ? "Témoin au hasard" : n || "—"; };
@@ -224,6 +234,86 @@ function sante(d){
   return h + `<p class="foot">Bookmakers agréés ANJ uniquement. L'outil détecte, il ne parie jamais tout seul.</p>`;
 }
 
+// ——— Aujourd'hui : page d'entrée commune aux 3 outils du propriétaire (schéma aujourdhui.json, vague 2 du 09/11/2026).
+// Chaque source est lue à part (8 s au plus) : absente, en erreur ou mal formée = voyant gris, jamais de page bloquée.
+const EXT = [
+  {nom: "cotes-value", src: "https://matttgic.github.io/cotes-value/aujourdhui.json", site: "https://matttgic.github.io/cotes-value/"},
+  {nom: "cotes-boostees", src: "https://raw.githubusercontent.com/Matttgic/cotes-boostees/donnees/aujourdhui.json", site: "https://matttgic.github.io/cotes-boostees/"},
+];
+let ext = {};  // nom -> {etat: "absent" | "erreur" | "ok", why, d}
+async function getJson(url, ms=8000){
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url + "?t=" + Date.now(), {cache: "no-store", signal: ctl.signal});
+    if (!r.ok) return {status: r.status, why: "HTTP " + r.status};
+    let d = null;
+    try { d = await r.json(); } catch (e) { return {why: "fichier illisible"}; }
+    if (!d || typeof d !== "object" || Array.isArray(d)) return {why: "fichier vide ou inattendu"};
+    return {d};
+  } catch (e) { return {why: e && e.name === "AbortError" ? "délai de 8 s dépassé" : "réseau injoignable"}; }
+  finally { clearTimeout(t); }
+}
+async function loadExt(){
+  await Promise.all(EXT.map(async x => {
+    const r = await getJson(x.src);
+    ext[x.nom] = r.d ? (r.d.sante && typeof r.d.sante === "object" && !Array.isArray(r.d.sante) ? {etat: "ok", d: r.d} : {etat: "erreur", why: "fichier mal formé"})
+      : r.status === 404 ? {etat: "absent"} : {etat: "erreur", why: r.why};
+  }));
+  renderJour();
+}
+const RANG = {ok: 0, degrade: 1, panne: 2};
+const LIB = {ok: "en marche", degrade: "dégradé", panne: "en panne"};
+// voyant = état annoncé par la source, aggravé par l'âge de sa dernière collecte (jugé ici, à la lecture)
+function voyant(a, warnMin, lateMin){
+  const s = a && a.sante && typeof a.sante === "object" ? a.sante : {};
+  let etat = RANG[s.etat] != null ? s.etat : null;
+  const quandC = s.derniere_collecte || a.genere_le, age = minutes(quandC);
+  let msg = typeof s.message === "string" ? s.message.slice(0, 200) : "";
+  if (age == null) { etat = etat ? (RANG[etat] < 1 ? "degrade" : etat) : null; msg += (msg ? " · " : "") + "date de collecte inconnue"; }
+  else {
+    if (age > lateMin) etat = "panne"; else if (age > warnMin && (!etat || RANG[etat] < 1)) etat = "degrade";
+    msg += (msg ? " · " : "") + "collecte " + ago(quandC);
+  }
+  return etat ? {cls: etat, txt: LIB[etat], msg} : {cls: "", txt: "état inconnu", msg};
+}
+function jouables(nom, a){  // 5 au plus par source, non commencés, champs vérifiés
+  return (Array.isArray(a) ? a : []).slice(0, 5).filter(x => x && typeof x === "object" && typeof x.match === "string"
+    && num(x.cote) > 1 && minutes(x.debut) != null && minutes(x.debut) < 0).map(x => ({...x, src: nom}));
+}
+const lien = u => typeof u === "string" && /^https:\/\//.test(u) ? u : null;
+function jour(){
+  const rows = [], P = [];
+  // Autonome : bloc « aujourdhui » de site.json
+  const A = data && typeof data === "object" ? data.aujourdhui : null;
+  if (!data) rows.push({nom: "Autonome", site: null, cls: "", txt: "indisponible", msg: lastError ? lastError.why : "chargement…"});
+  else if (!A || typeof A !== "object") rows.push({nom: "Autonome", site: null, cls: "", txt: "indisponible", msg: "bloc absent du fichier publié (mise à jour au prochain passage)"});
+  else { rows.push({nom: "Autonome", site: null, ...voyant(A, 20, 60), verdict: A.verdict}); P.push(...jouables("Autonome", A.a_jouer)); }
+  for (const x of EXT) {
+    const e = ext[x.nom];
+    if (!e) rows.push({nom: x.nom, site: x.site, cls: "", txt: "chargement…", msg: ""});
+    else if (e.etat === "absent") rows.push({nom: x.nom, site: x.site, cls: "", txt: "pas encore publié", msg: "le fichier aujourdhui.json n'existe pas encore"});
+    else if (e.etat === "erreur") rows.push({nom: x.nom, site: x.site, cls: "", txt: "indisponible", msg: e.why});
+    else { rows.push({nom: x.nom, site: x.site, ...voyant(e.d, 180, 1440), verdict: e.d.verdict}); P.push(...jouables(x.nom, e.d.a_jouer)); }
+  }
+  P.sort((a, b) => new Date(a.debut) - new Date(b.debut));
+  const J = P.slice(0, 5);
+  let s = `<h2>${J.length ? `${J.length} pari${J.length > 1 ? "s" : ""} à jouer` : "Rien à jouer pour l'instant"}</h2>
+    <p class="lead">Paris pas encore commencés des 3 outils, par heure de début (5 au plus). Vérifie la cote dans l'appli avant de miser.</p>`;
+  s += J.map(p => { const u = lien(p.lien);
+    return `<article class="bet"><div class="meta"><span>${quand(p.debut)}</span><span>${esc(p.src)} · ${esc(p.bookmaker || "—")}</span></div>
+    <div class="match">${esc(p.match.slice(0, 120))}</div><div class="pick">${esc(String(p.pari ?? "—").slice(0, 160))}</div>
+    <dl class="grid">${cell("Cote", fr(p.cote))}${cell("Cote juste", fr(p.cote_juste))}${cell("EV", pct(p.ev), tone(p.ev))}${cell("Lien", u ? `<a href="${esc(u)}" rel="noopener noreferrer" target="_blank">ouvrir</a>` : "—")}</dl></article>`; }).join("");
+  s += `<h2>Les 3 outils</h2><ul class="src">` + rows.map(r => `<li><div class="row"><span><i class="dot ${r.cls}"></i>${r.site ? `<a href="${esc(r.site)}">${esc(r.nom)}</a>` : esc(r.nom)}</span>
+      <span class="${r.cls === "panne" ? "down" : r.cls === "degrade" ? "flag" : r.cls === "ok" ? "up" : "mute"}">${esc(r.txt)}</span></div>
+      ${r.msg ? `<small>${esc(r.msg)}</small>` : ""}${typeof r.verdict === "string" && r.verdict ? `<p class="verdict">${esc(r.verdict.slice(0, 300))}</p>` : ""}</li>`).join("") + `</ul>`;
+  s += `<p class="foot">Les autres outils : ${EXT.map(x => `<a href="${esc(x.site)}">${esc(x.nom)}</a>`).join(" · ")}. Aucun ne parie tout seul.</p>`;
+  return s;
+}
+function renderJour(){
+  const sec = document.getElementById("t-jour");
+  try { sec.innerHTML = jour(); }
+  catch (e) { console.error(e); sec.innerHTML = `<p class="note flag">Section indisponible : une donnée manque ou est illisible. Les autres onglets restent à jour.</p>`; }
+}
 let data = null, lastError = null;  // dernière lecture ratée : affichée jusqu'à la prochaine lecture réussie
 function entete(){
   const el = document.getElementById("maj");
@@ -236,6 +326,7 @@ function entete(){
 }
 function render(){
   try { entete(); } catch (e) { console.error(e); }
+  renderJour();
   if (!data || typeof data !== "object") return;
   for (const [id, f] of [["paris", paris], ["bilan", bilan], ["marche", marche], ["sante", sante]]) {
     const sec = document.getElementById("t-" + id), open = [...sec.querySelectorAll("details")].map(x => x.open);
@@ -245,29 +336,20 @@ function render(){
   }
 }
 async function load(){
-  let why = null;
-  try {
-    const r = await fetch(SRC + "?t=" + Date.now(), {cache: "no-store"});
-    if (!r.ok) why = "HTTP " + r.status;
-    else {
-      let d = null;
-      try { d = await r.json(); } catch (e) { why = "fichier illisible"; }
-      if (!why && (!d || typeof d !== "object" || Array.isArray(d))) why = "fichier vide ou inattendu";
-      if (!why) data = d;
-    }
-  } catch (e) { why = "réseau injoignable"; }
-  lastError = why ? {at: Date.now(), why} : null;
+  const r = await getJson(SRC);
+  if (r.d) data = r.d;
+  lastError = r.d ? null : {at: Date.now(), why: r.why};
   render();
 }
 function tab(t){
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
   document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === "t-" + t));
-  try { localStorage.setItem("tab", t); } catch (e) {}
   window.scrollTo(0, 0);
 }
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => tab(b.dataset.t));
-try { const t = localStorage.getItem("tab"); if (["paris","bilan","marche","sante"].includes(t)) tab(t); } catch (e) {}
-load(); setInterval(load, 120000); setInterval(render, 60000);
+// la page s'ouvre toujours sur « Aujourd'hui » (page d'entrée) ; #paris, #bilan… ouvrent directement un onglet
+{ const t = location.hash.slice(1); if (["paris","bilan","marche","sante"].includes(t)) tab(t); }
+renderJour(); load(); loadExt(); setInterval(load, 120000); setInterval(loadExt, 300000); setInterval(render, 60000);
 </script>
 </body>
 </html>
