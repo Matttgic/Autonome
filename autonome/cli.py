@@ -13,7 +13,7 @@ from . import engine, notify, store, tracker
 
 def load_cfg(path="config.json") -> dict:
     try:
-        return json.loads(Path(path).read_text())
+        return json.loads(Path(path).read_text(encoding="utf-8"))
     except FileNotFoundError:
         return {}
 
@@ -30,7 +30,7 @@ def _due(state, source, now, minutes: float) -> bool:
     d.mkdir(parents=True, exist_ok=True)
     f = d / "fetch_times.json"
     try:
-        times = json.loads(f.read_text()) if f.exists() else {}
+        times = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
     except (ValueError, OSError):
         times = {}
     last = times.get(source)
@@ -43,9 +43,7 @@ def _due(state, source, now, minutes: float) -> bool:
 
 def _atomic_write(path, text: str) -> None:
     """Écriture atomique (un passage tué par timeout ne laisse jamais un JSON tronqué)."""
-    tmp = Path(str(path) + ".tmp")
-    tmp.write_text(text)
-    os.replace(tmp, path)
+    store.replace_bytes(Path(path), text.encode("utf-8"))
 
 
 def _blocked(state, source, now) -> bool:
@@ -62,6 +60,31 @@ def _maybe_block(state, source, errors_before: int, errors: list, now, hours=6) 
         store.append(state, "backoff.jsonl", [{"source": source, "at": now.isoformat(),
                                                "until": (now + timedelta(hours=hours)).isoformat()}])
         errors.append(f"{source} : accès refusé (403/429) -> pause de {hours} h, aucune insistance")
+
+
+# Fichiers chauds (jours gardés) : le reste part dans archives/<nom>-AAAA-MM.jsonl.gz, rien n'est détruit.
+# observations : seule la dernière ligne est relue ; runs : la page en lit 10 jours (site.daily) ; lag : 7 jours.
+ROTATION = {"observations.jsonl": 30, "runs.jsonl": 14, "lag.jsonl": 30}
+STATE_MAX_BYTES = 20_000_000  # GitHub avertit à 50 Mo et refuse un fichier de 100 Mo (le push de l'état échouerait)
+
+
+def housekeeping(state, now, errors: list) -> dict:
+    """Fin de passage (sous le verrou du job live) : rotation, lignes illisibles, taille des fichiers. Jamais bloquant."""
+    moved = {}
+    for name, days in ROTATION.items():
+        try:
+            n = store.rotate(state, name, now, keep_days=days)
+        except Exception as e:  # noqa: BLE001 - une rotation ratée laisse le fichier chaud intact
+            errors.append(f"rotation {name}: {type(e).__name__}: {e}"[:160])
+            continue
+        if n:
+            moved[name] = n
+    for name, n in sorted(store.BAD.items()):
+        errors.append(f"état : {n} ligne(s) illisible(s) dans {name}, ignorée(s), copiée(s) dans {store.QUARANTINE}")
+    store.BAD.clear()
+    for name, size in store.oversized(state, STATE_MAX_BYTES):
+        errors.append(f"état : {name} pèse {size / 1e6:.1f} Mo (> {STATE_MAX_BYTES // 1_000_000} Mo)")
+    return moved
 
 
 def cmd_live(a, cfg):
@@ -114,7 +137,7 @@ def cmd_live(a, cfg):
         cache_dir.mkdir(parents=True, exist_ok=True)
         ls_path = cache_dir / "livescore_cache.json"
         try:
-            ls_cache = json.loads(ls_path.read_text()) if ls_path.exists() else {}
+            ls_cache = json.loads(ls_path.read_text(encoding="utf-8")) if ls_path.exists() else {}
         except (ValueError, OSError):
             ls_cache = {}
         real = CS0.days_to_fetch(rows_s, now)
@@ -142,8 +165,9 @@ def cmd_live(a, cfg):
         ls_cache = {k: v for k, v in ls_cache.items() if (now - datetime.fromisoformat(v["at"])).total_seconds() < 6 * 3600}
         _atomic_write(ls_path, json.dumps(ls_cache, separators=(",", ":")))
         _maybe_block(a.state, "livescore", ls0, errors, now)
+        before_s = json.dumps(rows_s, sort_keys=True)
         n_cons = CS0.settle(rows_s, results, now) if results else 0
-        if n_cons:
+        if json.dumps(rows_s, sort_keys=True) != before_s:  # réglé, ou match signalé reporté
             store.write_all(a.state, tracker.BETS, rows_s)
             settled += n_cons
         if results and CS0.settle(rows_p, results, now):
@@ -301,18 +325,14 @@ def cmd_live(a, cfg):
         cache_dir.mkdir(parents=True, exist_ok=True)
         lag_path = cache_dir / "lag_state.json"
         try:
-            lag_state = json.loads(lag_path.read_text()) if lag_path.exists() else {}
+            lag_state = json.loads(lag_path.read_text(encoding="utf-8")) if lag_path.exists() else {}
         except (ValueError, OSError):
             lag_state = {}
             errors.append("retard : état de travail illisible, réinitialisé")
         lag_new = LG.update(lag_state, allc, now)
         _atomic_write(lag_path, json.dumps(lag_state, separators=(",", ":")))
         if lag_new:
-            store.append(a.state, "lag.jsonl", lag_new)
-            recs = store.read(a.state, "lag.jsonl")
-            if len(recs) > 20000:  # rotation : 30 derniers jours
-                from datetime import timedelta as _td
-                store.write_all(a.state, "lag.jsonl", [r for r in recs if r.get("at", "") >= (now - _td(days=30)).isoformat()])
+            store.append(a.state, "lag.jsonl", lag_new)  # rotation (30 jours, archives gz) en fin de passage
     except Exception as e:  # noqa: BLE001
         errors.append(f"retard: {type(e).__name__}: {e}"[:160])
     obs = live.summarize(allc, now)
@@ -422,6 +442,7 @@ def cmd_live(a, cfg):
         store.append(a.state, "observations.jsonl", [obs])  # remplacé juste après par la version complète
     if keep_obs:
         store.write_all(a.state, "observations.jsonl", store.read(a.state, "observations.jsonl")[:-1] + [obs])
+    rotated = housekeeping(a.state, now, errors)
     meta = {"at": now.isoformat(), "mode": "live", "ref_games": len(ref), "ref_soon": len(soon),
             "netbet_pages": len(book_events), "unibet_events": len(ub_events), "pmu_events": len(pmu_events),
             "betclic_events": len(bc_events), "winamax_events": len(wx_events),
@@ -430,6 +451,8 @@ def cmd_live(a, cfg):
             "closing_updates": closed, "settled": settled, "boosts_lus": len(boost_eval),
             "boosts_evaluables": sum(e["evaluable"] for e in boost_eval), "boosts_value": len(boost_picks),
             "errors": errors}
+    if rotated:
+        meta["archives"] = rotated
     store.append(a.state, "runs.jsonl", [meta])
     print(json.dumps(meta, ensure_ascii=False))
     try:  # page mobile (site/index.html) : résumé compact lu sur la branche data
@@ -484,7 +507,7 @@ def dashboard_md(root, meta, obs=None) -> str:
     rows = store.read(root, tracker.BETS)[-15:][::-1]
     lines = [f"Dernière exécution : {meta['at'][:16]} UTC · matchs de référence {meta['ref_games']} · "
              f"matchs appariés (NetBet+Unibet+PMU) {meta['pairs']} · PMU {meta.get('pmu_events', 0)} matchs lus · candidats {meta['candidates']} · erreurs {len(meta['errors'])}",
-             "", "## Mesure de l'avantage", f"- Paris : {st['bets_total']} (ouverts {st['bets_open']}, réglés {st['bets_settled']})",
+             "", "## Mesure de l'avantage", f"- Paris : {st['bets_total']} (ouverts {st['bets_open']}, à régler {st['bets_a_regler']}, réglés {st['bets_settled']})",
              f"- **CLV moyenne : {pct(clv.get('mean'))}** (n={clv['n']}, IC95 % "
              f"{(f'{ci[0]:+.2%} à {ci[1]:+.2%}') if ci else 'n/a'}) — {st['clv_coverage']}",
              f"- EV attendue moyenne : {pct(st['ev_expected'].get('mean'))}",
@@ -495,10 +518,11 @@ def dashboard_md(root, meta, obs=None) -> str:
         lines.append(f"| {notify.md(r['home'])}–{notify.md(r['away'])} | {notify.md(r.get('label', r['selection']))} | {r['odds']:.2f} | {r['ev']:+.1%} | "
                      f"{pct(r['close']['clv_odds']) if r.get('close') else '—'} | "
                      f"{'✅' if res is True else '❌' if res is False else ('remboursé' if r['status'] == 'settled' else '…')} |")
-    stale = [r for r in store.read(root, tracker.BETS) if r.get("status") == "open" and r.get("commence")
-             and (datetime.now(timezone.utc) - datetime.fromisoformat(r["commence"].replace("Z", "+00:00"))).total_seconds() > 86400]
+    now_ = datetime.now(timezone.utc)
+    stale = [r for r in store.read(root, tracker.BETS) if tracker.a_regler(r, now_)]
     if stale:
-        lines += ["", f"## À régler à la main ({len(stale)} paris commencés depuis plus de 24 h sans résultat automatique)",
+        lines += ["", f"## À régler à la main ({len(stale)} paris commencés depuis plus de {tracker.A_REGLER_H} h "
+                      f"sans résultat automatique)",
                   "| Match | Pari | Book | Début (UTC) |", "|---|---|---|---|"]
         lines += [f"| {notify.md(r['home'])}–{notify.md(r['away'])} | {notify.md(r.get('label', r['selection']))} | "
                   f"{notify.md(r.get('book', ''))} | {r['commence'][:16]} |" for r in stale[-20:]]

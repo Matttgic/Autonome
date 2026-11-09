@@ -26,9 +26,9 @@ def _pnl(r):
     return round(r["stake"] * (r["odds"] - 1), 2) if res["won"] else -float(r["stake"])
 
 
-def _etat(r):
+def _etat(r, now: datetime | None = None):
     if r.get("status") != "settled":
-        return "en cours"
+        return "à régler" if now and tracker.a_regler(r, now) else "en cours"
     res = r.get("result") or {}
     if "won" not in res:
         return "inconnu"
@@ -100,7 +100,7 @@ def pourquoi(r: dict) -> str | None:
     return " ".join(out)
 
 
-def history(rows: list[dict], bankroll: float, limit: int = 60) -> list[dict]:
+def history(rows: list[dict], bankroll: float, limit: int = 60, now: datetime | None = None) -> list[dict]:
     """Tous les paris (alertes), du plus récent au plus ancien, avec ce qu'il faut pour refaire le calcul à la main :
     p (probabilité juste), p_prudente (borne défavorable du bid/ask), EV = p × cote − 1. La mise (live.compare,
     value.stake) part de p_prudente : Kelly = (p_prudente × cote − 1)/(cote − 1), mise = min(1/4 Kelly, 2 %) × bankroll,
@@ -116,7 +116,7 @@ def history(rows: list[dict], bankroll: float, limit: int = 60) -> list[dict]:
             "pari": r.get("label") or r.get("selection"), "book": r.get("book"), "sport": r.get("sport"),
             "ref": r.get("ref_kind"), "cote": o, "p": _r(p), "p_prudente": _r(r.get("p_cons")), "juste": _r(r.get("fair_odds"), 3),
             "ev": _r(r.get("ev")), "ev_prudente": _r(r.get("ev_cons")), "kelly": kelly, "mise": r.get("stake"),
-            "bankroll": bankroll, "etat": _etat(r), "gain": _pnl(r),
+            "bankroll": bankroll, "etat": _etat(r, now), "gain": _pnl(r),
             "p_cloture": _r(cl.get("p_fair")) if clv_ok else None, "clv": _r(cl.get("clv_odds")) if clv_ok else None,
             "cloture_min": round(cl["minutes_to_start"]) if clv_ok else None, "suspect": tracker.suspect(r),
             "pourquoi": pourquoi(r)})
@@ -192,7 +192,7 @@ def build(root, meta: dict, obs: dict | None, now: datetime) -> dict:
         main = fams.get("1x2") or fams.get("ml") or max(fams.values(), key=lambda v: v.get("n", 0))
         books.append({"book": bk, "cotes": n, "ev_mediane": _r(main.get("median_ev")), "meilleure": _r(best)})
     books.sort(key=lambda b: -(b["meilleure"] if b["meilleure"] is not None else -9))
-    st = tracker.stats(root)
+    st = tracker.stats(root, now)
     paper = [{"nom": x["name"], "paris": x["n"], "regles": x["settled"], "roi": _r(x["roi"]), "clv": _r(x["clv"]),
               "bankroll": round(x["bankroll"], 2)} for x in PP.summary(store.read(root, PP.FILE))]
     lag = [{"book": x["book"], "suivis": x["followed"], "pas_suivis": x["not_followed"], "mediane_min": x["median_min"],
@@ -203,11 +203,12 @@ def build(root, meta: dict, obs: dict | None, now: datetime) -> dict:
         "alertes": alerts[:8],
         "proches": near,
         "books": books[:8],
-        "bilan": {"paris": st["bets_total"], "regles": st["bets_settled"], "roi": _r(st["roi"]["roi"]),
+        "bilan": {"paris": st["bets_total"], "regles": st["bets_settled"], "a_regler": st["bets_a_regler"],
+                  "roi": _r(st["roi"]["roi"]),
                   "gain": _r(st["roi"]["pnl"], 2), "mises": _r(st["roi"]["staked"], 2), "ecartes": st["bets_suspect"],
                   "clv": _r(st["clv"].get("mean")), "n_clv": st["clv"]["n"],
                   "clv_ic": [_r(x) for x in st["clv"]["ci95"]] if st["clv"].get("ci95") else None},
-        "historique": history(rows, _bankroll()),
+        "historique": history(rows, _bankroll(), now=now),
         "jours": daily(store.read(root, "runs.jsonl"), rows, now),
         "fictif": paper,
         "retard": lag[:6],

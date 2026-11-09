@@ -1,10 +1,13 @@
 """Suivi : enregistrement des paris, statistiques (CLV, ROI) et garde-fou « référence suspecte »."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from . import store, value as V
 
 BETS = "bets.jsonl"          # un pari recommandé par ligne (mis à jour sur place)
 CLOSE_MAX_MIN = 90          # au-delà, la dernière observation n'est pas une clôture
+A_REGLER_H = 48             # pari encore ouvert 48 h après le début : le règlement automatique a échoué
 
 
 def record_bets(root, new_bets: list[dict]) -> None:
@@ -36,7 +39,21 @@ def suspect(x: dict, cfg: dict | None = None) -> str | None:
     return None
 
 
-def stats(root) -> dict:
+def a_regler(r: dict, now: datetime) -> bool:
+    """Pari ouvert plus de 48 h après le début, sauf match signalé reporté (`reporte`) : « à régler » à la main.
+    Statut affiché seulement (le pari reste « open » et peut encore être réglé automatiquement)."""
+    if r.get("status") != "open" or r.get("reporte"):
+        return False
+    try:
+        start = datetime.fromisoformat(str(r["commence"]).replace("Z", "+00:00"))
+    except (KeyError, ValueError, TypeError):
+        return False
+    start = start if start.tzinfo else start.replace(tzinfo=timezone.utc)
+    return (now - start).total_seconds() > A_REGLER_H * 3600
+
+
+def stats(root, now: datetime | None = None) -> dict:
+    now = now or datetime.now(timezone.utc)
     allrows = store.read(root, BETS)
     rows = [r for r in allrows if not suspect(r)]
     closed = [r for r in rows if r.get("close")]
@@ -47,7 +64,9 @@ def stats(root) -> dict:
     settled = [{"stake": r["stake"], "odds": r["odds"], "won": r["result"]["won"]}
                for r in rows if r["status"] == "settled" and r.get("result")]
     return {
-        "bets_total": len(rows), "bets_suspect": len(allrows) - len(rows), "bets_open": sum(r["status"] == "open" for r in rows),
+        "bets_total": len(rows), "bets_suspect": len(allrows) - len(rows),
+        "bets_open": sum(r["status"] == "open" and not a_regler(r, now) for r in rows),
+        "bets_a_regler": sum(a_regler(r, now) for r in rows),  # compté à part : hors ROI tant qu'il n'est pas réglé
         "bets_settled": len(settled),
         "clv": V.mean_ci(clvs), "clv_by_ref_kind": by_kind,
         "clv_coverage": f"{len(good)}/{len(rows)} paris ont une clôture sharp ≤{CLOSE_MAX_MIN} min avant le match "

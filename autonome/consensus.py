@@ -180,6 +180,8 @@ def settle(rows: list[dict], results: list[dict], now: datetime, after_h: float 
         res, swap = found[0]
         win = outcome(res, r.get("group"))
         if win is None:
+            if str(res.get("status") or "").startswith("Postp"):
+                r["reporte"] = f"LiveScore {res.get('id')} ({res.get('status')})"  # pas « à régler » après 48 h
             continue
         if swap:
             win = {"home": "away", "away": "home"}.get(win, win)
