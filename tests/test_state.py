@@ -142,6 +142,21 @@ class Rotation(unittest.TestCase):
         self.assertIn('{"sans_date": 1}', lines(p))  # sans date lisible : reste dans le fichier chaud
         self.assertEqual(Counter(lines(p) + archived(self.d, "observations")), Counter(orig))
 
+    def test_unreadable_archive_set_aside_and_reported(self):
+        rows = runs_rows(datetime(2026, 11, 1, tzinfo=timezone.utc), 49)
+        store.write_all(self.d, "runs.jsonl", rows)
+        orig = lines(Path(self.d, "runs.jsonl"))
+        Path(self.d, "archives").mkdir()
+        bad = Path(self.d, "archives", "runs-2026-11.jsonl.gz")
+        bad.write_bytes(b"<<<<<<< HEAD\nconflit git\n")
+        errors = []
+        moved = cli.housekeeping(self.d, NOW, errors)
+        self.assertEqual(set(moved), {"runs.jsonl"})
+        self.assertTrue(any("runs-2026-11.jsonl.gz illisible" in e and "mise de côté" in e for e in errors))
+        aside = list(Path(self.d, "archives").glob("runs-2026-11.jsonl.gz.illisible-*"))
+        self.assertEqual([x.read_bytes() for x in aside], [b"<<<<<<< HEAD\nconflit git\n"])  # gardée, jamais supprimée
+        self.assertEqual(Counter(lines(Path(self.d, "runs.jsonl")) + archived(self.d, "runs")), Counter(orig))
+
     def test_oversized(self):
         Path(self.d, "a.jsonl").write_bytes(b"x" * 30)
         Path(self.d, ".git").mkdir()
@@ -175,7 +190,12 @@ class ARegler(unittest.TestCase):
         start = datetime(2026, 11, 7, 15, 0, tzinfo=timezone.utc)
         self.assertFalse(tracker.a_regler(self.b(), start + timedelta(hours=47)))
         self.assertTrue(tracker.a_regler(self.b(), start + timedelta(hours=49)))
-        self.assertFalse(tracker.a_regler(self.b(reporte="LiveScore 4 (Postp.)"), start + timedelta(hours=49)))
+        rep = {"reporte": "LiveScore 4 (Postp.)", "reporte_le": (start + timedelta(hours=3)).isoformat()}
+        self.assertFalse(tracker.a_regler(self.b(**rep), start + timedelta(hours=49)))
+        # rejoué hors de la fenêtre d'appariement : jamais réglé -> « à régler » 7 jours après le signalement
+        self.assertFalse(tracker.a_regler(self.b(**rep), start + timedelta(days=7, hours=2)))
+        self.assertTrue(tracker.a_regler(self.b(**rep), start + timedelta(days=7, hours=4)))
+        self.assertTrue(tracker.a_regler(self.b(reporte="LiveScore 4 (Postp.)"), start + timedelta(hours=49)))  # sans date
         self.assertFalse(tracker.a_regler(self.b(status="settled"), start + timedelta(hours=49)))
         self.assertFalse(tracker.a_regler(self.b(commence="??"), start + timedelta(hours=49)))
 
@@ -194,9 +214,17 @@ class ARegler(unittest.TestCase):
     def test_postponed_marks(self):
         res = LS.parse(SOCCER, "FOOTBALL")
         rows = [cbet("Epsilon", "Zeta", "1x2", "home", "2026-11-02T18:00:00Z")]
-        self.assertEqual(CS.settle(rows, res, datetime(2026, 11, 3, 12, 0, tzinfo=timezone.utc)), 0)
-        self.assertEqual(rows[0]["reporte"], "LiveScore 4 (Postp.)")
+        t1 = datetime(2026, 11, 3, 12, 0, tzinfo=timezone.utc)
+        self.assertEqual(CS.settle(rows, res, t1), 0)
+        self.assertEqual((rows[0]["reporte"], rows[0]["reporte_le"]), ("LiveScore 4 (Postp.)", t1.isoformat()))
         self.assertEqual(rows[0]["status"], "open")
+        CS.settle(rows, res, t1 + timedelta(days=2))  # relu plus tard : la date du premier signalement est gardée
+        self.assertEqual(rows[0]["reporte_le"], t1.isoformat())
+        # paris fictifs (paper.jsonl) : un simple signalement suffit à réécrire le fichier
+        paper = [cbet("Epsilon", "Zeta", "1x2", "home", "2026-11-02T18:00:00Z")]
+        self.assertEqual(cli.settle_consensus(paper, res, t1), (0, True))
+        self.assertEqual(cli.settle_consensus(paper, res, t1), (0, False))
+        self.assertEqual(cli.settle_consensus(paper, [], t1), (0, False))
         # Polymarket annonce un début décalé de plus de 3 h : signalé reporté, clôture mesurée sur le nouvel horaire
         d = tempfile.mkdtemp()
         store.write_all(d, tracker.BETS, [self.b(ref_kind="polymarket", event_id="pm|k", group="1x2", selection="home",
@@ -204,8 +232,14 @@ class ARegler(unittest.TestCase):
         ref = [{"key": "pm|k", "commence": "2026-11-09T15:00:00Z", "markets": {"1x2": {"home": {"p": 0.5, "spread": 0.02}}}}]
         live.update_closing(d, ref, datetime(2026, 11, 9, 14, 0, tzinfo=timezone.utc))
         r = store.read(d, tracker.BETS)[0]
-        self.assertEqual(r["reporte"], "2026-11-09T15:00:00Z")
+        self.assertEqual((r["reporte"], r["reporte_le"]), ("2026-11-09T15:00:00Z", "2026-11-09T14:00:00+00:00"))
         self.assertFalse(tracker.a_regler(r, datetime(2026, 11, 11, tzinfo=timezone.utc)))
+        # l'écart disparaît (Polymarket revient à l'horaire du pari) : plus signalé reporté
+        ref[0]["commence"] = "2026-11-08T15:00:00Z"
+        live.update_closing(d, ref, datetime(2026, 11, 8, 14, 0, tzinfo=timezone.utc))
+        r = store.read(d, tracker.BETS)[0]
+        self.assertNotIn("reporte", r)
+        self.assertNotIn("reporte_le", r)
 
 
 if __name__ == "__main__":

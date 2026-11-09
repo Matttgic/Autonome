@@ -56,6 +56,7 @@ jobs:
         run: |
           case "$LOOP_MIN" in ''|*[!0-9]*) LOOP_MIN=50;; esac
           [ "$LOOP_MIN" -gt 55 ] && LOOP_MIN=55   # le job dure au plus 85 min : marge pour le dernier passage
+          [ "$LOOP_MIN" -lt 5 ] && LOOP_MIN=5     # 0 : aucun passage, puis relance immédiate du live suivant (boucle vide)
           case "$INTERVAL" in ''|*[!0-9]*) INTERVAL=120;; esac
           git -C state config user.name autonome && git -C state config user.email autonome@users.noreply.github.com
           save() {

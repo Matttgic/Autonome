@@ -8,6 +8,7 @@ from . import store, value as V
 BETS = "bets.jsonl"          # un pari recommandé par ligne (mis à jour sur place)
 CLOSE_MAX_MIN = 90          # au-delà, la dernière observation n'est pas une clôture
 A_REGLER_H = 48             # pari encore ouvert 48 h après le début : le règlement automatique a échoué
+REPORTE_MAX_J = 7           # un match signalé reporté repasse « à régler » 7 jours après le signalement
 # Version des règles de détection/collecte, inscrite sur chaque NOUVEAU pari (comparer avant/après un changement).
 # 2026-11-09 : groupes PMU en 404 mis en pause 1 h (première version datée ; les paris antérieurs n'ont pas ce champ).
 VERSION_REGLES = "2026-11-09"
@@ -43,10 +44,19 @@ def suspect(x: dict, cfg: dict | None = None) -> str | None:
 
 
 def a_regler(r: dict, now: datetime) -> bool:
-    """Pari ouvert plus de 48 h après le début, sauf match signalé reporté (`reporte`) : « à régler » à la main.
-    Statut affiché seulement (le pari reste « open » et peut encore être réglé automatiquement)."""
-    if r.get("status") != "open" or r.get("reporte"):
+    """Pari ouvert plus de 48 h après le début, sauf match signalé reporté (`reporte`) depuis moins de 7 jours
+    (`reporte_le`) : « à régler » à la main. Un match rejoué hors de la fenêtre d'appariement ne serait jamais réglé :
+    il revient donc « à régler ». Statut affiché seulement (le pari reste « open », réglable automatiquement)."""
+    if r.get("status") != "open":
         return False
+    if r.get("reporte"):
+        try:
+            since = datetime.fromisoformat(str(r.get("reporte_le")).replace("Z", "+00:00"))
+            since = since if since.tzinfo else since.replace(tzinfo=timezone.utc)
+            if (now - since).total_seconds() <= REPORTE_MAX_J * 86400:
+                return False
+        except ValueError:
+            pass  # signalement sans date lisible : pas d'exemption
     try:
         start = datetime.fromisoformat(str(r["commence"]).replace("Z", "+00:00"))
     except (KeyError, ValueError, TypeError):

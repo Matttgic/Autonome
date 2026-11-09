@@ -73,7 +73,7 @@ def housekeeping(state, now, errors: list) -> dict:
     moved = {}
     for name, days in ROTATION.items():
         try:
-            n = store.rotate(state, name, now, keep_days=days)
+            n = store.rotate(state, name, now, keep_days=days, notes=errors)
         except Exception as e:  # noqa: BLE001 - une rotation ratée laisse le fichier chaud intact
             errors.append(f"rotation {name}: {type(e).__name__}: {e}"[:160])
             continue
@@ -85,6 +85,17 @@ def housekeeping(state, now, errors: list) -> dict:
     for name, size in store.oversized(state, STATE_MAX_BYTES):
         errors.append(f"état : {name} pèse {size / 1e6:.1f} Mo (> {STATE_MAX_BYTES // 1_000_000} Mo)")
     return moved
+
+
+def settle_consensus(rows: list[dict], results: list[dict], now) -> tuple[int, bool]:
+    """Règlement LiveScore des paris « consensus » : (nombre réglés, lignes modifiées ?), y compris un simple
+    signalement « reporté » (à enregistrer même si rien n'est réglé)."""
+    from . import consensus as CS0
+    if not results:
+        return 0, False
+    before = json.dumps(rows, sort_keys=True)
+    n = CS0.settle(rows, results, now)
+    return n, json.dumps(rows, sort_keys=True) != before
 
 
 def cmd_live(a, cfg):
@@ -165,12 +176,11 @@ def cmd_live(a, cfg):
         ls_cache = {k: v for k, v in ls_cache.items() if (now - datetime.fromisoformat(v["at"])).total_seconds() < 6 * 3600}
         _atomic_write(ls_path, json.dumps(ls_cache, separators=(",", ":")))
         _maybe_block(a.state, "livescore", ls0, errors, now)
-        before_s = json.dumps(rows_s, sort_keys=True)
-        n_cons = CS0.settle(rows_s, results, now) if results else 0
-        if json.dumps(rows_s, sort_keys=True) != before_s:  # réglé, ou match signalé reporté
+        n_cons, changed = settle_consensus(rows_s, results, now)
+        if changed:  # réglé, ou match signalé reporté
             store.write_all(a.state, tracker.BETS, rows_s)
             settled += n_cons
-        if results and CS0.settle(rows_p, results, now):
+        if settle_consensus(rows_p, results, now)[1]:  # paris fictifs : même règle
             store.write_all(a.state, PP0.FILE, rows_p)
     except Exception as e:  # noqa: BLE001
         errors.append(f"règlement consensus: {type(e).__name__}")

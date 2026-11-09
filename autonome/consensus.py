@@ -180,8 +180,10 @@ def settle(rows: list[dict], results: list[dict], now: datetime, after_h: float 
         res, swap = found[0]
         win = outcome(res, r.get("group"))
         if win is None:
-            if str(res.get("status") or "").startswith("Postp"):
-                r["reporte"] = f"LiveScore {res.get('id')} ({res.get('status')})"  # pas « à régler » après 48 h
+            if str(res.get("status") or "").startswith("Postp") and not r.get("reporte"):
+                # pas « à régler » après 48 h, mais seulement 7 jours après ce signalement (tracker.a_regler)
+                r["reporte"] = f"LiveScore {res.get('id')} ({res.get('status')})"
+                r["reporte_le"] = now.isoformat()
             continue
         if swap:
             win = {"home": "away", "away": "home"}.get(win, win)

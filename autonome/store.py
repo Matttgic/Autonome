@@ -119,14 +119,16 @@ def _read_gz(p: Path) -> list[str]:
 
 
 def rotate(root, name: str, now: datetime, keep_days: float, max_bytes: int = 16_000_000,
-           target_bytes: int = 12_000_000) -> int:
+           target_bytes: int = 12_000_000, notes: list | None = None) -> int:
     """Déplace les lignes de plus de `keep_days` jours (champ `at`) dans archives/<nom>-AAAA-MM.jsonl.gz.
 
     Si le fichier dépasse `max_bytes`, les plus anciennes partent aussi jusqu'à `target_bytes` (le fichier chaud reste
     sous la limite des 20 Mo vérifiée par ci.yml). Ne fait rien tant que la plus vieille ligne a moins de keep_days + 1 j
     (une rotation par jour au plus). Les lignes sans date lisible restent dans le fichier chaud. Ordre sûr : archives
     écrites et relues d'abord, fichier chaud réécrit ensuite ; un arrêt entre les deux ne duplique rien (les lignes
-    déjà archivées ne sont pas réajoutées). Renvoie le nombre de lignes déplacées."""
+    déjà archivées ne sont pas réajoutées). Une archive illisible (conflit git, fichier tronqué) est mise de côté sous
+    `<nom>.illisible-<horodatage>` (jamais supprimée), le mois repart d'une archive neuve et un message est ajouté à
+    `notes` (erreurs du passage : runs.jsonl et page). Renvoie le nombre de lignes déplacées."""
     p = _p(root, name)
     if not p.exists():
         return 0
@@ -158,7 +160,15 @@ def rotate(root, name: str, now: datetime, keep_days: float, max_bytes: int = 16
     adir.mkdir(parents=True, exist_ok=True)
     for month, moved in sorted(by_month.items()):
         ap = adir / f"{stem}-{month}.jsonl.gz"
-        have = _read_gz(ap)
+        try:
+            have = _read_gz(ap)
+        except (OSError, EOFError, UnicodeDecodeError, ValueError) as e:
+            aside = ap.with_name(f"{ap.name}.illisible-{now.strftime('%Y%m%dT%H%M%S')}")
+            os.replace(ap, aside)
+            have = []
+            if notes is not None:
+                notes.append(f"rotation {name} : archive {ap.name} illisible ({type(e).__name__}), mise de côté sous "
+                             f"{aside.name}, mois recommencé"[:160])
         missing = Counter(moved) - Counter(have)  # déjà archivées (arrêt au milieu d'une rotation) : pas en double
         add = []
         for x in moved:
