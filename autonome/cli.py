@@ -213,9 +213,22 @@ def cmd_live(a, cfg):
     from .match import pair as _pair
     from .sources import kambi
     pmu_events, pmu_cov = [], {}
+    kb_path = Path(os.environ.get("AUTONOME_CACHE") or a.state) / "kambi_pauses.json"
     try:
-        pmu_main, err = kambi.fetch_main("pmusportsfr")
+        kb_pauses = json.loads(kb_path.read_text(encoding="utf-8")) if kb_path.exists() else {}
+        kb_pauses = {str(k): v for k, v in kb_pauses.items() if isinstance(v, dict) and isinstance(v.get("n", 0), int)
+                     and isinstance(v.get("until", ""), str)} if isinstance(kb_pauses, dict) else {}
+    except (ValueError, OSError):
+        kb_pauses = {}
+    kb_skip, kb_status = kambi.paused(kb_pauses, now), {}
+    try:
+        pmu_main, err = kambi.fetch_main("pmusportsfr", skip=kb_skip, status=kb_status)
         errors += err
+        try:  # groupes PMU qui répondent 404 trois passages de suite : pause d'une heure (comme un 403)
+            kb_path.parent.mkdir(parents=True, exist_ok=True)
+            _atomic_write(kb_path, json.dumps(kambi.update_pauses(kb_pauses, kb_status, now)))
+        except (OSError, TypeError, ValueError, AttributeError) as ex:
+            errors.append(f"pmu : pauses 404 non enregistrées ({type(ex).__name__})")
         for e in pmu_main:
             pmu_cov[e["sport"]] = pmu_cov.get(e["sport"], 0) + 1
         horizon = [e for e in pmu_main if 0 < live._mins(e["commence"], now) <= lcfg["max_hours_to_start"] * 60]
@@ -446,7 +459,7 @@ def cmd_live(a, cfg):
     meta = {"at": now.isoformat(), "mode": "live", "ref_games": len(ref), "ref_soon": len(soon),
             "netbet_pages": len(book_events), "unibet_events": len(ub_events), "pmu_events": len(pmu_events),
             "betclic_events": len(bc_events), "winamax_events": len(wx_events),
-            "pmu_par_sport": pmu_cov, "coteur_matchs": len(ct_matches),
+            "pmu_par_sport": pmu_cov, "pmu_groupes_en_pause": len(kb_skip), "coteur_matchs": len(ct_matches),
             "coteur_books": {k: len(v) for k, v in ct_books.items()}, "pairs": len(pairs), "candidates": len(cands), "picked": len(picks),
             "closing_updates": closed, "settled": settled, "boosts_lus": len(boost_eval),
             "boosts_evaluables": sum(e["evaluable"] for e in boost_eval), "boosts_value": len(boost_picks),

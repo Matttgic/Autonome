@@ -8,6 +8,9 @@ from . import store, value as V
 BETS = "bets.jsonl"          # un pari recommandé par ligne (mis à jour sur place)
 CLOSE_MAX_MIN = 90          # au-delà, la dernière observation n'est pas une clôture
 A_REGLER_H = 48             # pari encore ouvert 48 h après le début : le règlement automatique a échoué
+# Version des règles de détection/collecte, inscrite sur chaque NOUVEAU pari (comparer avant/après un changement).
+# 2026-11-09 : groupes PMU en 404 mis en pause 1 h (première version datée ; les paris antérieurs n'ont pas ce champ).
+VERSION_REGLES = "2026-11-09"
 
 
 def record_bets(root, new_bets: list[dict]) -> None:
@@ -15,7 +18,7 @@ def record_bets(root, new_bets: list[dict]) -> None:
     have = {r["bet_id"] for r in rows}
     for b in new_bets:
         if b["bet_id"] not in have:
-            rows.append({**b, "status": "open", "close": None, "result": None})
+            rows.append({"version_regles": VERSION_REGLES, **b, "status": "open", "close": None, "result": None})
     store.write_all(root, BETS, rows)
 
 

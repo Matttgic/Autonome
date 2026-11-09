@@ -35,13 +35,20 @@ jobs:
             cd .. && sleep $((i * 7))
           done
           exit 1
-      - name: Filet du relais pulse
+      - name: Filets (live, pulse)
         if: always() && vars.PULSE != 'off'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           REF: ${{ github.event.repository.default_branch || github.ref_name }}
         run: |
+          # live : décidé sur l'âge du dernier départ, pas sur « un pulse est en cours » (un pulse mort peut le rester des
+          # heures). Plus de 60 min sans départ et aucun live en file -> un live est mis en file (s'il en tourne un, le nouveau
+          # attend la fin du groupe autonome-state : jamais deux en même temps). -1 : API muette ou live déjà en file.
+          l=$(gh run list --workflow live.yml -L 10 --json status,createdAt -q \
+              'if ([.[] | select(.status != "completed" and .status != "in_progress")] | length) > 0 then -1
+               elif length == 0 then 99999 else ((now - (.[0].createdAt | fromdateiso8601)) / 60 | floor) end') || l=-1
+          if [ "$l" -ge 60 ]; then gh workflow run live.yml --ref "$REF" && echo "live relancé (dernier départ il y a $l min)" || true; fi
           # pulse actif et lancé depuis moins de 4 h 50 (avant sa propre relance) ? sinon on le relance
           n=$(gh run list --workflow pulse.yml -L 10 --json status,createdAt \
               -q '[.[] | select(.status != "completed" and (now - (.createdAt | fromdateiso8601)) < 17400)] | length') || exit 0

@@ -7,6 +7,7 @@ Aucune donnée inventée : ce qui manque est absent (null) et la page l'affiche 
 from __future__ import annotations
 
 import os
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 from . import lag as LG, paper as PP, store, tracker
@@ -156,6 +157,15 @@ def daily(runs: list[dict], bets: list[dict], now: datetime, days: int = 10) -> 
     return [x for x in out if x["jour"] >= (now - timedelta(days=days)).date().isoformat()]
 
 
+def repeated(runs: list[dict], last: int = 50, min_n: int = 3) -> dict:
+    """Erreurs revenues sur au moins `min_n` des `last` derniers passages (une fois par passage), y compris les 404
+    PMU masqués de la liste du dernier passage : une source qui échoue en boucle se voit sur la page."""
+    tail = [r for r in runs if isinstance(r, dict)][-last:]
+    c = Counter(e for r in tail for e in set(x for x in (r.get("errors") or []) if isinstance(x, str)))
+    top = [{"erreur": e[:90], "passages": n} for e, n in c.most_common() if n >= min_n]
+    return {"sur": len(tail), "n": len(top), "top": top[:5]}
+
+
 def _bankroll() -> float:
     try:
         return float(os.environ.get("BANKROLL") or 100)
@@ -198,6 +208,7 @@ def build(root, meta: dict, obs: dict | None, now: datetime) -> dict:
     lag = [{"book": x["book"], "suivis": x["followed"], "pas_suivis": x["not_followed"], "mediane_min": x["median_min"],
             "en_15min": _r(x["within_15"], 3)} for x in LG.summary(store.read(root, "lag.jsonl"), now)]
     paused = sorted({r["source"] for r in store.read(root, "backoff.jsonl") if r.get("until", "") > now.isoformat()})
+    runs = store.read(root, "runs.jsonl")
     return {
         "maj": now.astimezone(timezone.utc).isoformat(),
         "alertes": alerts[:8],
@@ -209,7 +220,7 @@ def build(root, meta: dict, obs: dict | None, now: datetime) -> dict:
                   "clv": _r(st["clv"].get("mean")), "n_clv": st["clv"]["n"],
                   "clv_ic": [_r(x) for x in st["clv"]["ci95"]] if st["clv"].get("ci95") else None},
         "historique": history(rows, _bankroll(), now=now),
-        "jours": daily(store.read(root, "runs.jsonl"), rows, now),
+        "jours": daily(runs, rows, now),
         "fictif": paper,
         "retard": lag[:6],
         "sante": {"cotes": obs.get("n"), "ev_pos": obs.get("n_ev_pos"), "matchs_ref": meta.get("ref_soon"),
@@ -217,6 +228,8 @@ def build(root, meta: dict, obs: dict | None, now: datetime) -> dict:
                   "sources": {"PMU": meta.get("pmu_events"), "Betclic": meta.get("betclic_events"),
                               "Winamax": meta.get("winamax_events"), "NetBet": meta.get("netbet_pages"),
                               "Unibet": meta.get("unibet_events"), "coteur": meta.get("coteur_matchs")},
-                  "en_pause": paused, "erreurs": [e[:90] for e in (meta.get("errors") or [])
+                  "en_pause": paused, "pmu_groupes_en_pause": meta.get("pmu_groupes_en_pause"),
+                  "erreurs_repetees": repeated(runs),
+                  "erreurs": [e[:90] for e in (meta.get("errors") or [])
                               if not (e.startswith("kambi") and "HTTP 404" in e)][:4]},  # 404 Kambi : sports vides, connus
     }

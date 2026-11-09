@@ -36,10 +36,16 @@ jobs:
             gh run list --workflow live.yml -L 10 --json status -q '[.[] | select(.status != "completed")] | length' \
               2>/dev/null || echo -1
           }
+          age_live() {  # minutes depuis le dernier départ de live ; -1 si un live est déjà en file ou si l'API ne répond pas
+            gh run list --workflow live.yml -L 10 --json status,createdAt -q \
+              'if ([.[] | select(.status != "completed" and .status != "in_progress")] | length) > 0 then -1
+               elif length == 0 then 99999 else ((now - (.[0].createdAt | fromdateiso8601)) / 60 | floor) end' \
+              2>/dev/null || echo -1
+          }
           END=$((SECONDS + 290 * 60))
           while [ "$SECONDS" -lt "$END" ]; do
-            a=$(live_actifs); c=$(age_min coteur.yml)
-            echo "$(date -u +%FT%TZ) jobs live actifs : ${a}, coteur il y a ${c} min"
+            a=$(live_actifs); c=$(age_min coteur.yml); l=$(age_live)
+            echo "$(date -u +%FT%TZ) jobs live actifs : ${a}, dernier départ live il y a ${l} min, coteur il y a ${c} min"
             if [ "$c" -ge "$COTEUR_EVERY" ]; then gh workflow run coteur.yml --ref "$REF" && echo "-> coteur relancé"; fi
             if [ "$a" = "0" ]; then
               # dernier live terminé en moins de 5 min (tests rouges, panne) : on attend 15 min avant de relancer
@@ -47,6 +53,10 @@ jobs:
                 '.[0] | ((.updatedAt|fromdateiso8601) - (.createdAt|fromdateiso8601) >= 300) or ((now - (.createdAt|fromdateiso8601)) >= 900)' \
                 2>/dev/null || echo true)
               if [ "$ok" = "true" ]; then gh workflow run live.yml --ref "$REF" && echo "-> live relancé"; else echo "live en échec rapide : attente"; fi
+            elif [ "$l" -ge 60 ]; then
+              # live parti depuis plus de 60 min (fin normale vers 55-75 min, ou runner perdu qui le laisse « en cours ») et
+              # aucun en file : le suivant est mis en file, il démarre dès que le groupe autonome-state est libre
+              gh workflow run live.yml --ref "$REF" && echo "-> live suivant mis en file"
             fi
             sleep 120
           done

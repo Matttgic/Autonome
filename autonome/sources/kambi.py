@@ -147,23 +147,51 @@ def _event(e, eid, offers, offering):
                     "url": "https://www.pmu.fr/sport/", "odds": map_offers(e, offers.get(eid, []))})
 
 
-def fetch_main(offering: str = "pmusportsfr", min_bo: int = 1) -> tuple[list[dict], list[str]]:
-    """Marchés principaux de tous les sports (une requête par sport)."""
+def fetch_main(offering: str = "pmusportsfr", min_bo: int = 1, skip=(), status: dict | None = None
+               ) -> tuple[list[dict], list[str]]:
+    """Marchés principaux de tous les sports (une requête par sport). `skip` : groupes en pause (non demandés) ;
+    `status` (facultatif) reçoit pour chaque groupe demandé "ok", "404" (sport sans offre avant match) ou "erreur"."""
     errors, out = [], []
     try:
         sp = sports(offering)
     except SourceError as e:
         return [], [str(e)]
     for s in sp:
-        if s["boCount"] < min_bo:
+        if s["boCount"] < min_bo or str(s["id"]) in skip:
             continue
         try:
             d = get(offering, f"betoffer/group/{s['id']}.json", excludeLive="true", excludeOngoing="true",
                     excludePrePacks="true", includeParticipants="true", onlyMain="true")
             out += to_events(d, offering) if isinstance(d, dict) else []
+            if status is not None:
+                status[str(s["id"])] = "ok"
         except SourceError as e:
             errors.append(str(e))
+            if status is not None:
+                status[str(s["id"])] = "404" if str(e).endswith("HTTP 404") else "erreur"
     return out, errors
+
+
+def update_pauses(pauses: dict, status: dict, now: datetime, after: int = 3, hours: float = 1) -> dict:
+    """Groupes qui répondent 404 `after` passages de suite (sport sans offre avant match : 8 612 erreurs « 404 » sur les
+    2 919 passages du 02 au 09/11/2026) : en pause `hours` heure(s), comme un 403, au lieu d'une requête inutile à chaque
+    passage. Rejoué sur ces passages : 404 −85 % ; au plus 1 % des passages où le groupe avait des offres sautés (1 h :
+    6 h en aurait sauté jusqu'à 6 %). pauses = {groupe: {"n": 404 consécutifs, "until": fin de pause ISO}} (cache de
+    travail ; perdu = on recompte)."""
+    from datetime import timedelta
+    for gid, st in status.items():
+        if st == "ok":
+            pauses.pop(gid, None)
+        elif st == "404":
+            e = pauses.setdefault(gid, {"n": 0, "until": ""})
+            e["n"] += 1
+            if e["n"] >= after:
+                e["n"], e["until"] = 0, (now + timedelta(hours=hours)).isoformat()
+    return {g: e for g, e in pauses.items() if e.get("n") or e.get("until", "") > now.isoformat()}
+
+
+def paused(pauses: dict, now: datetime) -> set[str]:
+    return {g for g, e in pauses.items() if e.get("until", "") > now.isoformat()}
 
 
 def fetch_full(offering: str, event: dict) -> dict:
