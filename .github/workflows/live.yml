@@ -48,6 +48,7 @@ jobs:
           key: autonome-cache-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: autonome-cache-
       - name: Passages en boucle (sauvegarde après chacun)
+        id: boucle
         env:
           AUTONOME_CACHE: cache
           LOOP_MIN: ${{ vars.LIVE_LOOP_MIN }}
@@ -55,6 +56,7 @@ jobs:
         run: |
           case "$LOOP_MIN" in ''|*[!0-9]*) LOOP_MIN=50;; esac
           [ "$LOOP_MIN" -gt 55 ] && LOOP_MIN=55   # le job dure au plus 85 min : marge pour le dernier passage
+          [ "$LOOP_MIN" -lt 5 ] && LOOP_MIN=5     # 0 : aucun passage, puis relance immédiate du live suivant (boucle vide)
           case "$INTERVAL" in ''|*[!0-9]*) INTERVAL=120;; esac
           git -C state config user.name autonome && git -C state config user.email autonome@users.noreply.github.com
           save() {
@@ -85,13 +87,29 @@ jobs:
         with:
           path: cache
           key: autonome-cache-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Filet du relais pulse
+      - name: Filets (live suivant, coteur, pulse)
         if: always() && vars.PULSE != 'off'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           REF: ${{ github.event.repository.default_branch || github.ref_name }}
+          BOUCLE: ${{ steps.boucle.outcome }}
+          COTEUR_EVERY: ${{ vars.COTEUR_EVERY_MIN }}
         run: |
+          # live : ce job se termine -> le suivant est mis en file, sans attendre pulse (un pulse mort mais encore affiché
+          # « en cours », runner perdu, a arrêté la collecte 4 h 18 le 04/11). Pas si un live attend déjà (GitHub n'en garde
+          # qu'un en file par groupe) ni après un échec rapide (tests rouges : boucle non lancée ; pulse attend 15 min).
+          if [ "$BOUCLE" = "success" ] || [ "$BOUCLE" = "failure" ] || [ "$BOUCLE" = "cancelled" ]; then
+            f=$(gh run list --workflow live.yml -L 10 --json status \
+                -q '[.[] | select(.status != "completed" and .status != "in_progress")] | length') || f=-1
+            if [ "$f" = "0" ]; then gh workflow run live.yml --ref "$REF" && echo "live suivant mis en file" || true; fi
+          fi
+          # coteur : relancé ici seulement après 2 x COTEUR_EVERY min sans départ (pulse en panne), si aucun n'est actif
+          case "$COTEUR_EVERY" in ''|*[!0-9]*) COTEUR_EVERY=45;; esac
+          c=$(gh run list --workflow coteur.yml -L 10 --json status,createdAt -q \
+              'if ([.[] | select(.status != "completed")] | length) > 0 then -1 elif length == 0 then 99999
+               else ((now - (.[0].createdAt | fromdateiso8601)) / 60 | floor) end') || c=-1
+          if [ "$c" -ge $((2 * COTEUR_EVERY)) ]; then gh workflow run coteur.yml --ref "$REF" && echo "coteur relancé" || true; fi
           # pulse actif et lancé depuis moins de 4 h 50 (avant sa propre relance) ? sinon on le relance
           n=$(gh run list --workflow pulse.yml -L 10 --json status,createdAt \
               -q '[.[] | select(.status != "completed" and (now - (.createdAt | fromdateiso8601)) < 17400)] | length') || exit 0

@@ -11,3 +11,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: python -m unittest discover -s tests -t . -v
+      # État publié (branche data) : un fichier de 100 Mo ferait échouer chaque sauvegarde (rotation : cli.housekeeping).
+      - name: Fichiers d'état sous 20 Mo (branche data)
+        run: |
+          git fetch -q --depth 1 origin data || { echo "branche data introuvable : rien à vérifier"; exit 0; }
+          big=$(git ls-tree -r -l FETCH_HEAD | awk '$4 > 20000000 {printf "%s (%.1f Mo) ", $5, $4 / 1e6}')
+          if [ -n "$big" ]; then echo "::error::fichiers d'état > 20 Mo : $big"; exit 1; fi
+          echo "aucun fichier d'état > 20 Mo"

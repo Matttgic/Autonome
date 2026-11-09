@@ -126,6 +126,15 @@ def update_closing(root, ref_games: list[dict], now: datetime) -> int:
         g = by_key.get(r["event_id"])
         if r["status"] != "open" or not g or r.get("ref_kind") != "polymarket":
             continue
+        try:  # Polymarket annonce un autre début : pas « à régler » après 48 h (7 jours au plus, tracker.a_regler)
+            if abs(_mins(g["commence"], now) - _mins(r["commence"], now)) > 180:
+                if r.get("reporte") != g["commence"]:
+                    r["reporte"], r["reporte_le"] = g["commence"], now.isoformat()
+            elif r.get("reporte"):
+                r.pop("reporte", None)  # l'écart a disparu : plus signalé reporté
+                r.pop("reporte_le", None)
+        except (KeyError, ValueError, AttributeError):
+            pass
         mins = _mins(g["commence"], now)
         leg = (g["markets"].get(r["group"]) or {}).get(r["selection"])
         if mins <= 0 or not leg:

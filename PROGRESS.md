@@ -137,3 +137,26 @@ tennis/basket (seul segment positif chez cotes-value) et le délai de mise à jo
   fair.yml) supprimées ; backtest football-data conservé (tools/backtest_fd.py). Page refaite plus sobre : chaque pari
   affiche cote, cote juste, proba, EV, mise, Kelly, CLV, résultat, un résumé « pourquoi » en 2-3 phrases
   (site.pourquoi, généré depuis les chiffres enregistrés) et le détail du calcul. 152 tests.
+
+## Session 5 (suite, 2026-11-09) — supervision des 3 dépôts, vague 1 (branche claude/multi-repo-agent-supervision-takjip)
+- AU-L1 État : lecture JSONL tolérante (ligne illisible ignorée + `quarantaine.jsonl`), écritures atomiques, UTF-8 ;
+  rotation en fin de passage (observations 30 j, runs 14 j, lag 30 j, chaud ≤ 16 Mo → `archives/*-AAAA-MM.jsonl.gz`),
+  vérifiée sur une copie des vrais fichiers (chaud + archives = original, gz ≈ 15× plus petit). Sans elle,
+  observations.jsonl (+0,92 Mo/j) aurait atteint 100 Mo (push refusé) vers mi-février 2027. Première rotation réelle
+  attendue vers le 17/11 (runs) et le 03/12 (observations). `ci.yml` : fichier d'état > 20 Mo = échec.
+  Statut « à régler » (ouvert > 48 h après le début, sauf reporté) : hors ROI, compté à part (page, tableau de bord).
+- AU-L2 Fiabilité : live met le suivant en file en fin de job ; coteur/pulse relancent live sur l'âge de son dernier
+  départ (> 60 min) — corrige l'arrêt de 4 h 18 du 04/11 (pulse mort affiché « en cours »). Groupes PMU en 404 3 fois
+  de suite : pause 1 h (rejeu sur 2 919 passages : 404 −85 %). Erreurs répétées visibles sur la page.
+- **Bascule `version_regles` = 2026-11-09** : présente sur chaque nouveau pari ; les paris antérieurs n'en ont pas.
+- AU-L3 Page : colonnes lisibles, rendu par onglet protégé, plus de « undefined/NaN », échec de lecture persistant,
+  seuils 20/60 min, « en attente » / « à régler », ROI fictif sans couleur sous 30 réglés. Vérifiée avec Playwright.
+- AU-L4 Docs : CLAUDE.md (cron mesuré, état, leçons transverses), docs/PROTOCOLE.md (protocole d'évaluation commun).
+Prochaine étape : laisser tourner ; vérifier la première rotation réelle de runs.jsonl (~17/11 : `archives/` sur data,
+aucune erreur « rotation » dans runs) ; à N du protocole seulement, conclure. Plus tard (non fait) : Matchbook 2ᵉ
+référence en observation, calibration du consensus.
+- AU-L5 Page « Aujourd'hui » (vague 2, approuvée par le propriétaire le 09/11) : onglet d'entrée avec les paris à jouer
+  des 3 outils (5 au plus, non commencés, par heure), 3 voyants (état annoncé, aggravé par l'âge de la collecte :
+  Autonome 20/60 min, autres 3 h/24 h) et le verdict-gabarit de chaque outil ; Autonome publie le bloc `aujourdhui`
+  dans site.json (N requis = 460 paris avec clôture, docs/PROTOCOLE.md P3). Au 09/11, les fichiers de cotes-value et
+  cotes-boostees ne sont pas encore publiés : la page affiche « pas encore publié ». Vérifié avec Playwright (6 cas).

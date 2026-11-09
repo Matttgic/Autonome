@@ -1,10 +1,17 @@
 """Suivi : enregistrement des paris, statistiques (CLV, ROI) et garde-fou « référence suspecte »."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from . import store, value as V
 
 BETS = "bets.jsonl"          # un pari recommandé par ligne (mis à jour sur place)
 CLOSE_MAX_MIN = 90          # au-delà, la dernière observation n'est pas une clôture
+A_REGLER_H = 48             # pari encore ouvert 48 h après le début : le règlement automatique a échoué
+REPORTE_MAX_J = 7           # un match signalé reporté repasse « à régler » 7 jours après le signalement
+# Version des règles de détection/collecte, inscrite sur chaque NOUVEAU pari (comparer avant/après un changement).
+# 2026-11-09 : groupes PMU en 404 mis en pause 1 h (première version datée ; les paris antérieurs n'ont pas ce champ).
+VERSION_REGLES = "2026-11-09"
 
 
 def record_bets(root, new_bets: list[dict]) -> None:
@@ -12,7 +19,7 @@ def record_bets(root, new_bets: list[dict]) -> None:
     have = {r["bet_id"] for r in rows}
     for b in new_bets:
         if b["bet_id"] not in have:
-            rows.append({**b, "status": "open", "close": None, "result": None})
+            rows.append({"version_regles": VERSION_REGLES, **b, "status": "open", "close": None, "result": None})
     store.write_all(root, BETS, rows)
 
 
@@ -36,7 +43,30 @@ def suspect(x: dict, cfg: dict | None = None) -> str | None:
     return None
 
 
-def stats(root) -> dict:
+def a_regler(r: dict, now: datetime) -> bool:
+    """Pari ouvert plus de 48 h après le début, sauf match signalé reporté (`reporte`) depuis moins de 7 jours
+    (`reporte_le`) : « à régler » à la main. Un match rejoué hors de la fenêtre d'appariement ne serait jamais réglé :
+    il revient donc « à régler ». Statut affiché seulement (le pari reste « open », réglable automatiquement)."""
+    if r.get("status") != "open":
+        return False
+    if r.get("reporte"):
+        try:
+            since = datetime.fromisoformat(str(r.get("reporte_le")).replace("Z", "+00:00"))
+            since = since if since.tzinfo else since.replace(tzinfo=timezone.utc)
+            if (now - since).total_seconds() <= REPORTE_MAX_J * 86400:
+                return False
+        except ValueError:
+            pass  # signalement sans date lisible : pas d'exemption
+    try:
+        start = datetime.fromisoformat(str(r["commence"]).replace("Z", "+00:00"))
+    except (KeyError, ValueError, TypeError):
+        return False
+    start = start if start.tzinfo else start.replace(tzinfo=timezone.utc)
+    return (now - start).total_seconds() > A_REGLER_H * 3600
+
+
+def stats(root, now: datetime | None = None) -> dict:
+    now = now or datetime.now(timezone.utc)
     allrows = store.read(root, BETS)
     rows = [r for r in allrows if not suspect(r)]
     closed = [r for r in rows if r.get("close")]
@@ -47,7 +77,9 @@ def stats(root) -> dict:
     settled = [{"stake": r["stake"], "odds": r["odds"], "won": r["result"]["won"]}
                for r in rows if r["status"] == "settled" and r.get("result")]
     return {
-        "bets_total": len(rows), "bets_suspect": len(allrows) - len(rows), "bets_open": sum(r["status"] == "open" for r in rows),
+        "bets_total": len(rows), "bets_suspect": len(allrows) - len(rows),
+        "bets_open": sum(r["status"] == "open" and not a_regler(r, now) for r in rows),
+        "bets_a_regler": sum(a_regler(r, now) for r in rows),  # compté à part : hors ROI tant qu'il n'est pas réglé
         "bets_settled": len(settled),
         "clv": V.mean_ci(clvs), "clv_by_ref_kind": by_kind,
         "clv_coverage": f"{len(good)}/{len(rows)} paris ont une clôture sharp ≤{CLOSE_MAX_MIN} min avant le match "

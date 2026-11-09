@@ -32,7 +32,7 @@ def load(path, now: datetime, max_snapshot_h: float = 3.0, max_age_h: float = 6.
     if not p.exists():
         return {}, [], "pas d'instantané coteur"
     try:
-        d = json.loads(p.read_text())
+        d = json.loads(p.read_text(encoding="utf-8"))
     except (ValueError, OSError) as e:
         return {}, [], f"instantané coteur illisible ({type(e).__name__})"
     if not isinstance(d, dict) or not isinstance(d.get("matches"), dict):
