@@ -9,3 +9,6 @@
 {"event": "Daniil Medvedev - Flavio Cobolli", "first_seen": "2026-11-16T09:04:58.940713+00:00", "id": "boost|45817d6d45b5", "odds": 3.5, "text": "Daniil Medvedev gagne 2-1"}
 {"event": "Ligue des Nations CONCACAF", "first_seen": "2026-11-16T09:04:58.940713+00:00", "id": "boost|dc1fb69378b1", "odds": 3.75, "text": "Plus de 1,5 buts lors de la première mi-temps de chacun des matchs suivants : Cuba - Grenade et Guadeloupe - Bermudes"}
 {"event": "Baltimore Ravens - Los Angeles Chargers", "first_seen": "2026-11-16T13:09:31.529645+00:00", "id": "boost|b957b6bd8caa", "odds": 5.0, "text": "Derrick Henry marque 2 touchdowns ou plus"}
+{"event": "Miami Heat - Houston Rockets", "first_seen": "2026-11-16T18:16:35.648762+00:00", "id": "boost|5c9bd8dccb54", "odds": 3.75, "text": "Giannis Antetokounmpo + Kevin Durant marquent 60 points ou plus"}
+{"event": "Cleveland Cavaliers - Chicago Bulls", "first_seen": "2026-11-16T18:16:35.648762+00:00", "id": "boost|d3b4643edca2", "odds": 3.5, "text": "Norman Powell et James Harden marquent au moins 20 points chacun"}
+{"event": "Boston Celtics - Orlando Magic", "first_seen": "2026-11-16T18:16:35.648762+00:00", "id": "boost|291bdea6d07d", "odds": 2.4, "text": "Boston Celtics gagne et plus de 212,5 points dans le match"}
