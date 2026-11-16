@@ -1,0 +1,2053 @@
+<!DOCTYPE html><html lang="fr"><head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+								<script>
+				window.dataLayer = window.dataLayer || [];
+				function gtag() { dataLayer.push(arguments); }
+				gtag('consent', 'default', {analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied'});
+				(function (config) {
+					var choix = null;
+					try {
+						var trouve = document.cookie.match(new RegExp('(?:^|; )' + config.cookie + '=([^;]*)'));
+						choix = trouve ? JSON.parse(decodeURIComponent(trouve[1])) : null;
+					} catch (e) {
+						choix = null;
+					}
+					var age = choix && typeof choix.d === 'string' ? Date.now() - Date.parse(choix.d) : NaN;
+					if (!choix || choix.v !== config.version || !choix.f || !(age < config.dureeJours * 864e5 && age > -864e5)) {
+						choix = null;
+					}
+					config.choix = choix;
+					config.mesureChargee = false;
+					/* Mesure d'audience : accord transmis à Google puis chargement unique de gtag.js
+					   (durée des cookies _ga limitée à 13 mois, recommandation CNIL). Jamais sur
+					   une page dont l'URL porte une signature ou un jeton (config.mesureBloquee,
+					   ConsentementExtension) : le choix est enregistré, la mesure reprend à la page
+					   suivante. */
+					config.activerMesure = function () {
+						if (config.mesureBloquee) {
+							return;
+						}
+						window['ga-disable-' + config.ga] = false;
+						gtag('consent', 'update', {analytics_storage: 'granted'});
+						if (config.mesureChargee) {
+							return;
+						}
+						config.mesureChargee = true;
+						var script = document.createElement('script');
+						script.async = true;
+						script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(config.ga);
+						document.head.appendChild(script);
+						gtag('js', new Date());
+						gtag('config', config.ga, {cookie_expires: 34128000});
+					};
+					window.coteurConsentement = config;
+					if (choix && choix.f.mesure === true) {
+						config.activerMesure();
+					}
+				})({"version":2,"cookie":"coteur_consentement","dureeJours":182,"finalites":["mesure","publicite"],"ga":"G-HGCSKWJK68","mesureBloquee":false});
+			</script>
+				<title>
+			Cotes Football : comparateur des cotes du jour | Coteur		</title>
+
+					<meta name="description" content="Cotes Football du jour : comparez en temps réel les cotes des bookmakers agréés ANJ, match par match et compétition par compétition.">
+							
+				<link rel="canonical" href="https://www.coteur.com/cotes-foot">
+				<link rel="preload" href="/build/fonts/inter-latin-wght-normal.4f2981d8.woff2" as="font" type="font/woff2" crossorigin="">
+
+								<link rel="stylesheet" href="/build/383.572c4e34.css"><link rel="stylesheet" href="/build/app.22548999.css">
+		
+	<style>
+		/* --- Styles spécifiques au Comparateur --- */
+
+		.flag-icon {
+			width: 20px;
+			margin-right: 10px;
+			vertical-align: middle;
+		}
+
+		.hover-scale {
+			transition: transform 0.2s ease;
+		}
+		.hover-scale:hover {
+			transform: translateY(-2px);
+			background-color: #f8f9fa;
+		}
+		.border-end-md {
+			border-right: 1px solid #dee2e6;
+		}
+		@media(max-width: 768px) {
+			.border-end-md {
+				border-right: none;
+				border-bottom: 1px solid #dee2e6;
+				padding-bottom: 1.5rem;
+			}
+		}
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+.hover-shadow:hover {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+    border-color: var(--primary-color) !important;
+}
+	</style>
+
+																										<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":"https://www.coteur.com/"},{"@type":"ListItem","position":2,"name":"Comparateur de cotes","item":"https://www.coteur.com/comparateur-de-cotes"},{"@type":"ListItem","position":3,"name":"Cotes Football","item":"https://www.coteur.com/cotes-foot"}]}</script>
+			
+		
+		<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+	
+<script src="https://www.google.com/cse/static/element/dc6f600a0d4404e5/cse_element__fr.js?usqp=CAM%3D" type="text/javascript"></script><link type="text/css" href="https://www.google.com/cse/static/element/dc6f600a0d4404e5/default_v6+fr.css" rel="stylesheet"><link type="text/css" href="https://www.google.com/cse/static/style/look/v6/default.css" rel="stylesheet"><style type="text/css">.gsc-control-cse{font-family:arial, sans-serif}.gsc-control-cse .gsc-table-result{font-family:arial, sans-serif}.gsc-refinementsGradient{background:linear-gradient(to left,rgba(255,255,255,1),rgba(255,255,255,0))}.gsc-control-cse{border-color:#FFFFFF;background-color:#FFFFFF}.gsc-results-wrapper-overlay{background-color:#FFFFFF}input.gsc-input,.gsc-input-box,.gsc-input-box-hover,.gsc-input-box-focus{border-color:#D2D2D2}.gsc-search-button-v2,.gsc-search-button-v2:hover,.gsc-search-button-v2:focus{border-color:#3079ED;background-color:#4D90FE;background-image:none;filter:none}.gsc-search-button-v2 svg{fill:#FFFFFF}.gsc-tabHeader.gsc-tabhActive,.gsc-refinementHeader.gsc-refinementhActive{color:#1A0DAB;border-color:#1A0DAB;background-color:#FFFFFF}.gsc-tabHeader.gsc-tabhInactive,.gsc-refinementHeader.gsc-refinementhInactive{color:#4D5156;border-color:#4D5156;background-color:#FFFFFF}.gsc-webResult.gsc-result,.gsc-results .gsc-imageResult{border-color:#FFFFFF;background-color:#FFFFFF}.gsc-webResult.gsc-result:hover{border-color:#FFFFFF;background-color:#FFFFFF}.gs-webResult.gs-result a.gs-title:link,.gs-webResult.gs-result a.gs-title:link b,.gs-imageResult a.gs-title:link,.gs-imageResult a.gs-title:link b{color:#1A0DAB}.gs-webResult.gs-result a.gs-title:visited,.gs-webResult.gs-result a.gs-title:visited b,.gs-imageResult a.gs-title:visited,.gs-imageResult a.gs-title:visited b{color:#1A0DAB}.gs-webResult.gs-result a.gs-title:hover,.gs-webResult.gs-result a.gs-title:hover b,.gs-imageResult a.gs-title:hover,.gs-imageResult a.gs-title:hover b{color:#1A0DAB}.gs-webResult.gs-result a.gs-title:active,.gs-webResult.gs-result a.gs-title:active b,.gs-imageResult a.gs-title:active,.gs-imageResult a.gs-title:active b{color:#1A0DAB}.gsc-cursor-page{color:#1A0DAB}a.gsc-trailing-more-results:link{color:#1A0DAB}.gs-webResult:not(.gs-no-results-result):not(.gs-error-result) .gs-snippet,.gs-fileFormatType{color:#4D5156}.gs-webResult div.gs-visibleUrl{color:#202124}.gs-webResult div.gs-visibleUrl-short{color:#202124}.gs-webResult div.gs-visibleUrl-short{display:none}.gs-webResult div.gs-visibleUrl-long{display:none}.gs-webResult div.gs-visibleUrl-breadcrumb{display:block}.gs-promotion div.gs-visibleUrl-short{display:none}.gs-promotion div.gs-visibleUrl-long{display:block}.gs-promotion div.gs-visibleUrl-breadcrumb{display:none}.gsc-cursor-box{border-color:#FFFFFF}.gsc-results .gsc-cursor-box .gsc-cursor-page{border-color:#4D5156;background-color:#FFFFFF;color:#4D5156}.gsc-results .gsc-cursor-box .gsc-cursor-current-page{border-color:#1A0DAB;background-color:#FFFFFF;color:#1A0DAB}.gsc-webResult.gsc-result.gsc-promotion{border-color:#FFFFFF;background-color:#F6F6F6}.gsc-completion-container{border-color:#D2D2D2}.gsc-completion-title{color:#1A0DAB}.gsc-completion-snippet{color:#4D5156}.gs-promotion a.gs-title:link,.gs-promotion a.gs-title:link *,.gs-promotion .gs-snippet a:link{color:#1A0DAB}.gs-promotion a.gs-title:visited,.gs-promotion a.gs-title:visited *,.gs-promotion .gs-snippet a:visited{color:#1A0DAB}.gs-promotion a.gs-title:hover,.gs-promotion a.gs-title:hover *,.gs-promotion .gs-snippet a:hover{color:#1A0DAB}.gs-promotion a.gs-title:active,.gs-promotion a.gs-title:active *,.gs-promotion .gs-snippet a:active{color:#1A0DAB}.gs-promotion .gs-snippet,.gs-promotion .gs-title .gs-promotion-title-right,.gs-promotion .gs-title .gs-promotion-title-right *{color:#4D5156}.gs-promotion .gs-visibleUrl,.gs-promotion .gs-visibleUrl-short{color:#202124}.gcsc-find-more-on-google{color:#1A0DAB}.gcsc-find-more-on-google-magnifier{fill:#1A0DAB}</style><style>:root{--swal2-outline: 0 0 0 3px rgba(100, 150, 200, 0.5);--swal2-container-padding: 0.625em;--swal2-backdrop: rgba(0, 0, 0, 0.4);--swal2-backdrop-transition: background-color 0.15s;--swal2-width: 32em;--swal2-padding: 0 0 1.25em;--swal2-border: none;--swal2-border-radius: 0.3125rem;--swal2-background: white;--swal2-color: #545454;--swal2-show-animation: swal2-show 0.3s;--swal2-hide-animation: swal2-hide 0.15s forwards;--swal2-icon-zoom: 1;--swal2-icon-animations: true;--swal2-title-padding: 0.8em 1em 0;--swal2-html-container-padding: 1em 1.6em 0.3em;--swal2-input-border: 1px solid #d9d9d9;--swal2-input-border-radius: 0.1875em;--swal2-input-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.06), 0 0 0 3px transparent;--swal2-input-background: transparent;--swal2-input-transition: border-color 0.2s, box-shadow 0.2s;--swal2-input-hover-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.06), 0 0 0 3px transparent;--swal2-input-focus-border: 1px solid #b4dbed;--swal2-input-focus-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.06), 0 0 0 3px rgba(100, 150, 200, 0.5);--swal2-progress-step-background: #add8e6;--swal2-validation-message-background: #f0f0f0;--swal2-validation-message-color: #666;--swal2-footer-border-color: #eee;--swal2-footer-background: transparent;--swal2-footer-color: inherit;--swal2-timer-progress-bar-background: rgba(0, 0, 0, 0.3);--swal2-close-button-position: initial;--swal2-close-button-inset: auto;--swal2-close-button-font-size: 2.5em;--swal2-close-button-color: #ccc;--swal2-close-button-transition: color 0.2s, box-shadow 0.2s;--swal2-close-button-outline: initial;--swal2-close-button-box-shadow: inset 0 0 0 3px transparent;--swal2-close-button-focus-box-shadow: inset var(--swal2-outline);--swal2-close-button-hover-transform: none;--swal2-actions-justify-content: center;--swal2-actions-width: auto;--swal2-actions-margin: 1.25em auto 0;--swal2-actions-padding: 0;--swal2-actions-border-radius: 0;--swal2-actions-background: transparent;--swal2-action-button-transition: background-color 0.2s, box-shadow 0.2s;--swal2-action-button-hover: black 10%;--swal2-action-button-active: black 10%;--swal2-confirm-button-box-shadow: none;--swal2-confirm-button-border-radius: 0.25em;--swal2-confirm-button-background-color: #7066e0;--swal2-confirm-button-color: #fff;--swal2-deny-button-box-shadow: none;--swal2-deny-button-border-radius: 0.25em;--swal2-deny-button-background-color: #dc3741;--swal2-deny-button-color: #fff;--swal2-cancel-button-box-shadow: none;--swal2-cancel-button-border-radius: 0.25em;--swal2-cancel-button-background-color: #6e7881;--swal2-cancel-button-color: #fff;--swal2-toast-show-animation: swal2-toast-show 0.5s;--swal2-toast-hide-animation: swal2-toast-hide 0.1s forwards;--swal2-toast-border: none;--swal2-toast-box-shadow: 0 0 1px hsl(0deg 0% 0% / 0.075), 0 1px 2px hsl(0deg 0% 0% / 0.075), 1px 2px 4px hsl(0deg 0% 0% / 0.075), 1px 3px 8px hsl(0deg 0% 0% / 0.075), 2px 4px 16px hsl(0deg 0% 0% / 0.075)}[data-swal2-theme=dark]{--swal2-dark-theme-black: #19191a;--swal2-dark-theme-white: #e1e1e1;--swal2-background: var(--swal2-dark-theme-black);--swal2-color: var(--swal2-dark-theme-white);--swal2-footer-border-color: #555;--swal2-input-background: color-mix(in srgb, var(--swal2-dark-theme-black), var(--swal2-dark-theme-white) 10%);--swal2-validation-message-background: color-mix( in srgb, var(--swal2-dark-theme-black), var(--swal2-dark-theme-white) 10% );--swal2-validation-message-color: var(--swal2-dark-theme-white);--swal2-timer-progress-bar-background: rgba(255, 255, 255, 0.7)}@media(prefers-color-scheme: dark){[data-swal2-theme=auto]{--swal2-dark-theme-black: #19191a;--swal2-dark-theme-white: #e1e1e1;--swal2-background: var(--swal2-dark-theme-black);--swal2-color: var(--swal2-dark-theme-white);--swal2-footer-border-color: #555;--swal2-input-background: color-mix(in srgb, var(--swal2-dark-theme-black), var(--swal2-dark-theme-white) 10%);--swal2-validation-message-background: color-mix( in srgb, var(--swal2-dark-theme-black), var(--swal2-dark-theme-white) 10% );--swal2-validation-message-color: var(--swal2-dark-theme-white);--swal2-timer-progress-bar-background: rgba(255, 255, 255, 0.7)}}body.swal2-shown:not(.swal2-no-backdrop,.swal2-toast-shown){overflow:hidden}body.swal2-height-auto{height:auto !important}body.swal2-no-backdrop .swal2-container{background-color:rgba(0,0,0,0) !important;pointer-events:none}body.swal2-no-backdrop .swal2-container .swal2-popup{pointer-events:all}body.swal2-no-backdrop .swal2-container .swal2-modal{box-shadow:0 0 10px var(--swal2-backdrop)}body.swal2-toast-shown .swal2-container{box-sizing:border-box;width:360px;max-width:100%;background-color:rgba(0,0,0,0);pointer-events:none}body.swal2-toast-shown .swal2-container.swal2-top{inset:0 auto auto 50%;transform:translateX(-50%)}body.swal2-toast-shown .swal2-container.swal2-top-end,body.swal2-toast-shown .swal2-container.swal2-top-right{inset:0 0 auto auto}body.swal2-toast-shown .swal2-container.swal2-top-start,body.swal2-toast-shown .swal2-container.swal2-top-left{inset:0 auto auto 0}body.swal2-toast-shown .swal2-container.swal2-center-start,body.swal2-toast-shown .swal2-container.swal2-center-left{inset:50% auto auto 0;transform:translateY(-50%)}body.swal2-toast-shown .swal2-container.swal2-center{inset:50% auto auto 50%;transform:translate(-50%, -50%)}body.swal2-toast-shown .swal2-container.swal2-center-end,body.swal2-toast-shown .swal2-container.swal2-center-right{inset:50% 0 auto auto;transform:translateY(-50%)}body.swal2-toast-shown .swal2-container.swal2-bottom-start,body.swal2-toast-shown .swal2-container.swal2-bottom-left{inset:auto auto 0 0}body.swal2-toast-shown .swal2-container.swal2-bottom{inset:auto auto 0 50%;transform:translateX(-50%)}body.swal2-toast-shown .swal2-container.swal2-bottom-end,body.swal2-toast-shown .swal2-container.swal2-bottom-right{inset:auto 0 0 auto}@media print{body.swal2-shown:not(.swal2-no-backdrop,.swal2-toast-shown){overflow-y:scroll !important}body.swal2-shown:not(.swal2-no-backdrop,.swal2-toast-shown)>[aria-hidden=true]{display:none}body.swal2-shown:not(.swal2-no-backdrop,.swal2-toast-shown) .swal2-container{position:static !important}}div:where(.swal2-container){display:grid;position:fixed;z-index:1060;inset:0;box-sizing:border-box;grid-template-areas:"top-start     top            top-end" "center-start  center         center-end" "bottom-start  bottom-center  bottom-end";grid-template-rows:minmax(min-content, auto) minmax(min-content, auto) minmax(min-content, auto);height:100%;padding:var(--swal2-container-padding);overflow-x:hidden;transition:var(--swal2-backdrop-transition);-webkit-overflow-scrolling:touch}div:where(.swal2-container).swal2-backdrop-show,div:where(.swal2-container).swal2-noanimation{background:var(--swal2-backdrop)}div:where(.swal2-container).swal2-backdrop-hide{background:rgba(0,0,0,0) !important}div:where(.swal2-container).swal2-top-start,div:where(.swal2-container).swal2-center-start,div:where(.swal2-container).swal2-bottom-start{grid-template-columns:minmax(0, 1fr) auto auto}div:where(.swal2-container).swal2-top,div:where(.swal2-container).swal2-center,div:where(.swal2-container).swal2-bottom{grid-template-columns:auto minmax(0, 1fr) auto}div:where(.swal2-container).swal2-top-end,div:where(.swal2-container).swal2-center-end,div:where(.swal2-container).swal2-bottom-end{grid-template-columns:auto auto minmax(0, 1fr)}div:where(.swal2-container).swal2-top-start>.swal2-popup{align-self:start}div:where(.swal2-container).swal2-top>.swal2-popup{grid-column:2;place-self:start center}div:where(.swal2-container).swal2-top-end>.swal2-popup,div:where(.swal2-container).swal2-top-right>.swal2-popup{grid-column:3;place-self:start end}div:where(.swal2-container).swal2-center-start>.swal2-popup,div:where(.swal2-container).swal2-center-left>.swal2-popup{grid-row:2;align-self:center}div:where(.swal2-container).swal2-center>.swal2-popup{grid-column:2;grid-row:2;place-self:center center}div:where(.swal2-container).swal2-center-end>.swal2-popup,div:where(.swal2-container).swal2-center-right>.swal2-popup{grid-column:3;grid-row:2;place-self:center end}div:where(.swal2-container).swal2-bottom-start>.swal2-popup,div:where(.swal2-container).swal2-bottom-left>.swal2-popup{grid-column:1;grid-row:3;align-self:end}div:where(.swal2-container).swal2-bottom>.swal2-popup{grid-column:2;grid-row:3;place-self:end center}div:where(.swal2-container).swal2-bottom-end>.swal2-popup,div:where(.swal2-container).swal2-bottom-right>.swal2-popup{grid-column:3;grid-row:3;place-self:end end}div:where(.swal2-container).swal2-grow-row>.swal2-popup,div:where(.swal2-container).swal2-grow-fullscreen>.swal2-popup{grid-column:1/4;width:100%}div:where(.swal2-container).swal2-grow-column>.swal2-popup,div:where(.swal2-container).swal2-grow-fullscreen>.swal2-popup{grid-row:1/4;align-self:stretch}div:where(.swal2-container).swal2-no-transition{transition:none !important}div:where(.swal2-container)[popover]{width:auto;border:0}div:where(.swal2-container) div:where(.swal2-popup){display:none;position:relative;box-sizing:border-box;grid-template-columns:minmax(0, 100%);width:var(--swal2-width);max-width:100%;padding:var(--swal2-padding);border:var(--swal2-border);border-radius:var(--swal2-border-radius);background:var(--swal2-background);color:var(--swal2-color);font-family:inherit;font-size:1rem;container-name:swal2-popup}div:where(.swal2-container) div:where(.swal2-popup):focus{outline:none}div:where(.swal2-container) div:where(.swal2-popup).swal2-loading{overflow-y:hidden}div:where(.swal2-container) div:where(.swal2-popup).swal2-draggable{cursor:grab}div:where(.swal2-container) div:where(.swal2-popup).swal2-draggable div:where(.swal2-icon){cursor:grab}div:where(.swal2-container) div:where(.swal2-popup).swal2-dragging{cursor:grabbing}div:where(.swal2-container) div:where(.swal2-popup).swal2-dragging div:where(.swal2-icon){cursor:grabbing}div:where(.swal2-container) h2:where(.swal2-title){position:relative;max-width:100%;margin:0;padding:var(--swal2-title-padding);color:inherit;font-size:1.875em;font-weight:600;text-align:center;text-transform:none;overflow-wrap:break-word;cursor:initial}div:where(.swal2-container) div:where(.swal2-actions){display:flex;z-index:1;box-sizing:border-box;flex-wrap:wrap;align-items:center;justify-content:var(--swal2-actions-justify-content);width:var(--swal2-actions-width);margin:var(--swal2-actions-margin);padding:var(--swal2-actions-padding);border-radius:var(--swal2-actions-border-radius);background:var(--swal2-actions-background)}div:where(.swal2-container) div:where(.swal2-loader){display:none;align-items:center;justify-content:center;width:2.2em;height:2.2em;margin:0 1.875em;animation:swal2-rotate-loading 1.5s linear 0s infinite normal;border-width:.25em;border-style:solid;border-radius:100%;border-color:#2778c4 rgba(0,0,0,0) #2778c4 rgba(0,0,0,0)}div:where(.swal2-container) button:where(.swal2-styled){margin:.3125em;padding:.625em 1.1em;transition:var(--swal2-action-button-transition);border:none;box-shadow:0 0 0 3px rgba(0,0,0,0);font-weight:500}div:where(.swal2-container) button:where(.swal2-styled):not([disabled]){cursor:pointer}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-confirm){border-radius:var(--swal2-confirm-button-border-radius);background:initial;background-color:var(--swal2-confirm-button-background-color);box-shadow:var(--swal2-confirm-button-box-shadow);color:var(--swal2-confirm-button-color);font-size:1em}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-confirm):hover{background-color:color-mix(in srgb, var(--swal2-confirm-button-background-color), var(--swal2-action-button-hover))}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-confirm):active{background-color:color-mix(in srgb, var(--swal2-confirm-button-background-color), var(--swal2-action-button-active))}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-deny){border-radius:var(--swal2-deny-button-border-radius);background:initial;background-color:var(--swal2-deny-button-background-color);box-shadow:var(--swal2-deny-button-box-shadow);color:var(--swal2-deny-button-color);font-size:1em}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-deny):hover{background-color:color-mix(in srgb, var(--swal2-deny-button-background-color), var(--swal2-action-button-hover))}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-deny):active{background-color:color-mix(in srgb, var(--swal2-deny-button-background-color), var(--swal2-action-button-active))}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-cancel){border-radius:var(--swal2-cancel-button-border-radius);background:initial;background-color:var(--swal2-cancel-button-background-color);box-shadow:var(--swal2-cancel-button-box-shadow);color:var(--swal2-cancel-button-color);font-size:1em}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-cancel):hover{background-color:color-mix(in srgb, var(--swal2-cancel-button-background-color), var(--swal2-action-button-hover))}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-cancel):active{background-color:color-mix(in srgb, var(--swal2-cancel-button-background-color), var(--swal2-action-button-active))}div:where(.swal2-container) button:where(.swal2-styled):focus-visible{outline:none;box-shadow:var(--swal2-action-button-focus-box-shadow)}div:where(.swal2-container) button:where(.swal2-styled)[disabled]:not(.swal2-loading){opacity:.4}div:where(.swal2-container) button:where(.swal2-styled)::-moz-focus-inner{border:0}div:where(.swal2-container) div:where(.swal2-footer){margin:1em 0 0;padding:1em 1em 0;border-top:1px solid var(--swal2-footer-border-color);background:var(--swal2-footer-background);color:var(--swal2-footer-color);font-size:1em;text-align:center;cursor:initial}div:where(.swal2-container) .swal2-timer-progress-bar-container{position:absolute;right:0;bottom:0;left:0;grid-column:auto !important;overflow:hidden;border-bottom-right-radius:var(--swal2-border-radius);border-bottom-left-radius:var(--swal2-border-radius)}div:where(.swal2-container) div:where(.swal2-timer-progress-bar){width:100%;height:.25em;background:var(--swal2-timer-progress-bar-background)}div:where(.swal2-container) img:where(.swal2-image){max-width:100%;margin:2em auto 1em;cursor:initial}div:where(.swal2-container) button:where(.swal2-close){position:var(--swal2-close-button-position);inset:var(--swal2-close-button-inset);z-index:2;align-items:center;justify-content:center;width:1.2em;height:1.2em;margin-top:0;margin-right:0;margin-bottom:-1.2em;padding:0;overflow:hidden;transition:var(--swal2-close-button-transition);border:none;border-radius:var(--swal2-border-radius);outline:var(--swal2-close-button-outline);background:rgba(0,0,0,0);color:var(--swal2-close-button-color);font-family:monospace;font-size:var(--swal2-close-button-font-size);cursor:pointer;justify-self:end}div:where(.swal2-container) button:where(.swal2-close):hover{transform:var(--swal2-close-button-hover-transform);background:rgba(0,0,0,0);color:#f27474}div:where(.swal2-container) button:where(.swal2-close):focus-visible{outline:none;box-shadow:var(--swal2-close-button-focus-box-shadow)}div:where(.swal2-container) button:where(.swal2-close)::-moz-focus-inner{border:0}div:where(.swal2-container) div:where(.swal2-html-container){z-index:1;justify-content:center;margin:0;padding:var(--swal2-html-container-padding);overflow:auto;color:inherit;font-size:1.125em;font-weight:normal;line-height:normal;text-align:center;overflow-wrap:break-word;word-break:break-word;cursor:initial}div:where(.swal2-container) input:where(.swal2-input),div:where(.swal2-container) input:where(.swal2-file),div:where(.swal2-container) textarea:where(.swal2-textarea),div:where(.swal2-container) select:where(.swal2-select),div:where(.swal2-container) div:where(.swal2-radio),div:where(.swal2-container) label:where(.swal2-checkbox){margin:1em 2em 3px}div:where(.swal2-container) input:where(.swal2-input),div:where(.swal2-container) input:where(.swal2-file),div:where(.swal2-container) textarea:where(.swal2-textarea){box-sizing:border-box;width:auto;transition:var(--swal2-input-transition);border:var(--swal2-input-border);border-radius:var(--swal2-input-border-radius);background:var(--swal2-input-background);box-shadow:var(--swal2-input-box-shadow);color:inherit;font-size:1.125em}div:where(.swal2-container) input:where(.swal2-input).swal2-inputerror,div:where(.swal2-container) input:where(.swal2-file).swal2-inputerror,div:where(.swal2-container) textarea:where(.swal2-textarea).swal2-inputerror{border-color:#f27474 !important;box-shadow:0 0 2px #f27474 !important}div:where(.swal2-container) input:where(.swal2-input):hover,div:where(.swal2-container) input:where(.swal2-file):hover,div:where(.swal2-container) textarea:where(.swal2-textarea):hover{box-shadow:var(--swal2-input-hover-box-shadow)}div:where(.swal2-container) input:where(.swal2-input):focus,div:where(.swal2-container) input:where(.swal2-file):focus,div:where(.swal2-container) textarea:where(.swal2-textarea):focus{border:var(--swal2-input-focus-border);outline:none;box-shadow:var(--swal2-input-focus-box-shadow)}div:where(.swal2-container) input:where(.swal2-input)::placeholder,div:where(.swal2-container) input:where(.swal2-file)::placeholder,div:where(.swal2-container) textarea:where(.swal2-textarea)::placeholder{color:#ccc}div:where(.swal2-container) .swal2-range{margin:1em 2em 3px;background:var(--swal2-background)}div:where(.swal2-container) .swal2-range input{width:80%}div:where(.swal2-container) .swal2-range output{width:20%;color:inherit;font-weight:600;text-align:center}div:where(.swal2-container) .swal2-range input,div:where(.swal2-container) .swal2-range output{height:2.625em;padding:0;font-size:1.125em;line-height:2.625em}div:where(.swal2-container) .swal2-input{height:2.625em;padding:0 .75em}div:where(.swal2-container) .swal2-file{width:75%;margin-right:auto;margin-left:auto;background:var(--swal2-input-background);font-size:1.125em}div:where(.swal2-container) .swal2-textarea{height:6.75em;padding:.75em}div:where(.swal2-container) .swal2-select{min-width:50%;max-width:100%;padding:.375em .625em;background:var(--swal2-input-background);color:inherit;font-size:1.125em}div:where(.swal2-container) .swal2-radio,div:where(.swal2-container) .swal2-checkbox{align-items:center;justify-content:center;background:var(--swal2-background);color:inherit}div:where(.swal2-container) .swal2-radio label,div:where(.swal2-container) .swal2-checkbox label{margin:0 .6em;font-size:1.125em}div:where(.swal2-container) .swal2-radio input,div:where(.swal2-container) .swal2-checkbox input{flex-shrink:0;margin:0 .4em}div:where(.swal2-container) label:where(.swal2-input-label){display:flex;justify-content:center;margin:1em auto 0}div:where(.swal2-container) div:where(.swal2-validation-message){align-items:center;justify-content:center;margin:1em 0 0;padding:.625em;overflow:hidden;background:var(--swal2-validation-message-background);color:var(--swal2-validation-message-color);font-size:1em;font-weight:300}div:where(.swal2-container) div:where(.swal2-validation-message)::before{content:"!";display:inline-block;width:1.5em;min-width:1.5em;height:1.5em;margin:0 .625em;border-radius:50%;background-color:#f27474;color:#fff;font-weight:600;line-height:1.5em;text-align:center}div:where(.swal2-container) .swal2-progress-steps{flex-wrap:wrap;align-items:center;max-width:100%;margin:1.25em auto;padding:0;background:rgba(0,0,0,0);font-weight:600}div:where(.swal2-container) .swal2-progress-steps li{display:inline-block;position:relative}div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step{z-index:20;flex-shrink:0;width:2em;height:2em;border-radius:2em;background:#2778c4;color:#fff;line-height:2em;text-align:center}div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step.swal2-active-progress-step{background:#2778c4}div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step.swal2-active-progress-step~.swal2-progress-step{background:var(--swal2-progress-step-background);color:#fff}div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step.swal2-active-progress-step~.swal2-progress-step-line{background:var(--swal2-progress-step-background)}div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step-line{z-index:10;flex-shrink:0;width:2.5em;height:.4em;margin:0 -1px;background:#2778c4}div:where(.swal2-icon){position:relative;box-sizing:content-box;justify-content:center;width:5em;height:5em;margin:2.5em auto .6em;zoom:var(--swal2-icon-zoom);border:.25em solid rgba(0,0,0,0);border-radius:50%;border-color:#000;font-family:inherit;line-height:5em;cursor:default;user-select:none}div:where(.swal2-icon) .swal2-icon-content{display:flex;align-items:center;font-size:3.75em}div:where(.swal2-icon).swal2-error{border-color:#f27474;color:#f27474}div:where(.swal2-icon).swal2-error .swal2-x-mark{position:relative;flex-grow:1}div:where(.swal2-icon).swal2-error [class^=swal2-x-mark-line]{display:block;position:absolute;top:2.3125em;width:2.9375em;height:.3125em;border-radius:.125em;background-color:#f27474}div:where(.swal2-icon).swal2-error [class^=swal2-x-mark-line][class$=left]{left:1.0625em;transform:rotate(45deg)}div:where(.swal2-icon).swal2-error [class^=swal2-x-mark-line][class$=right]{right:1em;transform:rotate(-45deg)}@container swal2-popup style(--swal2-icon-animations:true){div:where(.swal2-icon).swal2-error.swal2-icon-show{animation:swal2-animate-error-icon .5s}div:where(.swal2-icon).swal2-error.swal2-icon-show .swal2-x-mark{animation:swal2-animate-error-x-mark .5s}}div:where(.swal2-icon).swal2-warning{border-color:#f8bb86;color:#f8bb86}@container swal2-popup style(--swal2-icon-animations:true){div:where(.swal2-icon).swal2-warning.swal2-icon-show{animation:swal2-animate-error-icon .5s}div:where(.swal2-icon).swal2-warning.swal2-icon-show .swal2-icon-content{animation:swal2-animate-i-mark .5s}}div:where(.swal2-icon).swal2-info{border-color:#3fc3ee;color:#3fc3ee}@container swal2-popup style(--swal2-icon-animations:true){div:where(.swal2-icon).swal2-info.swal2-icon-show{animation:swal2-animate-error-icon .5s}div:where(.swal2-icon).swal2-info.swal2-icon-show .swal2-icon-content{animation:swal2-animate-i-mark .8s}}div:where(.swal2-icon).swal2-question{border-color:#87adbd;color:#87adbd}@container swal2-popup style(--swal2-icon-animations:true){div:where(.swal2-icon).swal2-question.swal2-icon-show{animation:swal2-animate-error-icon .5s}div:where(.swal2-icon).swal2-question.swal2-icon-show .swal2-icon-content{animation:swal2-animate-question-mark .8s}}div:where(.swal2-icon).swal2-success{border-color:#a5dc86;color:#a5dc86}div:where(.swal2-icon).swal2-success [class^=swal2-success-circular-line]{position:absolute;width:3.75em;height:7.5em;border-radius:50%}div:where(.swal2-icon).swal2-success [class^=swal2-success-circular-line][class$=left]{top:-0.4375em;left:-2.0635em;transform:rotate(-45deg);transform-origin:3.75em 3.75em;border-radius:7.5em 0 0 7.5em}div:where(.swal2-icon).swal2-success [class^=swal2-success-circular-line][class$=right]{top:-0.6875em;left:1.875em;transform:rotate(-45deg);transform-origin:0 3.75em;border-radius:0 7.5em 7.5em 0}div:where(.swal2-icon).swal2-success .swal2-success-ring{position:absolute;z-index:2;top:-0.25em;left:-0.25em;box-sizing:content-box;width:100%;height:100%;border:.25em solid rgba(165,220,134,.3);border-radius:50%}div:where(.swal2-icon).swal2-success .swal2-success-fix{position:absolute;z-index:1;top:.5em;left:1.625em;width:.4375em;height:5.625em;transform:rotate(-45deg)}div:where(.swal2-icon).swal2-success [class^=swal2-success-line]{display:block;position:absolute;z-index:2;height:.3125em;border-radius:.125em;background-color:#a5dc86}div:where(.swal2-icon).swal2-success [class^=swal2-success-line][class$=tip]{top:2.875em;left:.8125em;width:1.5625em;transform:rotate(45deg)}div:where(.swal2-icon).swal2-success [class^=swal2-success-line][class$=long]{top:2.375em;right:.5em;width:2.9375em;transform:rotate(-45deg)}@container swal2-popup style(--swal2-icon-animations:true){div:where(.swal2-icon).swal2-success.swal2-icon-show .swal2-success-line-tip{animation:swal2-animate-success-line-tip .75s}div:where(.swal2-icon).swal2-success.swal2-icon-show .swal2-success-line-long{animation:swal2-animate-success-line-long .75s}div:where(.swal2-icon).swal2-success.swal2-icon-show .swal2-success-circular-line-right{animation:swal2-rotate-success-circular-line 4.25s ease-in}}[class^=swal2]{-webkit-tap-highlight-color:rgba(0,0,0,0)}.swal2-show{animation:var(--swal2-show-animation)}.swal2-hide{animation:var(--swal2-hide-animation)}.swal2-noanimation{transition:none}.swal2-scrollbar-measure{position:absolute;top:-9999px;width:50px;height:50px;overflow:scroll}.swal2-rtl .swal2-close{margin-right:initial;margin-left:0}.swal2-rtl .swal2-timer-progress-bar{right:0;left:auto}.swal2-toast{box-sizing:border-box;grid-column:1/4 !important;grid-row:1/4 !important;grid-template-columns:min-content auto min-content;padding:1em;overflow-y:hidden;border:var(--swal2-toast-border);background:var(--swal2-background);box-shadow:var(--swal2-toast-box-shadow);pointer-events:all}.swal2-toast>*{grid-column:2}.swal2-toast h2:where(.swal2-title){margin:.5em 1em;padding:0;font-size:1em;text-align:initial}.swal2-toast .swal2-loading{justify-content:center}.swal2-toast input:where(.swal2-input){height:2em;margin:.5em;font-size:1em}.swal2-toast .swal2-validation-message{font-size:1em}.swal2-toast div:where(.swal2-footer){margin:.5em 0 0;padding:.5em 0 0;font-size:.8em}.swal2-toast button:where(.swal2-close){grid-column:3/3;grid-row:1/99;align-self:center;width:.8em;height:.8em;margin:0;font-size:2em}.swal2-toast div:where(.swal2-html-container){margin:.5em 1em;padding:0;overflow:initial;font-size:1em;text-align:initial}.swal2-toast div:where(.swal2-html-container):empty{padding:0}.swal2-toast .swal2-loader{grid-column:1;grid-row:1/99;align-self:center;width:2em;height:2em;margin:.25em}.swal2-toast .swal2-icon{grid-column:1;grid-row:1/99;align-self:center;width:2em;min-width:2em;height:2em;margin:0 .5em 0 0}.swal2-toast .swal2-icon .swal2-icon-content{display:flex;align-items:center;font-size:1.8em;font-weight:bold}.swal2-toast .swal2-icon.swal2-success .swal2-success-ring{width:2em;height:2em}.swal2-toast .swal2-icon.swal2-error [class^=swal2-x-mark-line]{top:.875em;width:1.375em}.swal2-toast .swal2-icon.swal2-error [class^=swal2-x-mark-line][class$=left]{left:.3125em}.swal2-toast .swal2-icon.swal2-error [class^=swal2-x-mark-line][class$=right]{right:.3125em}.swal2-toast div:where(.swal2-actions){justify-content:flex-start;height:auto;margin:0;margin-top:.5em;padding:0 .5em}.swal2-toast button:where(.swal2-styled){margin:.25em .5em;padding:.4em .6em;font-size:1em}.swal2-toast .swal2-success{border-color:#a5dc86}.swal2-toast .swal2-success [class^=swal2-success-circular-line]{position:absolute;width:1.6em;height:3em;border-radius:50%}.swal2-toast .swal2-success [class^=swal2-success-circular-line][class$=left]{top:-0.8em;left:-0.5em;transform:rotate(-45deg);transform-origin:2em 2em;border-radius:4em 0 0 4em}.swal2-toast .swal2-success [class^=swal2-success-circular-line][class$=right]{top:-0.25em;left:.9375em;transform-origin:0 1.5em;border-radius:0 4em 4em 0}.swal2-toast .swal2-success .swal2-success-ring{width:2em;height:2em}.swal2-toast .swal2-success .swal2-success-fix{top:0;left:.4375em;width:.4375em;height:2.6875em}.swal2-toast .swal2-success [class^=swal2-success-line]{height:.3125em}.swal2-toast .swal2-success [class^=swal2-success-line][class$=tip]{top:1.125em;left:.1875em;width:.75em}.swal2-toast .swal2-success [class^=swal2-success-line][class$=long]{top:.9375em;right:.1875em;width:1.375em}@container swal2-popup style(--swal2-icon-animations:true){.swal2-toast .swal2-success.swal2-icon-show .swal2-success-line-tip{animation:swal2-toast-animate-success-line-tip .75s}.swal2-toast .swal2-success.swal2-icon-show .swal2-success-line-long{animation:swal2-toast-animate-success-line-long .75s}}.swal2-toast.swal2-show{animation:var(--swal2-toast-show-animation)}.swal2-toast.swal2-hide{animation:var(--swal2-toast-hide-animation)}@keyframes swal2-show{0%{transform:translate3d(0, -50px, 0) scale(0.9);opacity:0}100%{transform:translate3d(0, 0, 0) scale(1);opacity:1}}@keyframes swal2-hide{0%{transform:translate3d(0, 0, 0) scale(1);opacity:1}100%{transform:translate3d(0, -50px, 0) scale(0.9);opacity:0}}@keyframes swal2-animate-success-line-tip{0%{top:1.1875em;left:.0625em;width:0}54%{top:1.0625em;left:.125em;width:0}70%{top:2.1875em;left:-0.375em;width:3.125em}84%{top:3em;left:1.3125em;width:1.0625em}100%{top:2.8125em;left:.8125em;width:1.5625em}}@keyframes swal2-animate-success-line-long{0%{top:3.375em;right:2.875em;width:0}65%{top:3.375em;right:2.875em;width:0}84%{top:2.1875em;right:0;width:3.4375em}100%{top:2.375em;right:.5em;width:2.9375em}}@keyframes swal2-rotate-success-circular-line{0%{transform:rotate(-45deg)}5%{transform:rotate(-45deg)}12%{transform:rotate(-405deg)}100%{transform:rotate(-405deg)}}@keyframes swal2-animate-error-x-mark{0%{margin-top:1.625em;transform:scale(0.4);opacity:0}50%{margin-top:1.625em;transform:scale(0.4);opacity:0}80%{margin-top:-0.375em;transform:scale(1.15)}100%{margin-top:0;transform:scale(1);opacity:1}}@keyframes swal2-animate-error-icon{0%{transform:rotateX(100deg);opacity:0}100%{transform:rotateX(0deg);opacity:1}}@keyframes swal2-rotate-loading{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes swal2-animate-question-mark{0%{transform:rotateY(-360deg)}100%{transform:rotateY(0)}}@keyframes swal2-animate-i-mark{0%{transform:rotateZ(45deg);opacity:0}25%{transform:rotateZ(-25deg);opacity:.4}50%{transform:rotateZ(15deg);opacity:.8}75%{transform:rotateZ(-5deg);opacity:1}100%{transform:rotateX(0);opacity:1}}@keyframes swal2-toast-show{0%{transform:translateY(-0.625em) rotateZ(2deg)}33%{transform:translateY(0) rotateZ(-2deg)}66%{transform:translateY(0.3125em) rotateZ(2deg)}100%{transform:translateY(0) rotateZ(0deg)}}@keyframes swal2-toast-hide{100%{transform:rotateZ(1deg);opacity:0}}@keyframes swal2-toast-animate-success-line-tip{0%{top:.5625em;left:.0625em;width:0}54%{top:.125em;left:.125em;width:0}70%{top:.625em;left:-0.25em;width:1.625em}84%{top:1.0625em;left:.75em;width:.5em}100%{top:1.125em;left:.1875em;width:.75em}}@keyframes swal2-toast-animate-success-line-long{0%{top:1.625em;right:1.375em;width:0}65%{top:1.25em;right:.9375em;width:0}84%{top:.9375em;right:0;width:1.125em}100%{top:.9375em;right:.1875em;width:1.375em}}</style><style type="text/css">.gscb_a{display:inline-block;font:27px/13px arial,sans-serif}.gsst_a .gscb_a{color:#a1b9ed;cursor:pointer}.gsst_a:hover .gscb_a,.gsst_a:focus .gscb_a{color:#36c}.gsst_a{display:inline-block}.gsst_a{cursor:pointer;padding:0 4px}.gsst_a:hover{text-decoration:none!important}.gsst_b{font-size:16px;padding:0 2px;position:relative;user-select:none;-webkit-user-select:none;white-space:nowrap}.gsst_e{vertical-align:middle;opacity:0.55;}.gsst_a:hover .gsst_e,.gsst_a:focus .gsst_e{opacity:0.72;}.gsst_a:active .gsst_e{opacity:1;}.gsst_f{background:white;text-align:left}.gsst_g{background-color:white;border:1px solid #ccc;border-top-color:#d9d9d9;box-shadow:0 2px 4px rgba(0,0,0,0.2);-webkit-box-shadow:0 2px 4px rgba(0,0,0,0.2);margin:-1px -3px;padding:0 6px}.gsst_h{background-color:white;height:1px;margin-bottom:-1px;position:relative;top:-1px}.gsib_a{width:100%;padding:4px 6px 0}.gsib_a,.gsib_b{vertical-align:top}.gssb_c{border:0;position:absolute;z-index:989}.gssb_e{border:1px solid #ccc;border-top-color:#d9d9d9;box-shadow:0 2px 4px rgba(0,0,0,0.2);-webkit-box-shadow:0 2px 4px rgba(0,0,0,0.2);cursor:default}.gssb_f{visibility:hidden;white-space:nowrap}.gssb_k{border:0;display:block;position:absolute;top:0;z-index:988}.gsdd_a{border:none!important}.gsq_a{padding:0}.gssb_a{padding:0 7px}.gssb_a,.gssb_a td{white-space:nowrap;overflow:hidden;line-height:22px}#gssb_b{font-size:11px;color:#36c;text-decoration:none}#gssb_b:hover{font-size:11px;color:#36c;text-decoration:underline}.gssb_g{text-align:center;padding:8px 0 7px;position:relative}.gssb_h{font-size:15px;height:28px;margin:0.2em;-webkit-appearance:button}.gssb_i{background:#eee}.gss_ifl{visibility:hidden;padding-left:5px}.gssb_i .gss_ifl{visibility:visible}a.gssb_j{font-size:13px;color:#36c;text-decoration:none;line-height:100%}a.gssb_j:hover{text-decoration:underline}.gssb_l{height:1px;background-color:#e5e5e5}.gssb_m{color:#000;background:#fff}.gssb_a{padding:8px 16px}.gsib_a{padding:4px 10px 4px 56px}.gscb_a{line-height:27px}.gssb_e{border:0}.gssb_l{margin:5px 0}input.gsc-input::-webkit-input-placeholder{font-size:14px}input.gsc-input:-moz-placeholder{font-size:14px}input.gsc-input::-moz-placeholder{font-size:14px}input.gsc-input:-ms-input-placeholder{font-size:14px}input.gsc-input:focus::-webkit-input-placeholder{color:transparent}input.gsc-input:focus:-moz-placeholder{color:transparent}input.gsc-input:focus::-moz-placeholder{color:transparent}input.gsc-input:focus:-ms-input-placeholder{color:transparent}.gssb_c .gsc-completion-container{position:static}.gssb_c{z-index:5000}.gsc-completion-container table{background:transparent;font-size:inherit;font-family:inherit}.gssb_c > tbody > tr,.gssb_c > tbody > tr > td,.gssb_d,.gssb_d > tbody > tr,.gssb_d > tbody > tr > td,.gssb_e,.gssb_e > tbody > tr,.gssb_e > tbody > tr > td{padding:0;margin:0;border:0}.gssb_a table,.gssb_a table tr,.gssb_a table tr td{padding:0;margin:0;border:0}.gssb_a,.gssb_a td{line-height:24px}</style><style type="text/css">.gscb_a{display:inline-block;font:27px/13px arial,sans-serif}.gsst_a .gscb_a{color:#a1b9ed;cursor:pointer}.gsst_a:hover .gscb_a,.gsst_a:focus .gscb_a{color:#36c}.gsst_a{display:inline-block}.gsst_a{cursor:pointer;padding:0 4px}.gsst_a:hover{text-decoration:none!important}.gsst_b{font-size:16px;padding:0 2px;position:relative;user-select:none;-webkit-user-select:none;white-space:nowrap}.gsst_e{vertical-align:middle;opacity:0.55;}.gsst_a:hover .gsst_e,.gsst_a:focus .gsst_e{opacity:0.72;}.gsst_a:active .gsst_e{opacity:1;}.gsst_f{background:white;text-align:left}.gsst_g{background-color:white;border:1px solid #ccc;border-top-color:#d9d9d9;box-shadow:0 2px 4px rgba(0,0,0,0.2);-webkit-box-shadow:0 2px 4px rgba(0,0,0,0.2);margin:-1px -3px;padding:0 6px}.gsst_h{background-color:white;height:1px;margin-bottom:-1px;position:relative;top:-1px}.gsib_a{width:100%;padding:4px 6px 0}.gsib_a,.gsib_b{vertical-align:top}.gssb_c{border:0;position:absolute;z-index:989}.gssb_e{border:1px solid #ccc;border-top-color:#d9d9d9;box-shadow:0 2px 4px rgba(0,0,0,0.2);-webkit-box-shadow:0 2px 4px rgba(0,0,0,0.2);cursor:default}.gssb_f{visibility:hidden;white-space:nowrap}.gssb_k{border:0;display:block;position:absolute;top:0;z-index:988}.gsdd_a{border:none!important}.gsq_a{padding:0}.gssb_a{padding:0 7px}.gssb_a,.gssb_a td{white-space:nowrap;overflow:hidden;line-height:22px}#gssb_b{font-size:11px;color:#36c;text-decoration:none}#gssb_b:hover{font-size:11px;color:#36c;text-decoration:underline}.gssb_g{text-align:center;padding:8px 0 7px;position:relative}.gssb_h{font-size:15px;height:28px;margin:0.2em;-webkit-appearance:button}.gssb_i{background:#eee}.gss_ifl{visibility:hidden;padding-left:5px}.gssb_i .gss_ifl{visibility:visible}a.gssb_j{font-size:13px;color:#36c;text-decoration:none;line-height:100%}a.gssb_j:hover{text-decoration:underline}.gssb_l{height:1px;background-color:#e5e5e5}.gssb_m{color:#000;background:#fff}.gssb_a{padding:8px 16px}.gsib_a{padding:4px 10px 4px 56px}.gscb_a{line-height:27px}.gssb_e{border:0}.gssb_l{margin:5px 0}input.gsc-input::-webkit-input-placeholder{font-size:14px}input.gsc-input:-moz-placeholder{font-size:14px}input.gsc-input::-moz-placeholder{font-size:14px}input.gsc-input:-ms-input-placeholder{font-size:14px}input.gsc-input:focus::-webkit-input-placeholder{color:transparent}input.gsc-input:focus:-moz-placeholder{color:transparent}input.gsc-input:focus::-moz-placeholder{color:transparent}input.gsc-input:focus:-ms-input-placeholder{color:transparent}.gssb_c .gsc-completion-container{position:static}.gssb_c{z-index:5000}.gsc-completion-container table{background:transparent;font-size:inherit;font-family:inherit}.gssb_c > tbody > tr,.gssb_c > tbody > tr > td,.gssb_d,.gssb_d > tbody > tr,.gssb_d > tbody > tr > td,.gssb_e,.gssb_e > tbody > tr,.gssb_e > tbody > tr > td{padding:0;margin:0;border:0}.gssb_a table,.gssb_a table tr,.gssb_a table tr td{padding:0;margin:0;border:0}.gssb_a,.gssb_a td{line-height:24px}</style></head>
+<body class="modal-open" style="overflow: hidden; padding-right: 0px;">
+				<div data-controller="consentement">
+	<div class="modal modal-consentement show" id="consentement-fenetre" tabindex="-1" role="dialog" aria-labelledby="consentement-titre" aria-describedby="consentement-texte" data-bs-backdrop="static" data-bs-keyboard="false" data-consentement-target="fenetre" aria-modal="true" style="display: block;">
+		<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<p class="modal-title h5" id="consentement-titre">Vos choix sur les cookies</p>
+				</div>
+				<div class="modal-body small">
+					<p id="consentement-texte">
+						Avec votre accord, Coteur et ses partenaires utilisent des cookies pour mesurer
+						l'audience du site (Google Analytics) et afficher les bannières des bookmakers
+						partenaires. Vous pouvez changer d'avis à tout moment via « Gérer les cookies »
+						en bas de page.
+					</p>
+										<button type="button" class="btn btn-link p-0 mb-2 consentement-repli" data-bs-toggle="collapse" data-bs-target="#consentement-explications" aria-expanded="false" aria-controls="consentement-explications">À quoi servent les cookies ?</button>
+					<div class="collapse" id="consentement-explications">
+						<ul class="mb-3 ps-3">
+							<li><strong>Mesure d'audience</strong> : Google Analytics compte les pages vues, la provenance et l'appareil des visiteurs, pour nous aider à améliorer le site.</li>
+							<li><strong>Publicité et affiliation</strong> : les bannières de nos partenaires (Winamax, Unibet, Gambling Affiliation pour PMU et RMC Sport) sont chargées depuis leurs serveurs, qui peuvent déposer leurs propres cookies pour compter les affichages et les inscriptions.</li>
+							<li><strong>Cookies nécessaires</strong> (session, connexion, sécurité, ticket de paris, mémorisation de ce choix) : toujours actifs, ils ne demandent pas d'accord.</li>
+						</ul>
+					</div>
+					<p class="mb-0">
+						Votre choix est conservé 6 mois.
+						<a href="/privacy-statement" data-consentement-target="politique">Politique de confidentialité</a>
+					</p>
+				</div>
+				<div class="modal-footer flex-column align-items-stretch">
+					<button type="button" class="btn btn-primary btn-lg w-100 m-0" data-action="consentement#toutAccepter" data-consentement-target="accepter">Accepter et continuer</button>
+					<div class="d-flex flex-wrap justify-content-between column-gap-3 m-0">
+						<button type="button" class="btn btn-link consentement-lien" data-action="consentement#ouvrirPanneau">Personnaliser</button>
+						<button type="button" class="btn btn-link consentement-lien" data-action="consentement#toutRefuser">Continuer sans accepter</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade modal-consentement" id="consentement-panneau" tabindex="-1" aria-labelledby="consentement-panneau-titre" aria-hidden="true" data-consentement-target="panneau">
+		<div class="modal-dialog modal-dialog-scrollable modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<p class="modal-title h5" id="consentement-panneau-titre">Gérer mes choix sur les cookies</p>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer sans modifier mes choix"></button>
+				</div>
+				<div class="modal-body small">
+					<p>
+						Choisissez, finalité par finalité, les cookies que vous acceptez. Votre choix
+						est conservé 6 mois, puis vous sera redemandé. Les détails (durées, partenaires)
+						figurent dans notre <a href="/privacy-statement">politique de confidentialité</a>.
+					</p>
+
+					<div class="border rounded p-3 mb-3">
+						<div class="d-flex justify-content-between align-items-start gap-3">
+							<p class="fw-bold mb-1" id="consentement-necessaires">Cookies strictement nécessaires</p>
+							<span class="badge text-bg-secondary flex-shrink-0">Toujours actifs</span>
+						</div>
+						<p class="mb-0 text-muted">
+							Indispensables au fonctionnement du site, ils ne demandent pas votre accord :
+							session et connexion, sécurité des formulaires, ticket de paris, préférences
+							d'affichage, notifications que vous avez demandées et mémorisation de vos choix
+							sur les cookies.
+						</p>
+					</div>
+
+					<div class="border rounded p-3 mb-3">
+						<div class="form-check form-switch d-flex justify-content-between align-items-start gap-3 ps-0">
+							<label class="form-check-label fw-bold" for="consentement-mesure">Mesure d'audience</label>
+							<input class="form-check-input flex-shrink-0 ms-0" type="checkbox" role="switch" id="consentement-mesure" aria-describedby="consentement-mesure-detail" data-consentement-target="finalite" data-finalite="mesure">
+						</div>
+						<p class="mb-0 text-muted" id="consentement-mesure-detail">
+							Google Analytics (Google Ireland Ltd) : statistiques de fréquentation (pages
+							vues, provenance, appareil) pour améliorer le site. Cookies <code>_ga</code> et
+							<code>_ga_*</code>, conservés 13 mois au plus.
+						</p>
+					</div>
+
+					<div class="border rounded p-3">
+						<div class="form-check form-switch d-flex justify-content-between align-items-start gap-3 ps-0">
+							<label class="form-check-label fw-bold" for="consentement-publicite">Publicité et affiliation</label>
+							<input class="form-check-input flex-shrink-0 ms-0" type="checkbox" role="switch" id="consentement-publicite" aria-describedby="consentement-publicite-detail" data-consentement-target="finalite" data-finalite="publicite">
+						</div>
+						<p class="mb-0 text-muted" id="consentement-publicite-detail">
+							Bannières chargées depuis les serveurs de nos partenaires (Winamax, Unibet, Gambling
+							Affiliation pour PMU et RMC Sport), qui peuvent déposer leurs propres cookies
+							pour compter les affichages et attribuer les inscriptions. Sans votre accord,
+							ces bannières ne sont pas affichées ; les liens vers les bookmakers restent
+							disponibles.
+						</p>
+					</div>
+				</div>
+				<div class="modal-footer flex-wrap gap-2">
+					<button type="button" class="btn btn-primary consentement-choix" data-action="consentement#toutRefuser">Tout refuser</button>
+					<button type="button" class="btn btn-primary consentement-choix" data-action="consentement#toutAccepter">Tout accepter</button>
+					<button type="button" class="btn btn-outline-primary consentement-autre" data-action="consentement#enregistrer">Enregistrer mes choix</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+	
+		<nav class="navbar navbar-expand-lg sticky-top shadow-sm topbar" style="padding-right: 0px; margin-right: 0px;">
+    <div class="container">
+        
+                <a class="navbar-brand" href="/" aria-label="Accueil Coteur.com">
+            COTEUR<span style="color: var(--accent-color)">.COM</span>
+        </a>
+
+                <div class="d-flex align-items-center gap-2 d-lg-none">
+            
+                        <div class="dropdown">
+                <button class="btn btn-link text-white p-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Rechercher">
+                    <i class="bi bi-search fs-5"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end p-2 shadow" style="min-width: 250px;">
+                                        <form role="search">
+                        <div class="input-group">
+                           <div id="___gcse_0"><div class="gsc-control-searchbox-only gsc-control-searchbox-only-fr" dir="ltr"><form class="gsc-search-box gsc-search-box-tools" accept-charset="utf-8"><table cellspacing="0" cellpadding="0" role="presentation" class="gsc-search-box"><tbody><tr><td class="gsc-input"><div class="gsc-input-box" id="gsc-iw-id1"><table cellspacing="0" cellpadding="0" role="presentation" id="gs_id50" class="gstl_50 gsc-input" style="width: 100%; padding: 0px;"><tbody><tr><td id="gs_tti50" class="gsib_a"><input autocomplete="off" type="text" size="10" class="gsc-input" name="search" title="rechercher" aria-label="rechercher" id="gsc-i-id1" dir="ltr" spellcheck="false" style="width: 100%; padding: 0px; border: none; margin: 0px; height: auto; outline: none;"></td><td class="gsib_b"><div class="gsst_b" id="gs_st50" dir="ltr"><a class="gsst_a" href="javascript:void(0)" title="Effacer le contenu du champ de recherche" role="button" style="display: none;"><span class="gscb_a" id="gs_cb50" aria-hidden="true">×</span></a></div></td></tr></tbody></table></div></td><td class="gsc-search-button"><button class="gsc-search-button gsc-search-button-v2"><svg width="13" height="13" viewBox="0 0 13 13"><title>rechercher</title><path d="m4.8495 7.8226c0.82666 0 1.5262-0.29146 2.0985-0.87438 0.57232-0.58292 0.86378-1.2877 0.87438-2.1144 0.010599-0.82666-0.28086-1.5262-0.87438-2.0985-0.59352-0.57232-1.293-0.86378-2.0985-0.87438-0.8055-0.010599-1.5103 0.28086-2.1144 0.87438-0.60414 0.59352-0.8956 1.293-0.87438 2.0985 0.021197 0.8055 0.31266 1.5103 0.87438 2.1144 0.56172 0.60414 1.2665 0.8956 2.1144 0.87438zm4.4695 0.2115 3.681 3.6819-1.259 1.284-3.6817-3.7 0.0019784-0.69479-0.090043-0.098846c-0.87973 0.76087-1.92 1.1413-3.1207 1.1413-1.3553 0-2.5025-0.46363-3.4417-1.3909s-1.4088-2.0686-1.4088-3.4239c0-1.3553 0.4696-2.4966 1.4088-3.4239 0.9392-0.92727 2.0864-1.3969 3.4417-1.4088 1.3553-0.011889 2.4906 0.45771 3.406 1.4088 0.9154 0.95107 1.379 2.0924 1.3909 3.4239 0 1.2126-0.38043 2.2588-1.1413 3.1385l0.098834 0.090049z"></path></svg></button></td><td class="gsc-clear-button"><div class="gsc-clear-button" title="effacer les résultats">&nbsp;</div></td></tr></tbody></table></form></div></div>
+                        </div>
+                    </form>
+                                    </div>
+            </div>
+
+                                                                    <a href="/login" class="btn btn-link text-white p-1" aria-label="Connexion">
+                    <i class="bi bi-person fs-4"></i>
+                </a>
+            
+                        <button class="navbar-toggler border-0 p-1 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navContent" aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-1"></i>
+            </button>
+        </div>
+
+                <div class="collapse navbar-collapse" id="navContent">
+            
+                        <ul class="navbar-nav me-auto ms-lg-3 mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="/pronostics">Pronostics</a></li>
+                <li class="nav-item"><a class="nav-link" href="/comparateur-de-cotes">Cotes</a></li>
+                <li class="nav-item"><a class="nav-link" href="/concours">Concours</a></li>
+                                                                        <li class="nav-item"><a class="nav-link" href="/apprendre-les-paris-sportifs">École des paris</a></li>
+                                <li class="nav-item"><a class="nav-link" href="/bookmaker">Bookmakers</a></li>
+                <li class="nav-item"><a class="nav-link" href="/stats">Stats</a></li>
+                <li class="nav-item"><a class="nav-link" href="/news-paris-sportifs">Actus</a></li>
+                                <li class="nav-item"><a class="nav-link" href="/forum">Forum</a></li>
+            </ul>
+
+                        <div class="d-none d-lg-flex align-items-center gap-3 navbar-actions">
+                
+                                <div class="dropdown">
+                    <button class="btn btn-link text-white opacity-75 hover-opacity-100 text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Rechercher">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end p-2 shadow border-0" style="min-width: 300px; margin-top: 10px;">
+                                                <form role="search">
+                            <div class="input-group">
+                                <div id="___gcse_1"><div class="gsc-control-searchbox-only gsc-control-searchbox-only-fr" dir="ltr"><form class="gsc-search-box gsc-search-box-tools" accept-charset="utf-8"><table cellspacing="0" cellpadding="0" role="presentation" class="gsc-search-box"><tbody><tr><td class="gsc-input"><div class="gsc-input-box" id="gsc-iw-id2"><table cellspacing="0" cellpadding="0" role="presentation" id="gs_id51" class="gstl_51 gsc-input" style="width: 100%; padding: 0px;"><tbody><tr><td id="gs_tti51" class="gsib_a"><input autocomplete="off" type="text" size="10" class="gsc-input" name="search" title="rechercher" aria-label="rechercher" id="gsc-i-id2" dir="ltr" spellcheck="false" style="width: 100%; padding: 0px; border: none; margin: 0px; height: auto; outline: none;"></td><td class="gsib_b"><div class="gsst_b" id="gs_st51" dir="ltr"><a class="gsst_a" href="javascript:void(0)" title="Effacer le contenu du champ de recherche" role="button" style="display: none;"><span class="gscb_a" id="gs_cb51" aria-hidden="true">×</span></a></div></td></tr></tbody></table></div></td><td class="gsc-search-button"><button class="gsc-search-button gsc-search-button-v2"><svg width="13" height="13" viewBox="0 0 13 13"><title>rechercher</title><path d="m4.8495 7.8226c0.82666 0 1.5262-0.29146 2.0985-0.87438 0.57232-0.58292 0.86378-1.2877 0.87438-2.1144 0.010599-0.82666-0.28086-1.5262-0.87438-2.0985-0.59352-0.57232-1.293-0.86378-2.0985-0.87438-0.8055-0.010599-1.5103 0.28086-2.1144 0.87438-0.60414 0.59352-0.8956 1.293-0.87438 2.0985 0.021197 0.8055 0.31266 1.5103 0.87438 2.1144 0.56172 0.60414 1.2665 0.8956 2.1144 0.87438zm4.4695 0.2115 3.681 3.6819-1.259 1.284-3.6817-3.7 0.0019784-0.69479-0.090043-0.098846c-0.87973 0.76087-1.92 1.1413-3.1207 1.1413-1.3553 0-2.5025-0.46363-3.4417-1.3909s-1.4088-2.0686-1.4088-3.4239c0-1.3553 0.4696-2.4966 1.4088-3.4239 0.9392-0.92727 2.0864-1.3969 3.4417-1.4088 1.3553-0.011889 2.4906 0.45771 3.406 1.4088 0.9154 0.95107 1.379 2.0924 1.3909 3.4239 0 1.2126-0.38043 2.2588-1.1413 3.1385l0.098834 0.090049z"></path></svg></button></td><td class="gsc-clear-button"><div class="gsc-clear-button" title="effacer les résultats">&nbsp;</div></td></tr></tbody></table></form></div></div>
+                            </div>
+                        </form>
+                                            </div>
+                </div>
+
+                                                    <div class="d-flex gap-2">
+                        <a href="/login" class="btn btn-outline-light btn-sm px-3 fw-bold">Connexion</a>
+                        <a href="/register" class="btn btn-signup btn-sm px-3 fw-bold">Inscription</a>
+                    </div>
+                            </div>
+
+        </div>
+    </div>
+</nav>
+		<div class="flex-grow-1 d-flex flex-column">
+		<section class="compact-hero bg-white border-bottom mb-4 py-4">
+		<div class="container">
+										<nav aria-label="Fil d'Ariane" class="small mb-3">
+					<ol class="breadcrumb mb-0">
+																					<li class="breadcrumb-item"><a href="/">Accueil</a></li>
+																												<li class="breadcrumb-item"><a href="/comparateur-de-cotes">Comparateur de cotes</a></li>
+																												<li class="breadcrumb-item active" aria-current="page">Cotes Football</li>
+																		</ol>
+				</nav>
+						<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
+									<div>
+						<h1 class="h3 fw-bold mb-1">
+															Cotes
+								Football
+													</h1>
+						<p class="text-muted mb-0 small">
+
+							Comparez les cotes de +15 bookmakers en temps réel.
+						</p>
+					</div>
+												<div class="d-flex gap-2">
+																	<a href="/pronostic-foot" class="btn btn-outline-primary btn-sm fw-bold">
+							<i class="bi bi-chat-quote-fill me-2"></i>Pronostics
+						</a>
+						<a href="/stats-foot" class="btn btn-outline-primary btn-sm fw-bold">
+							<i class="bi bi-bar-chart-fill me-1"></i>
+							Stats
+						</a>
+						
+
+									</div>
+
+			</div>
+		</div>
+	</section>
+
+
+	<main class="container">
+		<div class="row g-4">
+						<div class="col-lg-8">
+
+								<div class="mb-4">
+					<div class="d-flex justify-content-between align-items-center mb-2">
+						<h2 class="h6 fw-bold text-uppercase text-muted small ls-1">Filtrer
+						</h2>
+					</div>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+						<a href="/cotes-boostees" class="btn btn-sm btn-white border text-dark fw-bold shadow-sm d-flex align-items-center gap-2 hover-scale">
+							<i class="bi bi-lightning-charge-fill text-warning"></i>
+							Cotes Boostées
+						</a>
+						<a href="/cotes/surebet" class="btn btn-sm btn-white border text-dark fw-bold shadow-sm d-flex align-items-center gap-2 hover-scale">
+							<i class="bi bi-safe2-fill text-success"></i>
+							Surebet
+						</a>
+						<a href="/cotes/valuebet" class="btn btn-sm btn-white border text-dark fw-bold shadow-sm d-flex align-items-center gap-2 hover-scale">
+							<i class="bi bi-graph-up-arrow text-primary"></i>
+							ValueBet
+						</a>
+						<a href="/cotes/decote" class="btn btn-sm btn-white border text-dark fw-bold shadow-sm d-flex align-items-center gap-2 hover-scale">
+							<i class="bi bi-arrow-down-right-circle-fill text-danger"></i>
+							Décote
+						</a>
+						<a href="/cotes/surebet/calculette" class="btn btn-sm btn-white border text-dark fw-bold shadow-sm d-flex align-items-center gap-2 hover-scale">
+							<i class="bi bi-calculator text-secondary"></i>
+							Calculette Surebet
+						</a>
+					</div>
+					<div class="sport-filter-container">
+												<a href="/comparateur-de-cotes" class="sport-btn ">
+							<i class="bi bi-grid-fill"></i>
+							Tous
+						</a>
+
+																																		<a href="/cotes-foot" class="sport-btn active">
+									<i class="icon-sport-1" title="Football"></i>
+									Football
+								</a>
+																																																																																																																																																																																																																																									
+																										<a href="#" class="sport-btn " data-controller="compet-filter" data-compet-filter-sport-id-value="1" data-compet-filter-sport-slug-value="foot" data-action="click->compet-filter#open" data-compet-filter-type-value="cotes">
+								<i class="bi bi-trophy"></i>
+								Compétitions
+							</a>
+											</div>
+                    
+					
+				</div>
+
+				<div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+
+										<div class="d-flex align-items-center gap-2 w-100 w-md-auto overflow-auto pb-1 pb-md-0 no-scrollbar">
+
+												
+																		
+						<a href="/cotes-foot?date=today" class="btn btn-sm rounded-pill px-3 fw-bold transition-all btn-light border text-muted">
+							Aujourd'hui
+													</a>
+
+																		
+						<a href="/cotes-foot?date=tomorrow" class="btn btn-sm rounded-pill px-3 fw-bold transition-all btn-light border text-muted">
+							Demain
+													</a>
+
+												<div class="position-relative" title="Choisir une date">
+							<div class="input-group input-group-sm">
+								<span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
+									<i class="bi bi-calendar3 text-muted"></i>
+								</span>
+								<input type="date" class="form-control form-control-sm border-start-0 rounded-end-pill ps-1 text-muted fw-bold" style="max-width: 140px; cursor: pointer;" value="" onchange="let u = new window.URL(window.location.href); u.searchParams.set('date', this.value);u.searchParams.set('page', 1); window.location.href = u.toString();">
+							</div>
+						</div>
+					</div>
+
+										<div class="w-100 w-md-auto">
+												
+						<a href="/cotes-foot?sort=trj" class="btn btn-sm w-100 d-flex align-items-center justify-content-center gap-2 rounded-pill px-4 fw-bold transition-all btn-white border text-muted">
+							<i class="bi bi-fire text-warning"></i>
+							Meilleurs TRJ
+													</a>
+					</div>
+
+				</div>
+
+														<section class="custom-card mb-4" aria-labelledby="paris-long-terme-titre">
+		<div class="card-header-custom border-bottom bg-white">
+			<h2 id="paris-long-terme-titre" class="h6 fw-bold mb-0 d-flex align-items-center">
+				<i class="bi bi-trophy-fill text-warning me-2" aria-hidden="true"></i>Paris à long terme
+			</h2>
+		</div>
+		<ul class="list-group list-group-flush">
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/apertura-2026-vainqueur-1615613" class="fw-bold text-dark text-decoration-none">Cotes vainqueur Apertura 2026</a>
+													<div class="small text-muted text-truncate">Apertura</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 13 déc. 2026</span>
+											</div>
+				</li>
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/serie-a-bresil-2026-vainqueur-1615595" class="fw-bold text-dark text-decoration-none">Cotes vainqueur Serie A Brésil 2026</a>
+													<div class="small text-muted text-truncate">Serie A</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 2 déc. 2026</span>
+											</div>
+				</li>
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/major-league-soccer-2026-vainqueur-1615599" class="fw-bold text-dark text-decoration-none">Cotes vainqueur Major League Soccer 2026</a>
+													<div class="small text-muted text-truncate">Major League Soccer</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 8 déc. 2026</span>
+											</div>
+				</li>
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/eliteserien-2026-vainqueur-1615612" class="fw-bold text-dark text-decoration-none">Cotes vainqueur Eliteserien 2026</a>
+													<div class="small text-muted text-truncate">Eliteserien</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 13 déc. 2026</span>
+											</div>
+				</li>
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/league-of-wales-2026-2027-vainqueur-1615579" class="fw-bold text-dark text-decoration-none">Cotes vainqueur League Of Wales 2026/2027</a>
+													<div class="small text-muted text-truncate">League Of Wales</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 9 mai 2027</span>
+											</div>
+				</li>
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/league-cup-efl-2026-2027-vainqueur-1615600" class="fw-bold text-dark text-decoration-none">Cotes vainqueur League Cup - EFL 2026/2027</a>
+													<div class="small text-muted text-truncate">League Cup - EFL</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 28 févr. 2027</span>
+											</div>
+				</li>
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/bundesliga-2-2026-2027-vainqueur-1615597" class="fw-bold text-dark text-decoration-none">Cotes vainqueur Bundesliga 2 2026/2027</a>
+													<div class="small text-muted text-truncate">Bundesliga 2.</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 1 juin 2027</span>
+											</div>
+				</li>
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/liga-bbva-2026-2027-vainqueur-1615584" class="fw-bold text-dark text-decoration-none">Cotes vainqueur Liga BBVA 2026/2027</a>
+													<div class="small text-muted text-truncate">Liga BBVA</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 30 mai 2027</span>
+											</div>
+				</li>
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/ligue-1-2026-2027-vainqueur-1615585" class="fw-bold text-dark text-decoration-none">Cotes vainqueur Ligue 1 2026/2027</a>
+													<div class="small text-muted text-truncate">Ligue 1</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 30 mai 2027</span>
+											</div>
+				</li>
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/premier-league-2026-2027-vainqueur-1615583" class="fw-bold text-dark text-decoration-none">Cotes vainqueur Premier League 2026/2027</a>
+													<div class="small text-muted text-truncate">Premier League</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 30 mai 2027</span>
+											</div>
+				</li>
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/serie-a-italie-2026-2027-vainqueur-1615593" class="fw-bold text-dark text-decoration-none">Cotes vainqueur Serie A Italie 2026/2027</a>
+													<div class="small text-muted text-truncate">Serie A</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 30 mai 2027</span>
+											</div>
+				</li>
+											<li class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 gap-sm-3 py-2">
+					<div class="min-w-0">
+						<a href="/cote/bundesliga-d1-2026-2027-vainqueur-1615594" class="fw-bold text-dark text-decoration-none">Cotes vainqueur Bundesliga D1 2026/2027</a>
+													<div class="small text-muted text-truncate">Bundesliga D1</div>
+											</div>
+					<div class="small flex-shrink-0">
+													<span class="badge bg-secondary-subtle text-secondary-emphasis border">En cours</span>
+							<span class="text-muted ms-1">cotes jusqu'au 31 mai 2027</span>
+											</div>
+				</li>
+					</ul>
+	</section>
+				
+												<div class="custom-card border-0 shadow-sm bg-transparent">
+
+										
+
+												<div class="bg-white rounded border overflow-hidden">
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/iles-feroe-moldavie-1616384" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616384" data-special="0" data-typename="1n2">TRJ 91,0 %</span>
+        <span class="text-muted">16/11 16:00</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Iles Feroe</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Moldavie</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Iles Feroe - Moldavie" data-eventdate="1794841200">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616384" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Iles Feroe" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.71</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b24 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616384" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">3.32</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b24 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616384" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Moldavie" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">4.70</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b46 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/kazakhstan-slovaquie-1616385" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616385" data-special="0" data-typename="1n2">TRJ 91,9 %</span>
+        <span class="text-muted">16/11 16:00</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Kazakhstan</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Slovaquie</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Kazakhstan - Slovaquie" data-eventdate="1794841200">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616385" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Kazakhstan" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">3.75</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b21 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616385" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">3.30</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616385" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Slovaquie" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">1.93</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b46 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/grece-u21-islande-u21-1616659" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Championnat d'Europe U21 - Qualification</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616659" data-special="0" data-typename="1n2">TRJ 92,2 %</span>
+        <span class="text-muted">16/11 18:00</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">GRèCE (U21)</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Islande (U21)</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="GRèCE (U21) - Islande (U21)" data-eventdate="1794848400">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616659" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="GRèCE (U21)" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.85</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b43 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616659" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">3.40</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b24 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616659" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Islande (U21)" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">4.00</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b21 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/estonie-bulgarie-1616382" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616382" data-special="0" data-typename="1n2">TRJ 90,1 %</span>
+        <span class="text-muted">16/11 18:00</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Estonie</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Bulgarie</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Estonie - Bulgarie" data-eventdate="1794848400">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616382" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Estonie" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.99</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b46 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616382" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">3.03</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b24 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616382" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Bulgarie" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">3.60</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/islande-luxembourg-1616383" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616383" data-special="0" data-typename="1n2">TRJ 91,3 %</span>
+        <span class="text-muted">16/11 18:00</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Islande</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Luxembourg</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Islande - Luxembourg" data-eventdate="1794848400">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616383" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Islande" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.22</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b21 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616383" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">5.40</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616383" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Luxembourg" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">11.00</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/lithuanie-liechtenstein-1616528" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616528" data-special="0" data-typename="1n2">TRJ 91,8 %</span>
+        <span class="text-muted">16/11 18:00</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Lithuanie</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Liechtenstein</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Lithuanie - Liechtenstein" data-eventdate="1794848400">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616528" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Lithuanie" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.09</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b24 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616528" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">7.50</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616528" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Liechtenstein" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">26.00</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b21 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/guyana-porto-rico-1616579" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">CONCACAF Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616579" data-special="0" data-typename="1n2">TRJ 92,8 %</span>
+        <span class="text-muted">16/11 20:00</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Guyana</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Porto Rico</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Guyana - Porto Rico" data-eventdate="1794855600">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616579" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Guyana" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.71</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b44 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616579" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">3.85</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b33 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616579" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Porto Rico" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">4.30</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b21 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/guadeloupe-bermudes-1616590" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">CONCACAF Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616590" data-special="0" data-typename="1n2">TRJ 92,1 %</span>
+        <span class="text-muted">16/11 20:00</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Guadeloupe</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Bermudes</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Guadeloupe - Bermudes" data-eventdate="1794855600">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616590" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Guadeloupe" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.26</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b21 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616590" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">5.75</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b24 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616590" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Bermudes" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">8.50</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b21 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/cuba-grenade-cf-1616594" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">CONCACAF Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616594" data-special="0" data-typename="1n2">TRJ 92,5 %</span>
+        <span class="text-muted">16/11 20:00</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Cuba</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Grenade CF</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Cuba - Grenade CF" data-eventdate="1794855600">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616594" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Cuba" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.29</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b21 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616594" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">5.30</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b44 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616594" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Grenade CF" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">8.50</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b21 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/albacete-rc-celta-fortuna-1615782" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Liga Adelante</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1615782" data-special="0" data-typename="1n2">TRJ 88,2 %</span>
+        <span class="text-muted">16/11 20:30</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Albacete</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">RC Celta Fortuna</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Albacete - RC Celta Fortuna" data-eventdate="1794857400">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1615782" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Albacete" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.52</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b33 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1615782" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">3.90</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b33 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1615782" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="RC Celta Fortuna" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">4.55</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b43 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/suisse-ecosse-1616074" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616074" data-special="0" data-typename="1n2">TRJ 92,8 %</span>
+        <span class="text-muted">16/11 20:45</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Suisse</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Ecosse</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Suisse - Ecosse" data-eventdate="1794858300">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616074" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Suisse" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.73</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b24 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616074" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">3.60</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616074" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Ecosse" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">4.50</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/allemagne-pays-bas-1616288" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616288" data-special="0" data-typename="1n2">TRJ 91,9 %</span>
+        <span class="text-muted">16/11 20:45</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Allemagne</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Pays Bas</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Allemagne - Pays Bas" data-eventdate="1794858300">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616288" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Allemagne" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.81</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b43 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616288" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">4.00</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616288" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Pays Bas" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">3.50</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/grece-serbie-1616289" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616289" data-special="0" data-typename="1n2">TRJ 91,8 %</span>
+        <span class="text-muted">16/11 20:45</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Grèce</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Serbie</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Grèce - Serbie" data-eventdate="1794858300">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616289" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Grèce" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">1.39</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b43 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616289" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">4.55</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b43 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616289" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Serbie" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">6.65</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b43 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/macedoine-slovenie-1616290" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616290" data-special="0" data-typename="1n2">TRJ 91,6 %</span>
+        <span class="text-muted">16/11 20:45</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Macédoine</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Slovénie</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Macédoine - Slovénie" data-eventdate="1794858300">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616290" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Macédoine" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">6.20</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616290" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">3.80</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616290" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Slovénie" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">1.50</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b24 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+																															
+
+<div class="match-row">
+  <div class="row align-items-center">
+        <div class="col-md-6 col-12 mb-2 mb-md-0 match-details-container">
+    <div class="d-flex align-items-start">
+      <a href="/cote/gibraltar-malte-1616529" class="text-decoration-none text-dark flex-grow-1 min-w-0">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="text-muted text-truncate">Ligue des Nations</span>
+                <span class="text-success fw-bold trj-label text-nowrap bg-light" title="Taux de retour joueur des meilleures cotes du match" data-controller="retour" data-rencid="1616529" data-special="0" data-typename="1n2">TRJ 92,1 %</span>
+        <span class="text-muted">16/11 20:45</span>
+      </div>
+      <div class="fw-bold d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center me-3">
+          <span class="me-2">Gibraltar</span>
+            <span class="badge bg-light text-dark mx-1">vs</span>
+            <span class="ms-2">Malte</span>
+        </div>
+      </div></a>
+                      </div>
+    </div>
+  
+
+        <div class="col-md-6 col-12 match-odds-container">
+      <div class="d-flex w-100 gap-2" data-eventname="Gibraltar - Malte" data-eventdate="1794858300">
+
+                
+       
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616529" data-choice="1" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Gibraltar" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">1</span><span class="odd-value" data-odd-target="odds">7.00</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616529" data-choice="0" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="nul" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">N</span><span class="odd-value" data-odd-target="odds">3.80</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b20 ms-1" data-odd-target="book"></span></a></div>
+
+	<div class="odd-wrapper" data-controller="odd" data-rencid="1616529" data-choice="2" data-type="1n2" data-handicap="0" data-force="0" data-label="" data-display="bestfr" data-choicetxt="Malte" data-iconbooksize="Mini"><a class="odd-btn" href="javascript:void(0)" data-action="click->odd#compare"><span class="odd-label" data-odd-target="label">2</span><span class="odd-value" data-odd-target="odds">1.47</span><span class="odd-direction" data-odd-target="direction"></span><span class="circleBookIcon circleBookIconMini circleBookIconMini-b46 ms-1" data-odd-target="book"></span></a></div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+													</div>
+
+
+									</div>
+
+								 <div class="d-flex justify-content-end">
+                        <ul class="pagination"><li class="page-item  disabled"><span class="page-link">&lt;&lt;</span></li><li class="page-item active"><span class="page-link">1 <span class="visually-hidden">(current)</span></span></li><li class="page-item"><a class="page-link" href="/cotes-foot?page=2">2</a></li><li class="page-item"><a class="page-link" href="/cotes-foot?page=3">3</a></li><li class="page-item"><a class="page-link" href="/cotes-foot?page=4">4</a></li><li class="page-item"><a class="page-link" href="/cotes-foot?page=5">5</a></li><li class="page-item disabled"><span class="page-link">…</span></li><li class="page-item"><a class="page-link" href="/cotes-foot?page=37">37</a></li><li class="page-item"><a class="page-link" href="/cotes-foot?page=2" rel="next">&gt;&gt;</a></li></ul>
+                    </div>
+
+													<div class="mt-3">
+						
+	<section class="custom-card mb-4" aria-labelledby="competitions-cotes-titre">
+		<div class="card-header-custom border-bottom">
+			<h2 id="competitions-cotes-titre" class="h6 fw-bold mb-0">
+				<i class="bi bi-trophy text-primary me-2" aria-hidden="true"></i>Cotes Football par compétition
+			</h2>
+		</div>
+		<div class="p-3">
+				<ul class="list-unstyled row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-1 small mb-0 ">
+											<li class="col">
+									<a href="/cotes/foot/france/ligue-1" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-fr me-2" aria-hidden="true"></span>						<span class="text-truncate">Ligue 1</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/europe/ligue-des-champions" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-eu me-2" aria-hidden="true"></span>						<span class="text-truncate">Ligue des champions</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/europe/ligue-europa-1" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-eu me-2" aria-hidden="true"></span>						<span class="text-truncate">Ligue Europa</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/espagne/liga-bbva" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-es me-2" aria-hidden="true"></span>						<span class="text-truncate">Liga BBVA</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/angleterre/premier-league" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-gb-eng me-2" aria-hidden="true"></span>						<span class="text-truncate">Premier League</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/italie/serie-a" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-it me-2" aria-hidden="true"></span>						<span class="text-truncate">Serie A (Italie)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/allemagne/bundesliga-d1" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-de me-2" aria-hidden="true"></span>						<span class="text-truncate">Bundesliga D1</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/europe/ligue-des-nations" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-eu me-2" aria-hidden="true"></span>						<span class="text-truncate">Ligue des Nations</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/europe/uefa-conference-league" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-eu me-2" aria-hidden="true"></span>						<span class="text-truncate">UEFA Conference League</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/pays-bas/casino-eredivisie" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-nl me-2" aria-hidden="true"></span>						<span class="text-truncate">Casino Eredivisie</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/angleterre/the-championship" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-gb-eng me-2" aria-hidden="true"></span>						<span class="text-truncate">The Championship</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/france/ligue-2" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-fr me-2" aria-hidden="true"></span>						<span class="text-truncate">Ligue 2</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/portugal/primeira-liga" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-pt me-2" aria-hidden="true"></span>						<span class="text-truncate">Primeira Liga</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/allemagne/pokal-cup" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-de me-2" aria-hidden="true"></span>						<span class="text-truncate">Pokal Cup</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/angleterre/league-cup-efl" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-gb-eng me-2" aria-hidden="true"></span>						<span class="text-truncate">League Cup - EFL</span>
+					</a>
+							</li>
+			</ul>
+
+							<div class="collapse" id="competitions-cotes-titre-suite">
+						<ul class="list-unstyled row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-1 small mb-0 mt-1">
+											<li class="col">
+									<a href="/cotes/foot/italie/coupe-ditalie" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-it me-2" aria-hidden="true"></span>						<span class="text-truncate">Coupe d'Italie</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/monde/international-matchs-amicaux" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+												<span class="text-truncate">International - Matchs amicaux</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/ecosse/premiership" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-gb-sct me-2" aria-hidden="true"></span>						<span class="text-truncate">Premiership (Ecosse)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/grece/super-league-2" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-gr me-2" aria-hidden="true"></span>						<span class="text-truncate">Super League (Grèce)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/autriche/bundesliga" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-at me-2" aria-hidden="true"></span>						<span class="text-truncate">Bundesliga</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/espagne/liga-adelante" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-es me-2" aria-hidden="true"></span>						<span class="text-truncate">Liga Adelante</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/australie/a-league" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-au me-2" aria-hidden="true"></span>						<span class="text-truncate">A-League</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/allemagne/bundesliga-2" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-de me-2" aria-hidden="true"></span>						<span class="text-truncate">Bundesliga 2.</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/norvege/eliteserien" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-no me-2" aria-hidden="true"></span>						<span class="text-truncate">Eliteserien</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/japon/j-league" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-jp me-2" aria-hidden="true"></span>						<span class="text-truncate">J. League</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/europe/ligue-des-champions-f" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-eu me-2" aria-hidden="true"></span>						<span class="text-truncate">Ligue des Champions (F)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/argentine/primera-division-2" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-ar me-2" aria-hidden="true"></span>						<span class="text-truncate">Primera Division (Argentine)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/bresil/serie-a-1" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-br me-2" aria-hidden="true"></span>						<span class="text-truncate">Serie A (Brésil)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/italie/serie-b" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-it me-2" aria-hidden="true"></span>						<span class="text-truncate">Serie B</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/suede/allsvenskan" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-se me-2" aria-hidden="true"></span>						<span class="text-truncate">Allsvenskan</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/belgique/jupiler-pro-ligue" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-be me-2" aria-hidden="true"></span>						<span class="text-truncate">Jupiler Pro Ligue</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/mexique/primera-division-5" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-mx me-2" aria-hidden="true"></span>						<span class="text-truncate">Liga MX</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/etats-unis/major-league-soccer" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-us me-2" aria-hidden="true"></span>						<span class="text-truncate">Major League Soccer</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/pologne/orange-ekstraklasa" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-pl me-2" aria-hidden="true"></span>						<span class="text-truncate">Orange Ekstraklasa</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/turquie/super-ligi" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-tr me-2" aria-hidden="true"></span>						<span class="text-truncate">Süper Lig</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/republique-tcheque/het-liga" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-cz me-2" aria-hidden="true"></span>						<span class="text-truncate">Chance Liga</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/monde/concacaf-ligue-des-nations" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+												<span class="text-truncate">CONCACAF Ligue des Nations</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/chili/primera-division-4" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-cl me-2" aria-hidden="true"></span>						<span class="text-truncate">Primera Division (Chili)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/roumanie/liga-1" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-ro me-2" aria-hidden="true"></span>						<span class="text-truncate">SuperLiga (Roumanie)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/chypre/1ere-division" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-cy me-2" aria-hidden="true"></span>						<span class="text-truncate">1ère division</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/pays-de-galles/league-of-wales" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-gb-wls me-2" aria-hidden="true"></span>						<span class="text-truncate">League Of Wales</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/bulgarie/a-pfg" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-bg me-2" aria-hidden="true"></span>						<span class="text-truncate">Parva Liga</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/serbie/super-league-3" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-rs me-2" aria-hidden="true"></span>						<span class="text-truncate">Super League (Serbie)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/emirats-arabes-unis/uae-pro-league" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-ae me-2" aria-hidden="true"></span>						<span class="text-truncate">UAE Pro League</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/coree-du-sud/k-league-1" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-kor me-2" aria-hidden="true"></span>						<span class="text-truncate">K-League 1</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/hongrie/nb-i" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-hu me-2" aria-hidden="true"></span>						<span class="text-truncate">NB I</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/ukraine/premier-liga" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-ua me-2" aria-hidden="true"></span>						<span class="text-truncate">Premier Liga (Ukraine)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/irlande-du-nord/premiership-2" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-gb-nir me-2" aria-hidden="true"></span>						<span class="text-truncate">Premiership (Irlande du nord)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/paraguay/primera-division-1" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-py me-2" aria-hidden="true"></span>						<span class="text-truncate">Primera Division (Paraguay)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/equateur/serie-a-3" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-ec me-2" aria-hidden="true"></span>						<span class="text-truncate">Série A (Equateur)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/suisse/super-league" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-ch me-2" aria-hidden="true"></span>						<span class="text-truncate">Super League (Suisse)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/slovaquie/superliga-1" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-sk me-2" aria-hidden="true"></span>						<span class="text-truncate">Superliga (Slovaquie)</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/danemark/superligaen" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-dk me-2" aria-hidden="true"></span>						<span class="text-truncate">Superligaen</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/croatie/1-hnl" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-hr me-2" aria-hidden="true"></span>						<span class="text-truncate">1.HNL</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/slovenie/prvaliga" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-si me-2" aria-hidden="true"></span>						<span class="text-truncate">PrvaLiga</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/arabie-saoudite/saudi-pro-league" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-ksa me-2" aria-hidden="true"></span>						<span class="text-truncate">Saudi Pro League</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/canada/canadian-soccer-league" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-ca me-2" aria-hidden="true"></span>						<span class="text-truncate">Canadian Soccer League</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/europe/championnat-deurope-u21-qualification" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-eu me-2" aria-hidden="true"></span>						<span class="text-truncate">Championnat d'Europe U21 - Qualification</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/amerique-du-sud/copa-libertadores" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+												<span class="text-truncate">Copa Libertadores</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/amerique-du-sud/copa-sudamericana" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+												<span class="text-truncate">Copa Sudamericana</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/bresil/coupe-du-bresil" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-br me-2" aria-hidden="true"></span>						<span class="text-truncate">Coupe du Brésil</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/ecosse/league-cup" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-gb-sct me-2" aria-hidden="true"></span>						<span class="text-truncate">League Cup</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/portugal/liga-2-cabovisao" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-pt me-2" aria-hidden="true"></span>						<span class="text-truncate">Liga 2 Cabovisao</span>
+					</a>
+							</li>
+											<li class="col">
+									<a href="/cotes/foot/georgie/erovnuli-liga" class="d-flex align-items-center py-1 text-dark text-decoration-none">
+						<span class="flag-icon flag-icon-ge me-2" aria-hidden="true"></span>						<span class="text-truncate">Umaglesi Liga</span>
+					</a>
+							</li>
+			</ul>
+
+				</div>
+				<button type="button" class="btn btn-link btn-sm px-0 mt-2 fw-bold text-decoration-none" data-bs-toggle="collapse" data-bs-target="#competitions-cotes-titre-suite" aria-expanded="false" aria-controls="competitions-cotes-titre-suite">
+					Voir les 49 autres compétitions
+				</button>
+					</div>
+	</section>
+					</div>
+				
+			</div>
+
+						<aside class="col-lg-4">
+
+				
+
+        <div class="custom-card mb-4">
+                <div class="card-header-custom border-bottom bg-white">
+            <span class="d-flex align-items-center">
+                <i class="bi bi-graph-up-arrow text-primary me-2"></i>
+                <span class="fw-bold">Top Cotes · TRJ moyen</span>
+            </span>
+        </div>
+
+        <div class="p-3">
+            
+                                    <div class="alert alert-light border small text-muted mb-3">
+                <i class="bi bi-info-circle-fill text-primary me-1"></i>
+                Actuellement,
+                <a href="/bookmaker-betclic" target="_blank" rel="nofollow" class="fw-bold text-dark text-decoration-none border-bottom border-dark">
+                    Betclic
+                </a>
+                offre le meilleur TRJ moyen
+                <strong class="text-primary">88,1 %</strong>
+                (moyenne sur tous les marchés comparés).
+            </div>
+
+                        <div class="d-flex flex-column gap-2">
+                                    <a href="/bookmaker-betclic" target="_blank" rel="nofollow" class="d-flex align-items-center justify-content-between p-2 border rounded text-decoration-none bg-white hover-shadow transition-all group">
+                        
+                                                <div class="d-flex align-items-center gap-3">
+                                                        <span class="fw-bold small text-warning" style="width: 15px; text-align: center;">
+                                1
+                            </span>
+
+                                                        <div class="circleBookIcon circleBookIconMini circleBookIconMini-b24"></div>
+                            
+                                                        <span class="fw-bold text-dark small d-none d-xl-block">
+                                Betclic
+                            </span>
+                        </div>
+
+                                                <div class="d-flex align-items-center gap-3 text-end">
+                            
+                                                        <div class="d-flex flex-column align-items-end">
+                                <span class="badge bg-primary" title="TRJ moyen">
+                                    88,1 %
+                                </span>
+                            </div>
+
+                                                        <div class="d-flex flex-column align-items-end" style="min-width: 50px;">
+                                                                <small class="text-success fw-bold" style="font-size: 0.75rem;">
+                                    100€
+                                </small>
+                                <small class="text-muted" style="font-size: 0.6rem; line-height: 1;">Bonus</small>
+                                                            </div>
+                        </div>
+                    </a>
+                                    <a href="/bookmaker-olybet-fr" target="_blank" rel="nofollow" class="d-flex align-items-center justify-content-between p-2 border rounded text-decoration-none bg-white hover-shadow transition-all group">
+                        
+                                                <div class="d-flex align-items-center gap-3">
+                                                        <span class="fw-bold small text-muted" style="width: 15px; text-align: center;">
+                                2
+                            </span>
+
+                                                        <div class="circleBookIcon circleBookIconMini circleBookIconMini-b44"></div>
+                            
+                                                        <span class="fw-bold text-dark small d-none d-xl-block">
+                                OlyBet
+                            </span>
+                        </div>
+
+                                                <div class="d-flex align-items-center gap-3 text-end">
+                            
+                                                        <div class="d-flex flex-column align-items-end">
+                                <span class="badge bg-light text-dark border" title="TRJ moyen">
+                                    87,0 %
+                                </span>
+                            </div>
+
+                                                        <div class="d-flex flex-column align-items-end" style="min-width: 50px;">
+                                                                <small class="text-success fw-bold" style="font-size: 0.75rem;">
+                                    100€
+                                </small>
+                                <small class="text-muted" style="font-size: 0.6rem; line-height: 1;">Bonus</small>
+                                                            </div>
+                        </div>
+                    </a>
+                                    <a href="/bookmaker-winamax" target="_blank" rel="nofollow" class="d-flex align-items-center justify-content-between p-2 border rounded text-decoration-none bg-white hover-shadow transition-all group">
+                        
+                                                <div class="d-flex align-items-center gap-3">
+                                                        <span class="fw-bold small text-muted" style="width: 15px; text-align: center;">
+                                3
+                            </span>
+
+                                                        <div class="circleBookIcon circleBookIconMini circleBookIconMini-b33"></div>
+                            
+                                                        <span class="fw-bold text-dark small d-none d-xl-block">
+                                Winamax
+                            </span>
+                        </div>
+
+                                                <div class="d-flex align-items-center gap-3 text-end">
+                            
+                                                        <div class="d-flex flex-column align-items-end">
+                                <span class="badge bg-light text-dark border" title="TRJ moyen">
+                                    86,8 %
+                                </span>
+                            </div>
+
+                                                        <div class="d-flex flex-column align-items-end" style="min-width: 50px;">
+                                                                <small class="text-success fw-bold" style="font-size: 0.75rem;">
+                                    100€
+                                </small>
+                                <small class="text-muted" style="font-size: 0.6rem; line-height: 1;">Bonus</small>
+                                                            </div>
+                        </div>
+                    </a>
+                            </div>
+
+                        <p class="small text-muted text-end mt-2 mb-0">
+                <a href="/bookmakers/marges" class="text-muted">Détail par sport : marges des bookmakers</a>
+            </p>
+
+                        <div class="text-center mt-3">
+                <a href="/bookmaker" class="btn btn-sm btn-outline-primary w-100 fw-bold">
+                    Comparer tous les sites
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+								<div class="custom-card mb-4">
+					<div class="card-header-custom border-bottom bg-white">
+						<span>
+							<i class="bi bi-info-circle-fill text-warning me-2"></i>Qu'est-ce que le taux de retour (TRJ)&nbsp;?</span>
+					</div>
+					<div class="p-3">
+						<p class="small text-muted mb-2">
+							Le <strong>taux de retour joueur (TRJ)</strong> d'un match se calcule à partir des cotes :
+							TRJ = 100 ÷ (1/cote 1 + 1/cote N + 1/cote 2). C'est la part des mises que le bookmaker reverserait
+							en gains si les mises se répartissaient selon ses cotes ; le reste est sa marge.
+							Un TRJ plus élevé signifie des cotes plus hautes : à mise égale, un pari gagnant rapporte davantage.
+						</p>
+						<p class="small text-muted mb-0">
+							Le TRJ affiché sur chaque match est celui des <strong>meilleures cotes</strong> relevées chez les
+							bookmakers sélectionnés. Exemple : des cotes de 2,10 / 3,40 / 3,60 donnent
+							1/2,10 + 1/3,40 + 1/3,60 ≈ 1,048, soit un TRJ de 95,4 % et une marge d'environ 4,8 points.
+							Voir les <a href="/bookmakers/marges">marges moyennes des bookmakers</a>.
+						</p>
+					</div>
+				</div>
+
+																<div class="list-group list-group-flush">
+					
+                    
+    <article class="custom-card mb-4 shadow-sm h-100 border-0 overflow-hidden group-hover-action position-relative">
+        <a href="/match/pronostic-naples-torino-1614216" class="text-decoration-none text-dark stretched-link">
+            
+                        <div class="ratio ratio-16x9 bg-light">
+                <img src="https://images.coteur.com/upload/naples-torino-1614216.webp" class="object-fit-cover transition-transform" alt="Naples, l’heure du réveil ?" loading="lazy">
+            </div>
+
+                        <div class="p-3 bg-white">
+                                <h3 class="h6 fw-bold mb-2 text-dark lh-sm text-truncate-multiline">
+                    Naples, l’heure du réveil ?
+                </h3>
+
+                                <p class="card-text small text-muted mb-2">
+                    Pronostic Naples – Torino, Serie A samedi 21/11 : un Naples convalescent face à un Torino en glissad
+                    ...
+                </p>
+
+                                <div class="d-flex justify-content-end align-items-center mt-2">
+                    <span class="small fw-bold text-primary group-hover-underline">
+                        Lire le pronostic <i class="bi bi-arrow-right ms-1"></i>
+                    </span>
+                </div>
+            </div>
+        </a>
+    </article>
+
+
+                    
+    <article class="custom-card mb-4 shadow-sm h-100 border-0 overflow-hidden group-hover-action position-relative">
+        <a href="/match/pronostic-osasuna-malaga-1614498" class="text-decoration-none text-dark stretched-link">
+            
+                        <div class="ratio ratio-16x9 bg-light">
+                <img src="https://images.coteur.com/upload/osasuna-malaga-1614498.webp" class="object-fit-cover transition-transform" alt="Pronostic Osasuna – Málaga, 13e journée de Liga" loading="lazy">
+            </div>
+
+                        <div class="p-3 bg-white">
+                                <h3 class="h6 fw-bold mb-2 text-dark lh-sm text-truncate-multiline">
+                    Pronostic Osasuna – Málaga, 13e journée de Liga
+                </h3>
+
+                                <p class="card-text small text-muted mb-2">
+                    Pronostic Osasuna – Málaga, Liga, dimanche 22/11 : la lanterne rouge, toujours sans victoire, à El S
+                    ...
+                </p>
+
+                                <div class="d-flex justify-content-end align-items-center mt-2">
+                    <span class="small fw-bold text-primary group-hover-underline">
+                        Lire le pronostic <i class="bi bi-arrow-right ms-1"></i>
+                    </span>
+                </div>
+            </div>
+        </a>
+    </article>
+
+
+				</div>
+				<div class="list-group list-group-flush">
+					
+                    
+    <article class="custom-card mb-4 shadow-sm h-100 border-0 overflow-hidden group-hover-action position-relative">
+        <a href="/paris-sportifs/matchs-a-suivre-cette-semaine-du-3-au-8-novembre-2026-psg-masters-de-paris-france-fidji-et-lens-om" class="text-decoration-none text-dark stretched-link">
+            
+                        <div class="ratio ratio-16x9 bg-light">
+                <img src="https://images.coteur.com/upload/matchs-a-suivre-cette-semaine-du-3-au-8-novembre-2026-psg-masters-de-paris-france-fidji-et-lens-om.webp" class="object-fit-cover transition-transform" alt="Matchs à suivre cette semaine, du 3 au 8 novembre 2026 : PSG, Masters de Paris, France – Fidji et Lens – OM" loading="lazy">
+            </div>
+
+                        <div class="p-3 bg-white">
+                                <h3 class="h6 fw-bold mb-2 text-dark lh-sm text-truncate-multiline">
+                    Matchs à suivre cette semaine, du 3 au 8 novembre 2026 : PSG, Masters de Paris, France – Fidji et Lens – OM
+                </h3>
+
+                                <p class="card-text small text-muted mb-2">
+                    Les matchs à suivre du 3 au 8 novembre 2026 : PSG et Lille en Ligue des champions, Masters de Paris,
+                    ...
+                </p>
+
+                                <div class="d-flex justify-content-end align-items-center mt-2">
+                    <span class="small fw-bold text-primary group-hover-underline">
+                        Lire l'article <i class="bi bi-arrow-right ms-1"></i>
+                    </span>
+                </div>
+            </div>
+        </a>
+    </article>
+
+
+                    
+    <article class="custom-card mb-4 shadow-sm h-100 border-0 overflow-hidden group-hover-action position-relative">
+        <a href="/guide/suivre-ses-resultats-aux-paris-sportifs" class="text-decoration-none text-dark stretched-link">
+            
+                        <div class="ratio ratio-16x9 bg-light">
+                <img src="https://images.coteur.com/upload/suivre-ses-resultats-aux-paris-sportifs.webp" class="object-fit-cover transition-transform" alt="Suivre ses résultats aux paris sportifs" loading="lazy">
+            </div>
+
+                        <div class="p-3 bg-white">
+                                <h3 class="h6 fw-bold mb-2 text-dark lh-sm text-truncate-multiline">
+                    Suivre ses résultats aux paris sportifs
+                </h3>
+
+                                <p class="card-text small text-muted mb-2">
+                    Historique, taux de réussite, ROI et yield : mesurer ses pronostics sans se fier aux petits échantil
+                    ...
+                </p>
+
+                                <div class="d-flex justify-content-end align-items-center mt-2">
+                    <span class="small fw-bold text-primary group-hover-underline">
+                        Lire l'article <i class="bi bi-arrow-right ms-1"></i>
+                    </span>
+                </div>
+            </div>
+        </a>
+    </article>
+
+
+				</div>
+				<div class="competition-box shadow text-center position-relative overflow-hidden mb-4">
+					<div style="position: relative; z-index: 2">
+						<i class="bi bi-trophy-fill text-warning display-4 mb-2"></i>
+						<h3 class="h5 fw-bold mb-1">Concours de pronostics gratuit</h3>
+						<p class="small opacity-75 mb-3">En points virtuels, sans dépôt ni compte chez un bookmaker. Des lots à gagner chaque mois (<a href="/concours/reglement" class="text-reset text-decoration-underline">règlement</a>).</p>
+						<a href="/quickbet" class="btn btn-light btn-sm text-primary fw-bold w-100">Je participe gratuitement</a>
+					</div>
+				</div>
+				
+
+			</aside>
+		</div>
+	</main>
+</div>
+		<footer class="mt-5 py-4 bg-dark text-secondary text-center small">
+		<div class="container">
+			<p class="mb-2">© 2026 Coteur.com - <a href="/mention-legale">Mentions légales</a> - <a href="/privacy-statement">Vie privée</a> - <button type="button" class="btn btn-link p-0 border-0 lien-consentement" data-consentement-ouvrir="">Gérer les cookies</button> - <a href="/contact">Contact</a> - <a href="/jeu-responsable">Jeu responsable</a></p>
+			<p>
+				<img class="footer18" loading="lazy" src="/build/images/icones/moins18.png" alt="Interdit aux moins de 18 ans"> Les jeux d’argent et de hasard peuvent être dangereux&nbsp;: pertes d’argent, conflits familiaux, addiction… Retrouvez nos conseils sur joueurs-info-service.fr (09-74-75-13-13, appel non surtaxé). Les paris sportifs sont interdits aux mineurs.
+			</p>
+		</div>
+	</footer>
+			
+
+<div id="bet-slip" data-controller="betslip" data-betslip-target="container">
+
+	<div class="bet-slip-header" data-action="click->betslip#toggleVisibility">
+		<div>
+			<span class="badge bg-warning text-dark me-2" data-betslip-target="count">0</span>
+			Ma Sélection
+		</div>
+		<i class="bi bi-chevron-up" data-betslip-target="icon"></i>
+	</div>
+
+	<div class="slip-tabs-top">
+		<div class="slip-tab active" data-betslip-target="tabSimple" data-mode="simple" data-action="click->betslip#setMode">Simple</div>
+		<div class="slip-tab" data-betslip-target="tabCombined" data-mode="combined" data-action="click->betslip#setMode">Combiné</div>
+		<div class="slip-tab me-2 text-danger" style="text-align: right;" data-action="click->betslip#deleteAll"><i class="bi bi-trash"></i></div>
+	</div>
+
+	<div class="bet-slip-content">
+		
+		<div class="text-center text-muted small py-4" data-betslip-target="emptyMsg">
+			Sélectionnez une cote pour commencer
+		</div>
+
+				<div data-betslip-target="items"></div>
+	</div>
+
+	<div class="bet-slip-footer">
+
+		<div data-betslip-target="footerSimple">
+			<div class="input-group input-group-sm mb-3">
+				<span class="input-group-text bg-light">Mise par pari €v</span>
+				<input type="number" class="form-control" placeholder="Ex: 10" data-betslip-target="globalSimpleStake" data-action="input->betslip#applyGlobalStake">
+			</div>
+			<div class="d-flex justify-content-between mb-2 small fw-bold">
+				<span>Mise Totale :</span>
+				<span data-betslip-target="simpleTotalStake">0.00€v</span>
+			</div>
+			<div class="d-flex justify-content-between mb-3">
+				<span class="fw-bold text-primary">Gains Potentiels :</span>
+				<span class="fw-bold text-success" data-betslip-target="simplePotentialWin">0.00€v</span>
+			</div>
+		</div>
+
+		<div data-betslip-target="footerCombined" style="display: none;">
+
+			<div class="slip-tabs-bottom">
+				<div class="bottom-tab active" data-betslip-target="tabSubNormal" data-submode="normal" data-action="click->betslip#setSubMode">Combiné</div>
+				<div class="bottom-tab" data-betslip-target="tabSubSystem" data-submode="system" data-action="click->betslip#setSubMode">Système</div>
+			</div>
+
+			<div data-betslip-target="infoComboNormal">
+				<div data-betslip-target="combiWarning" class="mb-3"></div>
+				<div data-betslip-target="combiInput">
+					<div class="best-bookie-alert" data-betslip-target="bestBookieContainer" style="display:none;cursor:pointer" data-action="click->betslip#bestCombis">
+						<div class="d-flex align-items-center gap-2">
+							<i class="bi bi-lightning-fill text-warning"></i>
+							<div class="small lh-1">
+								<div class="text-muted" style="font-size: 0.7rem;">Meilleure cote combinée</div>
+								<div class="fw-bold text-dark" data-betslip-target="bestBookieName"></div>
+							</div>
+						</div>
+						<span class="fw-bold text-success fs-5" data-betslip-target="bestBookieOdd">--</span>
+					</div>
+
+					<div class="d-flex justify-content-between mb-2 small">
+						<span>Cote Totale :</span>
+						<span class="fw-bold bg-warning px-2 rounded" data-betslip-target="comboTotalOdd">1.00</span>
+					</div>
+					<div class="input-group input-group-sm mb-3">
+						<span class="input-group-text">Mise Totale €v</span>
+						<input type="number" class="form-control" value="10" data-betslip-target="comboStake" data-action="input->betslip#calculate">
+					</div>
+					<div class="d-flex justify-content-between mb-3">
+						<span class="fw-bold text-primary">Gains Potentiels :</span>
+						<span class="fw-bold text-success" data-betslip-target="comboPotentialWin">0.00€v</span>
+					</div>
+				</div>
+			</div>
+			<div data-betslip-target="infoComboSystem" style="display: none;">
+				<div data-betslip-target="systemList" class="mb-3"></div>
+
+				<div data-betslip-target="systemInputs" style="display:none;">
+					<div class="input-group input-group-sm mb-2">
+						<span class="input-group-text">Mise par combi €v</span>
+						<input type="number" class="form-control" value="2" data-betslip-target="systemUnitStake" data-action="input->betslip#calculate">
+					</div>
+
+					<div class="d-flex justify-content-between align-items-center mb-3 pt-2 border-top">
+						<span class="small fw-bold">Mise Totale :</span>
+						<div class="text-end">
+							<div class="fw-bold text-dark" data-betslip-target="systemTotalStake">0.00€v</div>
+							<small class="text-muted" style="font-size:0.7rem" data-betslip-target="systemCalcDetail"></small>
+						</div>
+					</div>
+
+
+				</div>
+			</div>
+		</div>
+
+		<button class="btn btn-coteur w-100 py-2" data-action="click->betslip#openValidationModal">
+			Valider mon ticket
+		</button>
+	</div>
+</div>
+
+<div class="modal fade" id="systemModal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content">
+			<div class="modal-header bg-primary text-white">
+				<div>
+					<h5 class="modal-title h6 fw-bold mb-0">Détail du Système</h5>
+				</div>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+
+			<div class="modal-body">
+				<p class="text-center text-muted">Détail des combinaisons et gains...</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="validationModal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-light">
+				<h5 class="modal-title h6 fw-bold">Confirmer mes paris</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+
+				<div class="text-center mb-4">
+					<h6 class="text-muted small text-uppercase ls-1">Récapitulatif</h6>
+					<div class="d-flex justify-content-center gap-4 mt-2">
+						<div>
+							<div class="fs-4 fw-bold text-dark" id="summaryCount">0</div>
+							<small class="text-muted">Paris</small>
+						</div>
+						<div class="vr"></div>
+						<div>
+							<div class="fs-4 fw-bold text-primary" id="summaryStake">0€v</div>
+							<small class="text-muted">Mise Totale</small>
+						</div>
+					</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="concoursSelect" class="form-label fw-bold small">Choisir un concours :</label>
+					<select class="form-select" id="concoursSelect">
+						<option value="" disabled="" selected="">Sélectionnez un concours...</option>
+					</select>
+				</div>
+
+				<div class="alert alert-warning small d-flex align-items-center">
+					<i class="bi bi-exclamation-triangle me-2"></i>
+					<span>Une fois validé, le pari ne pourra plus être annulé.</span>
+				</div>
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+				<button type="button" class="btn btn-coteur fw-bold px-4" id="confirmValidation">
+					Confirmer
+				</button>
+			</div>
+		</div>
+	</div>
+
+
+</div>
+<div class="modal fade" id="bestCombiModal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content">
+			<div class="modal-header bg-primary text-white">
+				<div>
+					<h5 class="modal-title h6 fw-bold mb-0">Meilleur Combiné</h5>
+				</div>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+
+			<div class="p-3 bg-white border-bottom text-center">
+				<div class="alert alert-warning border-0 rounded-0 mb-0 text-center small fw-bold">
+					<i class="bi bi-lightning-fill me-1"></i>
+					Comparez avant de parier :
+					<span class="text-danger diff">--%</span>
+					d'écart de cote entre les opérateurs sur ce combiné. La meilleure cote, c'est plus de gain potentiel.
+				</div>
+			</div>
+			<div class="modal-body">
+				<p class="text-muted">Détail des combinaisons...</p>
+			</div>
+		</div>
+	</div>
+</div>
+	
+
+	
+		<script src="/build/runtime.29c6de53.js" defer=""></script><script src="/build/383.15e090aa.js" defer=""></script><script src="/build/app.1f621adf.js" defer=""></script>
+
+	
+
+						<div data-controller="pano" id="pano">
+<div id="pano-mobile" class="d-none footerpano">
+
+</div></div>
+	
+
+
+<script async="" src="https://cse.google.com/cse.js?cx=8290d869dd5a94cf5"></script>
+			<script>
+let version = 'fr';
+let username = '';
+let defaultbook = true;let books = [
+20,
+21,
+24,
+30,
+32,
+33,
+36,
+42,
+43,
+44,
+46
+];let disablebooks = [];
+	</script>
+	<div class="modal fade" id="oddsComparisonModal" tabindex="-1" aria-hidden="true" data-controller="odds-comparison" data-action="odd:compare@window->odds-comparison#open betslip:compare@window->odds-comparison#open vainqueur:compare@window->odds-comparison#open">
+
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header bg-primary text-white">
+        <div>
+            <h5 class="modal-title h6 fw-bold mb-0" data-odds-comparison-target="matchTitle">Match</h5>
+            <small class="opacity-75" data-odds-comparison-target="selectionTitle">Sélection</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="p-3 bg-white border-bottom text-center">
+          <button type="button" class="btn btn-coteur w-100 py-2 fw-bold shadow-sm" data-odds-comparison-target="addButton" data-action="click->odds-comparison#addBestToTicket">
+              <i class="bi bi-plus-circle me-2"></i>
+              Ajouter au ticket (Meilleure cote : <span data-odds-comparison-target="bestOddDisplay">--</span>)
+          </button>
+                    <p class="text-muted small fw-bold mb-0 d-none" data-odds-comparison-target="closedMessage" role="status">
+              <i class="bi bi-lock-fill me-1" aria-hidden="true"></i>Pronostics fermés : ce pari ne peut plus être ajouté au ticket.
+          </p>
+      </div>
+
+      <div class="modal-body p-0">
+
+        <div class="alert alert-warning border-0 rounded-0 mb-0 text-center small fw-bold">
+            <i class="bi bi-lightning-fill me-1"></i>
+            Comparez avant de parier : <span class="text-danger" data-odds-comparison-target="diffPercent">--%</span> d'écart de cote entre les opérateurs sur ce pari. La meilleure cote, c'est plus de gain potentiel.
+        </div>
+
+        <div class="list-group list-group-flush" data-odds-comparison-target="bookmakerList">
+            </div>
+
+      </div>
+
+      <div class="modal-footer bg-light justify-content-center">
+        <small class="text-muted">Les cotes sont susceptibles de changer. Vérifiez sur le site du bookmaker.</small>
+      </div>
+
+    </div>
+  </div>
+</div>
+			<div class="modal fade modal-alternative" id="bookmaker-alternative" tabindex="-1" aria-labelledby="bookmaker-alternative-titre" aria-describedby="bookmaker-alternative-intro" aria-hidden="true" data-controller="bookmaker-alternative" data-bookmaker-alternative-partenaires-value="[{&quot;id&quot;:20,&quot;nom&quot;:&quot;Unibet&quot;,&quot;slug&quot;:&quot;unibet-1&quot;,&quot;logo&quot;:&quot;https:\/\/images.coteur.com\/coteur\/article\/logo\/unibet-220x100.jpg&quot;,&quot;offre&quot;:&quot;15 \u20ac de BonusBets offerts sans d\u00e9p\u00f4t avec le code FLASH15 + Jusqu'\u00e0 100 \u20ac recr\u00e9dit\u00e9s en BonusBet si votre 1er pari est perdant.&quot;,&quot;lien&quot;:&quot;\/bookmaker\/20&quot;,&quot;ordre&quot;:1},{&quot;id&quot;:21,&quot;nom&quot;:&quot;PMU&quot;,&quot;slug&quot;:&quot;pmu&quot;,&quot;logo&quot;:&quot;https:\/\/images.coteur.com\/coteur\/book\/pmu\/pmu-play-logo.webp&quot;,&quot;offre&quot;:&quot;L'offre de bienvenue PMU Play Jusqu'\u00e0 100 \u20ac rembours\u00e9s en CASH si votre 1er pari sportif est perdant ! L'argent est vers\u00e9 en cash et non en Freebets, vous pouvez donc le retirer imm\u00e9diatement.&quot;,&quot;lien&quot;:&quot;\/bookmaker\/21&quot;,&quot;ordre&quot;:2},{&quot;id&quot;:33,&quot;nom&quot;:&quot;Winamax&quot;,&quot;slug&quot;:&quot;winamax&quot;,&quot;logo&quot;:&quot;https:\/\/images.coteur.com\/coteur\/article\/logo\/winamax-220x100.jpg&quot;,&quot;offre&quot;:&quot;Ton premier pari rembours\u00e9 en cash s\u2019il est perdant jusqu'\u00e0 100 \u20ac&quot;,&quot;lien&quot;:&quot;\/bookmaker\/33&quot;,&quot;ordre&quot;:3},{&quot;id&quot;:24,&quot;nom&quot;:&quot;Betclic&quot;,&quot;slug&quot;:&quot;betclic&quot;,&quot;logo&quot;:&quot;https:\/\/images.coteur.com\/coteur\/article\/logo\/betclic-220x100.jpg&quot;,&quot;offre&quot;:&quot;Profitez d\u2019un 1er pari rembours\u00e9 jusqu\u2019\u00e0 100\u20ac !&quot;,&quot;lien&quot;:&quot;\/bookmaker\/24&quot;,&quot;ordre&quot;:4},{&quot;id&quot;:46,&quot;nom&quot;:&quot;DAZN Bet&quot;,&quot;slug&quot;:&quot;daznbet-fr&quot;,&quot;logo&quot;:&quot;https:\/\/images.coteur.com\/coteur\/book\/dazn-big.webp&quot;,&quot;offre&quot;:&quot;L'offre de lancement DAZNBET Jusqu'\u00e0 100 \u20ac de Freebets vers\u00e9s si votre premier pari est perdant ! Aucune cote minimale impos\u00e9e + acc\u00e8s facilit\u00e9 aux streams des matchs pour les inscrits.&quot;,&quot;lien&quot;:&quot;\/bookmaker\/46&quot;,&quot;ordre&quot;:5},{&quot;id&quot;:43,&quot;nom&quot;:&quot;Betsson&quot;,&quot;slug&quot;:&quot;betsson-fr&quot;,&quot;logo&quot;:&quot;https:\/\/images.coteur.com\/coteur\/book\/betsson\/betsson_FR_logo.png&quot;,&quot;offre&quot;:&quot;10 euros \u00e0 la validation du compte + premier d\u00e9p\u00f4t doubl\u00e9 jusqu'\u00e0 100 euros.&quot;,&quot;lien&quot;:&quot;\/bookmaker\/43&quot;,&quot;ordre&quot;:6},{&quot;id&quot;:30,&quot;nom&quot;:&quot;NetBet&quot;,&quot;slug&quot;:&quot;netbet&quot;,&quot;logo&quot;:&quot;https:\/\/images.coteur.com\/coteur\/article\/logo\/netBet-220x100.jpg&quot;,&quot;offre&quot;:&quot;Profitez du bonus jusqu'\u00e0 100\u20ac !&quot;,&quot;lien&quot;:&quot;\/bookmaker\/30&quot;,&quot;ordre&quot;:7},{&quot;id&quot;:36,&quot;nom&quot;:&quot;PokerStars Sports&quot;,&quot;slug&quot;:&quot;pokerstars-sport&quot;,&quot;logo&quot;:&quot;https:\/\/images.coteur.com\/coteur\/article\/logo\/pokerstars-220x100.jpg&quot;,&quot;offre&quot;:&quot;Profitez du bonus jusqu'\u00e0 100\u20ac !&quot;,&quot;lien&quot;:&quot;\/bookmaker\/36&quot;,&quot;ordre&quot;:8},{&quot;id&quot;:42,&quot;nom&quot;:&quot;Feelingbet&quot;,&quot;slug&quot;:&quot;feelingbet-fr&quot;,&quot;logo&quot;:&quot;https:\/\/images.coteur.com\/coteur\/article\/logo\/feelingbet-medium.webp&quot;,&quot;offre&quot;:&quot;50\u20ac rembours\u00e9s si votre premier pari est perdant + 250\u20ac de bonus fid\u00e9lit\u00e9.&quot;,&quot;lien&quot;:&quot;\/bookmaker\/42&quot;,&quot;ordre&quot;:9},{&quot;id&quot;:44,&quot;nom&quot;:&quot;OlyBet&quot;,&quot;slug&quot;:&quot;olybet-fr&quot;,&quot;logo&quot;:&quot;https:\/\/images.coteur.com\/coteur\/book\/olybet\/olybet_logo.jpeg&quot;,&quot;offre&quot;:&quot;Premier pari rembours\u00e9 en freebets s'il est perdant jusqu'\u00e0 50\u20ac puis 50\u20ac de cashback \u00e0 d\u00e9bloquer&quot;,&quot;lien&quot;:&quot;\/bookmaker\/44&quot;,&quot;ordre&quot;:10},{&quot;id&quot;:32,&quot;nom&quot;:&quot;Genybet&quot;,&quot;slug&quot;:&quot;genybet&quot;,&quot;logo&quot;:&quot;https:\/\/images.coteur.com\/coteur\/article\/logo\/genybet-220x100.jpg&quot;,&quot;offre&quot;:&quot;Jusqu'\u00e0 50\u20ac de bonus&quot;,&quot;lien&quot;:&quot;\/bookmaker\/32&quot;,&quot;ordre&quot;:11}]">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header py-2">
+				<h2 class="modal-title h5 fw-bold mb-0" id="bookmaker-alternative-titre" data-bookmaker-alternative-target="titre">Avant d’aller chez ce bookmaker</h2>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+			</div>
+			<div class="modal-body py-2">
+				<p class="small text-muted mb-2" id="bookmaker-alternative-intro" data-bookmaker-alternative-target="intro"></p>
+				<p class="small mb-2" data-bookmaker-alternative-target="coteOrigine" hidden=""></p>
+				<ul class="list-unstyled mb-2 alternative-cartes" data-bookmaker-alternative-target="cartes"></ul>
+				<a href="#" class="btn btn-outline-dark w-100 fw-bold alternative-continuer" data-bookmaker-alternative-target="continuer" rel="sponsored nofollow">Continuer chez ce bookmaker</a>
+				<p class="small text-muted text-center mt-2 mb-1">Publicité — liens partenaires</p>
+				<a href="https://www.joueurs-info-service.fr/" target="_blank" rel="noopener" class="mise-en-garde d-block small text-center">Les jeux d’argent et de hasard peuvent être dangereux&nbsp;: pertes d’argent, conflits familiaux, addiction… Retrouvez nos conseils sur joueurs-info-service.fr (09-74-75-13-13, appel non surtaxé).</a>
+			</div>
+		</div>
+	</div>
+</div>
+	
+<div class="modal-backdrop show"></div><table cellspacing="0" cellpadding="0" role="presentation" class="gstl_50 gssb_c" style="width: 2px; display: none; top: 0px; left: -1px; position: absolute;"><tbody><tr><td class="gssb_f"></td><td class="gssb_e" style="width: 100%;"></td></tr></tbody></table><table cellspacing="0" cellpadding="0" role="presentation" class="gstl_51 gssb_c" style="width: 2px; display: none; top: 0px; left: -1px; position: absolute;"><tbody><tr><td class="gssb_f"></td><td class="gssb_e" style="width: 100%;"></td></tr></tbody></table></body></html>
