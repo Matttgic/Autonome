@@ -4,3 +4,5 @@
 {"event": "Vegas Golden Knights - Vancouver Canucks", "first_seen": "2026-11-16T00:54:33.468888+00:00", "id": "boost|5c5d0d9c8e96", "odds": 2.6, "text": "Jack Eichel marque au moins un but"}
 {"event": "Allemagne - Pays-Bas", "first_seen": "2026-11-16T03:27:52.536412+00:00", "id": "boost|e8d0ec1cb573", "odds": 2.7, "text": "Allemagne gagne à la mi-temps et à la fin du match"}
 {"event": "États-Unis (F) - Canada (F)", "first_seen": "2026-11-16T06:31:25.118841+00:00", "id": "boost|3118d711fcb7", "odds": 2.75, "text": "États-Unis (F) gagne par au moins 3 buts d'écart"}
+{"event": "Ligue des Nations", "first_seen": "2026-11-16T08:04:31.916453+00:00", "id": "boost|78608a5ed78d", "odds": 3.6, "text": "Chaque équipe marque lors des matchs suivants : Suisse - Écosse et Grèce - Serbie"}
+{"event": "Ligue des Nations", "first_seen": "2026-11-16T08:04:31.916453+00:00", "id": "boost|eed36fbccb32", "odds": 4.5, "text": "Plus de 2,5 buts lors de chacun des matchs suivants : Îles Féroé - Moldavie et Kazakhstan - Slovaquie"}
