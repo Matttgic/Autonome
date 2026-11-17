@@ -20,3 +20,6 @@
 {"event": "Danemark - Norvège", "first_seen": "2026-11-17T09:02:00.214670+00:00", "id": "boost|2dc817c229f5", "odds": 3.25, "text": "Erling Haaland marque au moins un but en 1ère mi-temps"}
 {"event": "FC Barcelone - Paris Basketball", "first_seen": "2026-11-17T09:02:00.214670+00:00", "id": "boost|c3432ee24b20", "odds": 4.0, "text": "Nadir Hifi termine meilleur marqueur du match et son équipe gagne"}
 {"event": "Ligue des Champions", "first_seen": "2026-11-17T10:02:39.379982+00:00", "id": "boost|b59515050bc8", "odds": 4.0, "text": "HC Skoda Plzen et Tappara Tampere gagnent chacun leur match (respectivement contre HC Davos et Adler Mannheim) (hors prol. et TAB)"}
+{"event": "San Antonio Spurs - Detroit Pistons", "first_seen": "2026-11-17T14:04:29.927537+00:00", "id": "boost|963e273d4fb4", "odds": 3.0, "text": "Victor Wembanyama réalise une performance points + rebonds + passes décisives d'au moins 50"}
+{"event": "NBA", "first_seen": "2026-11-17T14:04:29.927537+00:00", "id": "boost|bf862514f4e7", "odds": 2.8, "text": "Plus de 222,5 points lors de chacun des matchs suivants : San Antonio Spurs - Detroit Pistons et Minnesota Timberwolves - Portland Trail Blazers"}
+{"event": "Alexander Zverev - Ben Shelton", "first_seen": "2026-11-17T14:04:29.927537+00:00", "id": "boost|9db5976703e8", "odds": 2.5, "text": "Alexander Zverev gagne par au moins 3 jeux d'écart"}
