@@ -27,3 +27,5 @@
 {"event": "Los Angeles Lakers - Charlotte Hornets", "first_seen": "2026-11-17T18:10:54.257893+00:00", "id": "boost|4d8897bbb135", "odds": 3.35, "text": "Luka Doncic marque au moins 40 points, prend au moins 5 rebonds et distribue au moins 5 passes décisives"}
 {"event": "Minnesota Wild - Nashville Predators", "first_seen": "2026-11-17T19:13:22.271283+00:00", "id": "boost|5e920526185e", "odds": 3.0, "text": "Minnesota Wild gagne et plus de 5,5 buts dans le match (hors prol. et TAB)"}
 {"event": "Winnipeg Jets - Ottawa Senators", "first_seen": "2026-11-17T19:13:22.271283+00:00", "id": "boost|4d6d1fa8729b", "odds": 3.0, "text": "Winnipeg Jets marque au moins 4 buts (hors prol. et TAB)"}
+{"event": "Carlos Alcaraz - Daniil Medvedev", "first_seen": "2026-11-18T06:31:29.563184+00:00", "id": "boost|55b4a4c67954", "odds": 2.6, "text": "Carlos Alcaraz gagne et moins de 20,5 jeux dans le match"}
+{"event": "New Zealand Breakers - SE Melbourne Phoenix", "first_seen": "2026-11-18T06:31:29.563184+00:00", "id": "boost|ecfa3d5de868", "odds": 2.15, "text": "Dejan Vasiljevic et Nathan Sobey marquent au moins 15 points chacun"}
