@@ -39,3 +39,6 @@
 {"event": "NBA", "first_seen": "2026-11-18T14:42:55.930915+00:00", "id": "boost|02033c15ac72", "odds": 3.25, "text": "Plus de 222,5 points lors de chacun des matchs suivants : Indiana Pacers - Houston Rockets et Orlando Magic - Philadelphia 76ers"}
 {"event": "Chelsea (F) - Paris SG (F)", "first_seen": "2026-11-18T16:44:12.608589+00:00", "id": "boost|60499173c2bf", "odds": 4.0, "text": "Paris SG (F) gagne ou fait match nul et plus de 1,5 buts dans le match"}
 {"event": "Coritiba - Santos", "first_seen": "2026-11-18T16:44:12.608589+00:00", "id": "boost|df0d84a0edc0", "odds": 4.0, "text": "Gabriel Barbosa marque au moins un but en 1ère mi-temps"}
+{"event": "New Jersey Devils - Montreal Canadiens", "first_seen": "2026-11-18T17:45:15.868051+00:00", "id": "boost|0fed1c7c118d", "odds": 2.5, "text": "Jack Hughes + Cole Caufield + Nick Suzuki marquent 2 buts ou plus (avec Garantie Golden Goal)"}
+{"event": "Utah Mammoth - Colorado Avalanche", "first_seen": "2026-11-18T17:45:15.868051+00:00", "id": "boost|b22881d26e55", "odds": 4.5, "text": "Martin Necas buteur et Colorado Avalanche gagne (hors prol. et TAB)"}
+{"event": "Denver Nuggets - Boston Celtics", "first_seen": "2026-11-18T17:45:15.868051+00:00", "id": "boost|5c0f8322907b", "odds": 3.6, "text": "Jayson Tatum et Nikola Jokic marquent au moins 25 points chacun"}
