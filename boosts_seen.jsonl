@@ -37,3 +37,5 @@
 {"event": "Los Angeles Lakers - Utah Jazz", "first_seen": "2026-11-18T14:42:55.930915+00:00", "id": "boost|65d96bd995a6", "odds": 2.65, "text": "Luka Doncic marque au moins 40 points"}
 {"event": "Dallas Mavericks - Golden State Warriors", "first_seen": "2026-11-18T14:42:55.930915+00:00", "id": "boost|bf2ce7e8d910", "odds": 3.75, "text": "Cooper Flagg + Kyrie Irving marquent 55 points ou plus"}
 {"event": "NBA", "first_seen": "2026-11-18T14:42:55.930915+00:00", "id": "boost|02033c15ac72", "odds": 3.25, "text": "Plus de 222,5 points lors de chacun des matchs suivants : Indiana Pacers - Houston Rockets et Orlando Magic - Philadelphia 76ers"}
+{"event": "Chelsea (F) - Paris SG (F)", "first_seen": "2026-11-18T16:44:12.608589+00:00", "id": "boost|60499173c2bf", "odds": 4.0, "text": "Paris SG (F) gagne ou fait match nul et plus de 1,5 buts dans le match"}
+{"event": "Coritiba - Santos", "first_seen": "2026-11-18T16:44:12.608589+00:00", "id": "boost|df0d84a0edc0", "odds": 4.0, "text": "Gabriel Barbosa marque au moins un but en 1ère mi-temps"}
