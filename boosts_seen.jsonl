@@ -32,3 +32,5 @@
 {"event": "Liiga", "first_seen": "2026-11-18T08:33:27.008308+00:00", "id": "boost|46c28ec82f1a", "odds": 4.0, "text": "Chaque équipe à domicile marque au moins 2 buts lors des 6 matchs à 17h30"}
 {"event": "Real Madrid (F) - Inter (F)", "first_seen": "2026-11-18T09:35:59.763679+00:00", "id": "boost|bac3aa0ff10b", "odds": 3.0, "text": "L. Caicedo marque au moins un but et Real Madrid (F) marque au moins 3 buts"}
 {"event": "Besiktas - Real Madrid", "first_seen": "2026-11-18T09:35:59.763679+00:00", "id": "boost|5c030b27f1b1", "odds": 3.0, "text": "T. Maledon marque au moins 15 points et Real Madrid gagne par au moins 7 points d'écart"}
+{"event": "Eurocoupe", "first_seen": "2026-11-18T11:38:54.444238+00:00", "id": "boost|2458ae33bc13", "odds": 3.5, "text": "Bourg-en-Bresse gagne et Le Mans gagne ou perd par moins de 13 points d'écart (respectivement contre Napoli Basket et Aris Salonique)"}
+{"event": "Flavio Cobolli - Frances Tiafoe", "first_seen": "2026-11-18T11:38:54.444238+00:00", "id": "boost|7ae24cecdc5b", "odds": 4.5, "text": "Flavio Cobolli gagne 2-1"}
