@@ -34,3 +34,6 @@
 {"event": "Besiktas - Real Madrid", "first_seen": "2026-11-18T09:35:59.763679+00:00", "id": "boost|5c030b27f1b1", "odds": 3.0, "text": "T. Maledon marque au moins 15 points et Real Madrid gagne par au moins 7 points d'écart"}
 {"event": "Eurocoupe", "first_seen": "2026-11-18T11:38:54.444238+00:00", "id": "boost|2458ae33bc13", "odds": 3.5, "text": "Bourg-en-Bresse gagne et Le Mans gagne ou perd par moins de 13 points d'écart (respectivement contre Napoli Basket et Aris Salonique)"}
 {"event": "Flavio Cobolli - Frances Tiafoe", "first_seen": "2026-11-18T11:38:54.444238+00:00", "id": "boost|7ae24cecdc5b", "odds": 4.5, "text": "Flavio Cobolli gagne 2-1"}
+{"event": "Los Angeles Lakers - Utah Jazz", "first_seen": "2026-11-18T14:42:55.930915+00:00", "id": "boost|65d96bd995a6", "odds": 2.65, "text": "Luka Doncic marque au moins 40 points"}
+{"event": "Dallas Mavericks - Golden State Warriors", "first_seen": "2026-11-18T14:42:55.930915+00:00", "id": "boost|bf2ce7e8d910", "odds": 3.75, "text": "Cooper Flagg + Kyrie Irving marquent 55 points ou plus"}
+{"event": "NBA", "first_seen": "2026-11-18T14:42:55.930915+00:00", "id": "boost|02033c15ac72", "odds": 3.25, "text": "Plus de 222,5 points lors de chacun des matchs suivants : Indiana Pacers - Houston Rockets et Orlando Magic - Philadelphia 76ers"}
