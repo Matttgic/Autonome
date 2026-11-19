@@ -44,3 +44,6 @@
 {"event": "Denver Nuggets - Boston Celtics", "first_seen": "2026-11-18T17:45:15.868051+00:00", "id": "boost|5c0f8322907b", "odds": 3.6, "text": "Jayson Tatum et Nikola Jokic marquent au moins 25 points chacun"}
 {"event": "Serie A - Brésil", "first_seen": "2026-11-18T19:17:49.776595+00:00", "id": "boost|88e44c0c562b", "odds": 3.0, "text": "Grêmio et Corinthians marquent chacun le 1er but (respectivement contre Bahia et Botafogo)"}
 {"event": "Los Angeles Lakers - Utah Jazz", "first_seen": "2026-11-18T22:22:00.479686+00:00", "id": "boost|4bd68d6aa565", "odds": 3.85, "text": "Luka Doncic marque au moins 45 points et Los Angeles Lakers gagne"}
+{"event": "Ben Shelton - Rafael Jodar", "first_seen": "2026-11-19T07:35:37.028455+00:00", "id": "boost|4b93eb12067a", "odds": 3.0, "text": "Ben Shelton gagne et plus de 23,5 jeux dans le match"}
+{"event": "Illawarra Hawks - Adelaide 36ers", "first_seen": "2026-11-19T07:35:37.028455+00:00", "id": "boost|95ccd805967a", "odds": 2.8, "text": "Adelaide 36ers gagne par au moins 10 points d'écart"}
+{"event": "Alexander Zverev - Arthur Fils", "first_seen": "2026-11-19T07:35:37.028455+00:00", "id": "boost|20da8a5104ef", "odds": 3.85, "text": "Arthur Fils gagne le premier set et le match"}
