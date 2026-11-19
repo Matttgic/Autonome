@@ -59,3 +59,7 @@
 {"event": "Ligue des Champions (F)", "first_seen": "2026-11-19T17:50:38.759952+00:00", "id": "boost|884ebcd5e1a2", "odds": 2.75, "text": "OL Lyonnes et Benfica marquent chacun le 1er but (respectivement contre Arsenal et AS Rome)"}
 {"event": "Paris Basketball - Hapoel Tel-Aviv", "first_seen": "2026-11-19T17:50:38.759952+00:00", "id": "boost|fc10fe443e15", "odds": 2.75, "text": "Nadir Hifi marque au moins 20 points et distribue au moins 5 passes décisives"}
 {"event": "Serie A - Brésil", "first_seen": "2026-11-19T18:51:05.137701+00:00", "id": "boost|69f342fb9a52", "odds": 2.9, "text": "Chaque équipe marque lors des matchs suivants : Vitoria - Bragantino SP et Vasco da Gama - Internacional"}
+{"event": "Seattle Sounders - Real Salt Lake", "first_seen": "2026-11-19T20:53:01.389306+00:00", "id": "boost|f2101d0a6d77", "odds": 4.0, "text": "Dejan Joveljic marque au moins un but en 1ère mi-temps"}
+{"event": "Tampa Bay Lightning - Edmonton Oilers", "first_seen": "2026-11-19T20:53:01.389306+00:00", "id": "boost|be6da68b1c53", "odds": 6.0, "text": "Leon Draisaitl et Nikita Kucherov marquent chacun au moins un but (avec Garantie Golden Goal)"}
+{"event": "Vegas Golden Knights - Dallas Stars", "first_seen": "2026-11-19T20:53:01.389306+00:00", "id": "boost|ad703947b4ca", "odds": 4.75, "text": "Jack Eichel buteur et Vegas Golden Knights gagne (hors prol. et TAB)"}
+{"event": "Orlando City - Cincinnati FC", "first_seen": "2026-11-19T20:53:01.389306+00:00", "id": "boost|87a8de9bbeac", "odds": 3.75, "text": "Antoine Griezmann buteur et Orlando City gagne"}
