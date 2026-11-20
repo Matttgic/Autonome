@@ -63,3 +63,8 @@
 {"event": "Tampa Bay Lightning - Edmonton Oilers", "first_seen": "2026-11-19T20:53:01.389306+00:00", "id": "boost|be6da68b1c53", "odds": 6.0, "text": "Leon Draisaitl et Nikita Kucherov marquent chacun au moins un but (avec Garantie Golden Goal)"}
 {"event": "Vegas Golden Knights - Dallas Stars", "first_seen": "2026-11-19T20:53:01.389306+00:00", "id": "boost|ad703947b4ca", "odds": 4.75, "text": "Jack Eichel buteur et Vegas Golden Knights gagne (hors prol. et TAB)"}
 {"event": "Orlando City - Cincinnati FC", "first_seen": "2026-11-19T20:53:01.389306+00:00", "id": "boost|87a8de9bbeac", "odds": 3.75, "text": "Antoine Griezmann buteur et Orlando City gagne"}
+{"event": "Carlos Alcaraz - Flavio Cobolli", "first_seen": "2026-11-20T06:36:01.560076+00:00", "id": "boost|dcb8c337891d", "odds": 3.6, "text": "Carlos Alcaraz gagne par au moins 7 jeux d'écart"}
+{"event": "Sibir Novosibirsk - Avtomobilist Yekaterinburg", "first_seen": "2026-11-20T06:36:01.560076+00:00", "id": "boost|4bcdb71b6f3e", "odds": 3.5, "text": "Daniel Sprong buteur et Avtomobilist Yekaterinburg gagne (hors prol. et TAB)"}
+{"event": "Bayern Munich - Cologne", "first_seen": "2026-11-20T06:36:01.560076+00:00", "id": "boost|cf564f14f1f7", "odds": 4.25, "text": "Bayern Munich gagne le match 4-0, 5-0 ou 6-0"}
+{"event": "Athletic Bilbao - Espanyol Barcelone", "first_seen": "2026-11-20T06:36:01.560076+00:00", "id": "boost|33335ba2a332", "odds": 3.5, "text": "Athletic Bilbao gagne les deux mi-temps"}
+{"event": "J-League", "first_seen": "2026-11-20T06:36:01.560076+00:00", "id": "boost|43076dd6f571", "odds": 5.0, "text": "Plus de 2,5 buts dans chacun des 3 matchs du jour"}
