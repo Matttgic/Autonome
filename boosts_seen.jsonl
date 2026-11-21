@@ -74,3 +74,13 @@
 {"event": "Los Angeles Lakers - Sacramento Kings", "first_seen": "2026-11-20T16:51:50.111644+00:00", "id": "boost|a59d92d9cd8b", "odds": 2.7, "text": "Los Angeles Lakers gagne le match et Luka Doncic marque au moins 40 points"}
 {"event": "Oklahoma City Thunder - New Orleans Pelicans", "first_seen": "2026-11-20T17:52:38.528477+00:00", "id": "boost|2cc765da6f75", "odds": 4.0, "text": "Zion Williamson et Ajay Mitchell marquent au moins 20 points chacun"}
 {"event": "Pro D2", "first_seen": "2026-11-20T17:52:38.528477+00:00", "id": "boost|756a39aac198", "odds": 5.5, "text": "Chaque équipe à domicile gagne (4 matchs à 19h30)"}
+{"event": "Manchester City - Fulham", "first_seen": "2026-11-21T12:46:27.032633+00:00", "id": "boost|b7841ced9c57", "odds": 2.65, "text": "Manchester City gagne et plus de 3,5 buts dans le match"}
+{"event": "Carlos Alcaraz - Ben Shelton", "first_seen": "2026-11-21T12:46:27.032633+00:00", "id": "boost|1757ed1f6ac2", "odds": 2.15, "text": "Carlos Alcaraz gagne et moins de 22,5 jeux dans le match"}
+{"event": "Nice - Paris SG", "first_seen": "2026-11-21T12:46:27.032633+00:00", "id": "boost|36e05224157b", "odds": 2.5, "text": "Paris SG gagne et les deux équipes marquent"}
+{"event": "Bundesliga", "first_seen": "2026-11-21T12:46:27.032633+00:00", "id": "boost|2b4a143ede18", "odds": 2.5, "text": "Au moins un but marqué en première mi-temps lors de chacun des 5 matchs à 15h30"}
+{"event": "Premier League", "first_seen": "2026-11-21T12:46:27.032633+00:00", "id": "boost|f00ef38a47c7", "odds": 3.25, "text": "Chaque équipe à domicile gagne ou fait match nul (5 matchs à 16h00)"}
+{"event": "Ligue 1 McDonald's®", "first_seen": "2026-11-21T12:46:27.032633+00:00", "id": "boost|4bbb44b1c8a6", "odds": 2.5, "text": "Plus de 1,5 buts dans chacun des 4 matchs à 20h45"}
+{"event": "Serie A", "first_seen": "2026-11-21T12:46:27.032633+00:00", "id": "boost|5af8cfdc76f0", "odds": 3.75, "text": "Lazio Rome et Come gagnent chacun par au moins 2 buts d'écart (respectivement contre Lecce et Cagliari)"}
+{"event": "Alexander Zverev - Daniil Medvedev", "first_seen": "2026-11-21T12:46:27.032633+00:00", "id": "boost|e7a8c4438d20", "odds": 2.6, "text": "Alexander Zverev gagne par au moins 4 jeux d'écart"}
+{"event": "France - Argentine", "first_seen": "2026-11-21T12:46:27.032633+00:00", "id": "boost|25ff1a23a390", "odds": 2.5, "text": "La France marque au moins 7 essais"}
+{"event": "Jiří Procházka - Navajo Stirling", "first_seen": "2026-11-21T12:46:27.032633+00:00", "id": "boost|86a333459f46", "odds": 2.75, "text": "Jiří Procházka gagne par KO, KO technique ou disqualification"}
