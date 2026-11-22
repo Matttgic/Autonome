@@ -107,3 +107,4 @@
 {"event": "NFL", "first_seen": "2026-11-22T15:46:39.287464+00:00", "id": "boost|e7bcbf7d3f7c", "odds": 3.85, "text": "Detroit Lions, Baltimore Ravens et Chicago Bears gagnent chacun leur match (respectivement contre Tampa Bay Buccaneers, Carolina Panthers et New Orleans Saints)"}
 {"event": "Atalanta - Inter Milan", "first_seen": "2026-11-22T17:19:58.127582+00:00", "id": "boost|eb2e7f661a7e", "odds": 2.55, "text": "Inter Milan gagne et les deux équipes marquent"}
 {"event": "Vancouver Whitecaps - Real Salt Lake", "first_seen": "2026-11-22T21:21:57.783481+00:00", "id": "boost|b43aebd803c6", "odds": 3.5, "text": "Vancouver Whitecaps gagne par au moins 3 buts d'écart"}
+{"event": "St. Louis Blues - Edmonton Oilers", "first_seen": "2026-11-22T22:24:17.152438+00:00", "id": "boost|bc44c17dadf4", "odds": 4.25, "text": "Connor McDavid marque au moins 3 points"}
