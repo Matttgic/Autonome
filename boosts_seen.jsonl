@@ -91,3 +91,10 @@
 {"event": "San Antonio Spurs - New Orleans Pelicans", "first_seen": "2026-11-21T17:19:31.294150+00:00", "id": "boost|ba983f678778", "odds": 2.55, "text": "V. Wembanyama + Z. Williamson marquent 55 points ou plus"}
 {"event": "Dallas Mavericks - Los Angeles Clippers", "first_seen": "2026-11-21T18:20:10.060065+00:00", "id": "boost|e3bd7355166d", "odds": 3.0, "text": "Cooper Flagg marque au moins 30 points"}
 {"event": "Real Madrid - Celta Vigo", "first_seen": "2026-11-21T19:20:43.989435+00:00", "id": "boost|068ba7a0f1c5", "odds": 2.9, "text": "Real Madrid gagne le match 1-0, 2-0 ou 3-0"}
+{"event": "FC Barcelone - Villarreal", "first_seen": "2026-11-22T09:39:07.615549+00:00", "id": "boost|d61e91e0a7c8", "odds": 3.0, "text": "Les deux équipes marquent en première mi-temps"}
+{"event": "Marseille - Le Mans", "first_seen": "2026-11-22T09:39:07.615549+00:00", "id": "boost|a08e317a03bc", "odds": 3.0, "text": "Marseille gagne et plus de 3,5 buts dans le match"}
+{"event": "Juventus - Venise", "first_seen": "2026-11-22T09:39:07.615549+00:00", "id": "boost|d5014ae41311", "odds": 2.35, "text": "Juventus marque au moins 3 buts"}
+{"event": "Paris FC - Angers", "first_seen": "2026-11-22T09:39:07.615549+00:00", "id": "boost|3855532a439e", "odds": 2.75, "text": "Paris FC marque au moins 2 buts en première mi-temps"}
+{"event": "Alexander Zverev - Carlos Alcaraz", "first_seen": "2026-11-22T09:39:07.615549+00:00", "id": "boost|975b551d09c2", "odds": 2.3, "text": "Plus de 2,5 sets lors du match"}
+{"event": "Liverpool - Manchester United", "first_seen": "2026-11-22T09:39:07.615549+00:00", "id": "boost|1a5f579df82b", "odds": 2.25, "text": "Liverpool marque dans les deux mi-temps"}
+{"event": "M.Arevalo / M.Pavic - T.Arribage / A.Olivetti", "first_seen": "2026-11-22T09:39:07.615549+00:00", "id": "boost|1a904e9bc1d6", "odds": 3.75, "text": "T.Arribage / A.Olivetti gagnent 2-0"}
