@@ -108,3 +108,6 @@
 {"event": "Atalanta - Inter Milan", "first_seen": "2026-11-22T17:19:58.127582+00:00", "id": "boost|eb2e7f661a7e", "odds": 2.55, "text": "Inter Milan gagne et les deux équipes marquent"}
 {"event": "Vancouver Whitecaps - Real Salt Lake", "first_seen": "2026-11-22T21:21:57.783481+00:00", "id": "boost|b43aebd803c6", "odds": 3.5, "text": "Vancouver Whitecaps gagne par au moins 3 buts d'écart"}
 {"event": "St. Louis Blues - Edmonton Oilers", "first_seen": "2026-11-22T22:24:17.152438+00:00", "id": "boost|bc44c17dadf4", "odds": 4.25, "text": "Connor McDavid marque au moins 3 points"}
+{"event": "LNZ Cherkasy - Polissya Zhytomyr", "first_seen": "2026-11-23T10:11:50.720750+00:00", "id": "boost|3fd491bc8be4", "odds": 3.25, "text": "Polissya Zhytomyr gagne à la mi-temps et à la fin du match"}
+{"event": "Istanbul Basaksehir - Çorum", "first_seen": "2026-11-23T10:11:50.720750+00:00", "id": "boost|2a5ff5534331", "odds": 4.5, "text": "Davie Selke marque au moins un but en 1ère mi-temps"}
+{"event": "Monza - Fiorentina", "first_seen": "2026-11-23T10:11:50.720750+00:00", "id": "boost|253d7f146169", "odds": 4.5, "text": "Gustavo Varela marque au moins un but en 1ère mi-temps"}
