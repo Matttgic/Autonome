@@ -116,3 +116,6 @@
 {"event": "Sibir Novosibirsk - Severstal Cherepovets", "first_seen": "2026-11-23T12:13:02.784892+00:00", "id": "boost|0e9de7f75b88", "odds": 4.75, "text": "Ruslan Abrosimov buteur et Severstal Cherepovets gagne (hors prol. et TAB)"}
 {"event": "Brentford - Everton", "first_seen": "2026-11-23T12:13:02.784892+00:00", "id": "boost|50240d35898f", "odds": 4.25, "text": "Brentford gagne le match 1-0, 2-0 ou 3-0"}
 {"event": "Philadelphia 76ers - Portland Trail Blazers", "first_seen": "2026-11-23T13:13:56.010201+00:00", "id": "boost|f3bc443b3b77", "odds": 3.0, "text": "Tyrese Maxey marque au moins 25 points et Philadelphia 76ers gagne"}
+{"event": "Los Angeles Lakers - Utah Jazz", "first_seen": "2026-11-23T18:21:44.800404+00:00", "id": "boost|afc8c191a026", "odds": 3.25, "text": "Luka Doncic réalise une performance points + rebonds + passes décisives d'au moins 60"}
+{"event": "Montreal Canadiens - Los Angeles Kings", "first_seen": "2026-11-23T18:21:44.800404+00:00", "id": "boost|4fbc0107add5", "odds": 4.0, "text": "Dylan Larkin buteur et Montreal Canadiens gagne (hors prol. et TAB)"}
+{"event": "Washington Commanders - Cincinnati Bengals", "first_seen": "2026-11-23T18:21:44.800404+00:00", "id": "boost|77783ba83b34", "odds": 3.5, "text": "J. Chase et T. Higgins marquent chacun au moins un touchdown"}
