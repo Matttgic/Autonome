@@ -120,3 +120,4 @@
 {"event": "Montreal Canadiens - Los Angeles Kings", "first_seen": "2026-11-23T18:21:44.800404+00:00", "id": "boost|4fbc0107add5", "odds": 4.0, "text": "Dylan Larkin buteur et Montreal Canadiens gagne (hors prol. et TAB)"}
 {"event": "Washington Commanders - Cincinnati Bengals", "first_seen": "2026-11-23T18:21:44.800404+00:00", "id": "boost|77783ba83b34", "odds": 3.5, "text": "J. Chase et T. Higgins marquent chacun au moins un touchdown"}
 {"event": "Serie A - Brésil", "first_seen": "2026-11-23T21:26:45.951351+00:00", "id": "boost|5db8e7551506", "odds": 3.4, "text": "Chaque équipe marque lors des matchs suivants : Internacional - Vitoria et Botafogo - Sao Paulo"}
+{"event": "NBA", "first_seen": "2026-11-23T22:27:42.596084+00:00", "id": "boost|fb228594cb5b", "odds": 3.5, "text": "New Orleans Pelicans, Cleveland Cavaliers et Houston Rockets gagnent chacun leur match (respectivement contre Phoenix Suns, Chicago Bulls et Los Angeles Clippers)"}
