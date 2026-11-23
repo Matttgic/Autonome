@@ -115,3 +115,4 @@
 {"event": "Ligue 2 BKT®", "first_seen": "2026-11-23T12:13:02.784892+00:00", "id": "boost|e093d4ef6c92", "odds": 3.6, "text": "Nantes et Sochaux gagnent chacun leur match (respectivement contre Grenoble et Dunkerque)"}
 {"event": "Sibir Novosibirsk - Severstal Cherepovets", "first_seen": "2026-11-23T12:13:02.784892+00:00", "id": "boost|0e9de7f75b88", "odds": 4.75, "text": "Ruslan Abrosimov buteur et Severstal Cherepovets gagne (hors prol. et TAB)"}
 {"event": "Brentford - Everton", "first_seen": "2026-11-23T12:13:02.784892+00:00", "id": "boost|50240d35898f", "odds": 4.25, "text": "Brentford gagne le match 1-0, 2-0 ou 3-0"}
+{"event": "Philadelphia 76ers - Portland Trail Blazers", "first_seen": "2026-11-23T13:13:56.010201+00:00", "id": "boost|f3bc443b3b77", "odds": 3.0, "text": "Tyrese Maxey marque au moins 25 points et Philadelphia 76ers gagne"}
