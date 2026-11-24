@@ -132,3 +132,6 @@
 {"event": "Arsenal - Borussia Dortmund", "first_seen": "2026-11-24T13:51:28.070333+00:00", "id": "boost|25808c6557d6", "odds": 3.25, "text": "Arsenal gagne et les deux équipes marquent"}
 {"event": "Manchester City - Naples", "first_seen": "2026-11-24T13:51:28.070333+00:00", "id": "boost|bab20141cc40", "odds": 2.85, "text": "E. Haaland marque 2 buts ou plus (remboursé si non titulaire)"}
 {"event": "Real Madrid - PSV Eindhoven", "first_seen": "2026-11-24T16:25:40.406358+00:00", "id": "boost|2ea4d122f181", "odds": 2.8, "text": "Kylian Mbappé premier buteur du match"}
+{"event": "San Jose Earthquakes - Houston Dynamo", "first_seen": "2026-11-24T19:28:18.875199+00:00", "id": "boost|c242d88636b9", "odds": 3.25, "text": "San Jose Earthquakes gagne par au moins 2 buts d'écart (hors prol. et TAB)"}
+{"event": "Chapecoense - Palmeiras", "first_seen": "2026-11-24T19:28:18.875199+00:00", "id": "boost|37e9bb0cfc31", "odds": 3.25, "text": "Palmeiras gagne à la mi-temps et à la fin du match"}
+{"event": "Edmonton Oilers - Vegas Golden Knights", "first_seen": "2026-11-24T19:28:18.875199+00:00", "id": "boost|0a73a0b75a9e", "odds": 3.85, "text": "L. Draisaitl buteur et Edmonton Oilers gagne (hors prol. et TAB)"}
