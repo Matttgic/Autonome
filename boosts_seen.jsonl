@@ -142,3 +142,4 @@
 {"event": "Paris SG - AS Rome", "first_seen": "2026-11-25T08:44:02.095610+00:00", "id": "boost|9d594ffcd3fb", "odds": 2.4, "text": "Paris SG gagne et les deux équipes marquent"}
 {"event": "Lille - Bayern Munich", "first_seen": "2026-11-25T08:44:02.095610+00:00", "id": "boost|d23d1f443792", "odds": 3.0, "text": "Lille gagne ou fait match nul et plus de 1,5 buts dans le match"}
 {"event": "Ligue des Champions", "first_seen": "2026-11-25T08:44:02.095610+00:00", "id": "boost|fe9896c683b6", "odds": 3.25, "text": "Chaque équipe marque lors des matchs suivants : Shakhtar Donetsk - Fenerbahce, Club Bruges - Liverpool et Sporting Portugal - Manchester United"}
+{"event": "Championship", "first_seen": "2026-11-25T10:45:27.499486+00:00", "id": "boost|9f9faa677a90", "odds": 3.5, "text": "Au moins un but marqué en première mi-temps lors de chacun des 4 matchs du jour"}
