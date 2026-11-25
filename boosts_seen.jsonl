@@ -137,3 +137,8 @@
 {"event": "Edmonton Oilers - Vegas Golden Knights", "first_seen": "2026-11-24T19:28:18.875199+00:00", "id": "boost|0a73a0b75a9e", "odds": 3.85, "text": "L. Draisaitl buteur et Edmonton Oilers gagne (hors prol. et TAB)"}
 {"event": "J-League", "first_seen": "2026-11-25T06:42:51.119782+00:00", "id": "boost|867e63113acc", "odds": 5.0, "text": "Plus de 1,5 buts dans chacun des 7 matchs du jour"}
 {"event": "Kryvbas Kryvyi Rih - FC Kharkiv", "first_seen": "2026-11-25T06:42:51.119782+00:00", "id": "boost|040c0b630ea7", "odds": 3.6, "text": "FC Kharkiv gagne les deux mi-temps"}
+{"event": "Sabah - FC Barcelone", "first_seen": "2026-11-25T08:44:02.095610+00:00", "id": "boost|fa708637c3eb", "odds": 2.5, "text": "FC Barcelone marque au moins 5 buts"}
+{"event": "Ligue des Champions", "first_seen": "2026-11-25T08:44:02.095610+00:00", "id": "boost|6b94ea6ba958", "odds": 2.75, "text": "Plus de 1,5 buts dans chacun des 7 matchs à 21h00"}
+{"event": "Paris SG - AS Rome", "first_seen": "2026-11-25T08:44:02.095610+00:00", "id": "boost|9d594ffcd3fb", "odds": 2.4, "text": "Paris SG gagne et les deux équipes marquent"}
+{"event": "Lille - Bayern Munich", "first_seen": "2026-11-25T08:44:02.095610+00:00", "id": "boost|d23d1f443792", "odds": 3.0, "text": "Lille gagne ou fait match nul et plus de 1,5 buts dans le match"}
+{"event": "Ligue des Champions", "first_seen": "2026-11-25T08:44:02.095610+00:00", "id": "boost|fe9896c683b6", "odds": 3.25, "text": "Chaque équipe marque lors des matchs suivants : Shakhtar Donetsk - Fenerbahce, Club Bruges - Liverpool et Sporting Portugal - Manchester United"}
