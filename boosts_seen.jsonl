@@ -146,3 +146,6 @@
 {"event": "Philadelphia 76ers - Miami Heat", "first_seen": "2026-11-25T15:48:36.997441+00:00", "id": "boost|63f9b5eded07", "odds": 2.65, "text": "Tyrese Maxey et LeBron James marquent au moins 20 points chacun"}
 {"event": "Tampa Bay Lightning - Carolina Hurricanes", "first_seen": "2026-11-25T16:50:58.070309+00:00", "id": "boost|e38d14d9ac37", "odds": 3.7, "text": "Carolina Hurricanes gagne et plus de 5,5 buts dans le match (hors prol. et TAB)"}
 {"event": "Oklahoma City Thunder - Minnesota Timberwolves", "first_seen": "2026-11-25T16:50:58.070309+00:00", "id": "boost|02e2c4a52664", "odds": 3.4, "text": "Shai Gilgeous-Alexander + LaMelo Ball marquent 60 points ou plus"}
+{"event": "Colorado Avalanche - Montreal Canadiens", "first_seen": "2026-11-25T17:51:14.758189+00:00", "id": "boost|b80b13722f3f", "odds": 4.25, "text": "Gabriel Landeskog buteur et Colorado Avalanche gagne (hors prol. et TAB)"}
+{"event": "Los Angeles Rams - Green Bay Packers", "first_seen": "2026-11-25T17:51:14.758189+00:00", "id": "boost|16974e797457", "odds": 3.25, "text": "Blake Corum marque au moins un touchdown et Los Angeles Rams gagne"}
+{"event": "Olympiakos - Hapoel Tel-Aviv", "first_seen": "2026-11-25T17:51:14.758189+00:00", "id": "boost|8608a1646d3a", "odds": 4.0, "text": "Sasha Vezenkov et Evan Fournier marquent au moins 20 points chacun"}
