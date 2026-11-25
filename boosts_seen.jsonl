@@ -135,3 +135,5 @@
 {"event": "San Jose Earthquakes - Houston Dynamo", "first_seen": "2026-11-24T19:28:18.875199+00:00", "id": "boost|c242d88636b9", "odds": 3.25, "text": "San Jose Earthquakes gagne par au moins 2 buts d'écart (hors prol. et TAB)"}
 {"event": "Chapecoense - Palmeiras", "first_seen": "2026-11-24T19:28:18.875199+00:00", "id": "boost|37e9bb0cfc31", "odds": 3.25, "text": "Palmeiras gagne à la mi-temps et à la fin du match"}
 {"event": "Edmonton Oilers - Vegas Golden Knights", "first_seen": "2026-11-24T19:28:18.875199+00:00", "id": "boost|0a73a0b75a9e", "odds": 3.85, "text": "L. Draisaitl buteur et Edmonton Oilers gagne (hors prol. et TAB)"}
+{"event": "J-League", "first_seen": "2026-11-25T06:42:51.119782+00:00", "id": "boost|867e63113acc", "odds": 5.0, "text": "Plus de 1,5 buts dans chacun des 7 matchs du jour"}
+{"event": "Kryvbas Kryvyi Rih - FC Kharkiv", "first_seen": "2026-11-25T06:42:51.119782+00:00", "id": "boost|040c0b630ea7", "odds": 3.6, "text": "FC Kharkiv gagne les deux mi-temps"}
