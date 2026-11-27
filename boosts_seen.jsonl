@@ -168,3 +168,8 @@
 {"event": "Sao Paulo - Remo", "first_seen": "2026-11-26T17:28:24.064018+00:00", "id": "boost|33a7cae9b3ef", "odds": 3.5, "text": "Luciano Neves marque au moins un but en 1ère mi-temps"}
 {"event": "Pachuca - Guadalajara", "first_seen": "2026-11-26T17:28:24.064018+00:00", "id": "boost|29b932410a72", "odds": 2.65, "text": "Pachuca ou Guadalajara gagne et les deux équipes marquent"}
 {"event": "Macarthur FC - Melbourne City", "first_seen": "2026-11-27T04:48:43.796801+00:00", "id": "boost|c42bc6a50b5e", "odds": 2.5, "text": "Macarthur FC gagne ou fait match nul et les deux équipes marquent"}
+{"event": "Nottingham Forest - Chelsea", "first_seen": "2026-11-27T07:52:16.133102+00:00", "id": "boost|78a343cc3983", "odds": 3.75, "text": "Chelsea marque dans les deux mi-temps"}
+{"event": "Brest - Paris FC", "first_seen": "2026-11-27T07:52:16.133102+00:00", "id": "boost|4aa45aa08166", "odds": 2.7, "text": "Paris FC gagne ou fait match nul et plus de 2,5 buts dans le match"}
+{"event": "Werder Brême - Borussia M'Gladbach", "first_seen": "2026-11-27T07:52:16.133102+00:00", "id": "boost|9abb280f1abb", "odds": 3.0, "text": "Werder Brême gagne et les deux équipes marquent"}
+{"event": "Venise - Bologne", "first_seen": "2026-11-27T07:52:16.133102+00:00", "id": "boost|6030eb61210b", "odds": 2.35, "text": "Bologne marque au moins 2 buts"}
+{"event": "Daikin Starligue", "first_seen": "2026-11-27T07:52:16.133102+00:00", "id": "boost|eb0cbc649afc", "odds": 2.9, "text": "Montpellier et Limoges marquent chacun au moins 34 buts (respectivement contre Cesson et Chambéry)"}
