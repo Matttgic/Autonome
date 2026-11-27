@@ -186,3 +186,4 @@
 {"event": "NBA", "first_seen": "2026-11-27T17:03:41.258942+00:00", "id": "boost|672d2e0c0f9f", "odds": 2.75, "text": "Jalen Brunson marque au moins 30 points et New York Knicks gagne"}
 {"event": "Indiana Pacers - Philadelphia 76ers", "first_seen": "2026-11-27T17:03:41.258942+00:00", "id": "boost|7a20b69ae142", "odds": 3.5, "text": "LeBron James réalise une performance points + rebonds + passes décisives d'au moins 40"}
 {"event": "San Antonio Spurs - Los Angeles Lakers", "first_seen": "2026-11-27T17:03:41.258942+00:00", "id": "boost|593589b6487a", "odds": 4.4, "text": "Victor Wembanyama marque au moins 30 points, réalise au moins 3 contres et San Antonio Spurs gagne"}
+{"event": "Real Salt Lake - Vancouver Whitecaps", "first_seen": "2026-11-27T17:34:02.209505+00:00", "id": "boost|ef1178fbdd8c", "odds": 3.0, "text": "Real Salt Lake ou Vancouver Whitecaps gagne et plus de 3,5 buts dans le match (hors prol. et TAB)"}
