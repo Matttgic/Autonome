@@ -174,3 +174,6 @@
 {"event": "Venise - Bologne", "first_seen": "2026-11-27T07:52:16.133102+00:00", "id": "boost|6030eb61210b", "odds": 2.35, "text": "Bologne marque au moins 2 buts"}
 {"event": "Daikin Starligue", "first_seen": "2026-11-27T07:52:16.133102+00:00", "id": "boost|eb0cbc649afc", "odds": 2.9, "text": "Montpellier et Limoges marquent chacun au moins 34 buts (respectivement contre Cesson et Chambéry)"}
 {"event": "Brest vs Paris FC", "first_seen": "2026-11-27T08:22:38.050883+00:00", "id": "boost|3a13bef87295", "odds": 2.7, "text": "CB - L.Sinayoko décisif et son équipe gagne (remboursé si non titulaire) (2,30 -> 2,70 / Mise max 25 €) Oui"}
+{"event": "France (F) - Vénézuela (F)", "first_seen": "2026-11-27T08:54:37.431190+00:00", "id": "boost|c312f471b59b", "odds": 3.25, "text": "France (F) gagne le match 1-0, 2-0 ou 3-0"}
+{"event": "Al-Kholood - Al Khaleej", "first_seen": "2026-11-27T08:54:37.431190+00:00", "id": "boost|a411c55ced7e", "odds": 4.5, "text": "Joshua King marque au moins un but en 1ère mi-temps"}
+{"event": "MyMatch Biathlon (F) - Kontiolahti - Individuel 15Km", "first_seen": "2026-11-27T08:54:37.431190+00:00", "id": "boost|17afbe4234fb", "odds": 4.0, "text": "L. Jeanmonnot termine sur le podium, J. Simon dans le Top 6 et C. Bened dans le Top 10"}
