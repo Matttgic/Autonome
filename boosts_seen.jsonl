@@ -190,3 +190,8 @@
 {"event": "Fluminense - Cruzeiro", "first_seen": "2026-11-27T19:37:09.605378+00:00", "id": "boost|517430f80c86", "odds": 2.65, "text": "Fluminense ou Cruzeiro gagne et les deux équipes marquent"}
 {"event": "Angers vs Lens", "first_seen": "2026-11-28T08:28:26.975990+00:00", "id": "boost|5996e9c0578d", "odds": 2.5, "text": "CB - Lens marque dans les 2 Mi-temps ( 2,20 -> 2,50 / Mise max 25 €) Oui"}
 {"event": "Paris SG vs Lorient", "first_seen": "2026-11-28T08:28:26.975990+00:00", "id": "boost|efe12e4d3b3f", "odds": 3.0, "text": "CB - Ousmane Dembélé buteur et son équipe gagne de 3 buts ou + (remboursé si non titulaire) (2,60 -> 3,00 / Mise max 25 €) Oui"}
+{"event": "Angers - Lens", "first_seen": "2026-11-28T10:01:52.000172+00:00", "id": "boost|142fca2af3d7", "odds": 2.1, "text": "Lens gagne la première mi-temps"}
+{"event": "Hambourg - Bayern Munich", "first_seen": "2026-11-28T10:01:52.000172+00:00", "id": "boost|c09d47478b68", "odds": 3.4, "text": "Bayern Munich gagne et plus de 4,5 buts dans le match"}
+{"event": "Al Hazem - Al Nassr", "first_seen": "2026-11-28T10:01:52.000172+00:00", "id": "boost|5fea89d57486", "odds": 3.0, "text": "Cristiano Ronaldo marque 2 buts ou plus"}
+{"event": "Premier League", "first_seen": "2026-11-28T10:01:52.000172+00:00", "id": "boost|a1efb4abac38", "odds": 3.4, "text": "Manchester United et Leeds gagnent chacun leur match (respectivement contre Brentford et Coventry)"}
+{"event": "Top 14", "first_seen": "2026-11-28T10:01:52.000172+00:00", "id": "boost|e488ee5573fb", "odds": 2.0, "text": "Chaque équipe à domicile gagne (4 matchs à 16h35)"}
