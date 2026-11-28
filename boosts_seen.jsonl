@@ -195,3 +195,6 @@
 {"event": "Al Hazem - Al Nassr", "first_seen": "2026-11-28T10:01:52.000172+00:00", "id": "boost|5fea89d57486", "odds": 3.0, "text": "Cristiano Ronaldo marque 2 buts ou plus"}
 {"event": "Premier League", "first_seen": "2026-11-28T10:01:52.000172+00:00", "id": "boost|a1efb4abac38", "odds": 3.4, "text": "Manchester United et Leeds gagnent chacun leur match (respectivement contre Brentford et Coventry)"}
 {"event": "Top 14", "first_seen": "2026-11-28T10:01:52.000172+00:00", "id": "boost|e488ee5573fb", "odds": 2.0, "text": "Chaque équipe à domicile gagne (4 matchs à 16h35)"}
+{"event": "Bordeaux vs Montpellier", "first_seen": "2026-11-28T11:02:09.723923+00:00", "id": "boost|46fb9633f9ba", "odds": 2.5, "text": "CB - Hugo Avogadro marque un essai ou + (2,20 -> 2,50 / Mise max 25€) Oui"}
+{"event": "Angleterre vs Nlle-Zélande", "first_seen": "2026-11-28T11:02:09.723923+00:00", "id": "boost|be7afde5d264", "odds": 2.45, "text": "CB - Angleterre gagne et Will Joseph marque un essai ou + (2,15 -> 2,45 / Mise max 25€) Oui"}
+{"event": "Real Madrid - Alaves", "first_seen": "2026-11-28T11:02:09.723923+00:00", "id": "boost|fb64ed04ef54", "odds": 3.1, "text": "Real Madrid gagne par au moins 4 buts d'écart"}
